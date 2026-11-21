@@ -1,7 +1,8 @@
 # Textures
 
-Texture dictionaries are descriptor-backed. The descriptor bounds, names, and
-dimensions validate; the pixel codec and mip/tile layout do not yet.
+Texture dictionaries are descriptor-backed. Their bounds, names, and
+dimensions validate. One single-mip `0x4d` texture also has a verified BC3
+decode and block layout.
 
 ## Descriptor model
 
@@ -72,7 +73,14 @@ stateDiagram-v2
     Verified --> [*]
 ```
 
-## Top-mip experiment
+## Verified control
+
+The `64×64` `trophy` texture in `textures.rpf` fills a single 4 KiB buffer
+with 256 BC3 blocks starting at offset zero. All block addresses match the
+low 4 KiB of the 2D 128-bpp standard swizzle. The decoded PNG and
+reproduction command are listed in `handoff/texture-trophy-control.md`.
+
+## Earlier top-mip experiment
 
 ```mermaid
 sequenceDiagram
@@ -98,6 +106,5 @@ sequenceDiagram
 - Which codec is used by `0x62`?
 - Can a second independent texture verify the spinner candidate?
 
-!!! warning "Not verified"
-    Only `loading_screen_spinner_i1` renders plausibly. No texture conversion
-    is labelled verified, and the HUD holdouts fail under the tested layouts.
+The spinner and HUD layouts remain open. The trophy control does not cover
+multi-tile surfaces, packed mip tails, or format `0x62`.

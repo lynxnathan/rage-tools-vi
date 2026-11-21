@@ -2250,3 +2250,20 @@ and part names open pending an independent root/model reference or ordered
 named skeleton. Results and commands are in
 `handoff/script-bone-namespace-probe.md` and
 `handoff/script-bone-namespace-probe.tsv`.
+
+## Journal: BC3 trophy control and block swizzle (2026-11-21)
+
+The `trophy` texture in local `textures.rpf` has a 240-byte system stream at
+archive-relative `0x9160010..0x916006b` and a 4,096-byte graphics stream at
+`0x9160070..0x91603ae`, verified by zlib. Its descriptor gives `64×64×1`,
+`0x4d`, 256 blocks at 16 bytes each, a graphics pointer at relative zero,
+and `1` in the mip-count byte. BC3 consumes the full buffer at mip offset
+zero with a linear pitch of 256 bytes after reordering.
+
+The best of 40,320 address-bit permutations places `x` low-to-high at block
+address bits `2,3,5,7` and `y` at `0,1,4,6`. The mean premultiplied RGBA seam
+delta is 10.9012 against 13.5301 for the runner-up and 86.3884 for linear.
+Every address matches the low 4 KiB of the published 128-bpp standard swizzle.
+The resulting PNG is a coherent striped circle with transparent corners.
+Run the bounded probe in `handoff/texture-trophy-control.md` to reproduce.
+Multi-tile pitch, packed mip ordering, and `0x62` still need controls.

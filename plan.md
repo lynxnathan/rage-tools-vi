@@ -203,8 +203,12 @@ entry identification, coverage, or decoding across the archive set.
 - Top-mip decode trial: `loading_screen_spinner_i1` (32×32, format 0x4D) has a
   plausible BC3 candidate at offset `0x800` with 4×4-block tiles. The
   `hud_i8d6`/`hud_i689` holdouts do not render coherently under offsets
-  0/0x2000/0x4000/0x6000 and tiles 1/2/4/8. Descriptor bounds agree; top-mip
-  offset, mip order, pitch, tile order, and codec remain unknown.
+  0/0x2000/0x4000/0x6000 and tiles 1/2/4/8.
+- `trophy` in `textures.rpf` confirms BC3 for one `0x4d` control. Its
+  single `64×64` mip fills the 4 KiB graphics buffer from offset zero.
+  All 256 addresses match the low 4 KiB of Microsoft's 128-bpp standard
+  swizzle. Linear pitch after reordering is 256 bytes. Repro and PNG
+  digest are in `handoff/texture-trophy-control.md`.
 
 ### Script sections
 
@@ -589,6 +593,7 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/layout_link_probe.py` | Test model/layout pairs against class-0 layout roots |
 | `tools/native_texture_scan.py` | Scan decoded resources for texture dictionaries and export native textures |
 | `tools/texture_decode.py` | Decode BC1/BC3 top-mip candidates and write PNG samples |
+| `tools/texture_control_probe.py` | Recover and verify one bounded BC3 texture control and compare its block addresses |
 | `tools/pi_archive_audit.py` | Raw DEFLATE, root-ID, motif, and path probes |
 | `tools/audit_payload_objects.py` | Independent payload-object audit |
 
@@ -601,8 +606,8 @@ entry identification, coverage, or decoding across the archive set.
   where are the transforms stored?
 - Is the 331,728-byte blob bytecode, compressed data, or an unrelated resource?
 - Where is the compiled shader bytecode, if it is present in this corpus?
-- What are the actual codec, top-mip offset, mip order, pitch, and tile order for
-  format 0x4D and 0x62 textures?
+- How does the verified `0x4d` 4 KiB layout extend to multi-tile textures and
+  packed mip tails? Does a `0x62` control validate the DXGI BC7 mapping?
 - How are Opus pre-skip and end-trim derived in AWC codec `0x0B`?
 - What do the ACE1 trailer pairs describe beyond the final prefix block count?
 - What hash produces the 612 class-0 bone-table names, and what are their names?
