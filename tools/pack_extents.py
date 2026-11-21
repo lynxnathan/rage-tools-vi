@@ -75,7 +75,7 @@ def main():
     streams = sorted((int(row["start"], 16), int(row["end"], 16), int(row["decoded_bytes"] or 0))
                      for row in csv.DictReader(args.index.open(), delimiter="\t")
                      if row["kind"] == "zlib")
-    by_offset = {pack[0]: pack for pack in packs}
+    stream_starts = [stream[0] for stream in streams]
     print(f"{args.archive.name}: packs {len(packs)}, streams {len(streams)}")
 
     with args.archive.open("rb") as handle:
@@ -105,8 +105,35 @@ def main():
             if stack_parent := pack.get("parent"):
                 stack_parent["last_end"] = max(stack_parent["last_end"], end)
 
-        for offset, kind, index in events:
+        next_offset = None
+        for event_index, (offset, kind, index) in enumerate(events):
             if kind == 0:
+                next_offset = events[event_index + 1][0] if event_index + 1 < len(events) else size
+                # Leaf fast path: if the pack's own window (up to the physical
+                # boundary of the next header) already holds exactly N struct
+                # roots, it is a leaf and closes on the physical boundary.  The
+                # count is used only to *classify* leaf vs parent, never to
+                # drive the walk, so an ambiguous N cannot collapse the tree.
+                row = packs[index]
+                front = row[0] + row[2]
+                boundary = next_offset - padding_before(mm, next_offset) if next_offset else size
+                lo = bisect.bisect_left(stream_starts, front)
+                hi = bisect.bisect_left(stream_starts, boundary)
+                own = sum(1 for k in range(lo, hi) if kinds.get(k))
+                if own == row[1] and boundary > front:
+                    leaf = {
+                        "offset": row[0], "count": row[1], "trailer": row[3],
+                        "front_end_abs": front, "items": own, "children": 0,
+                        "direct": own, "last_end": boundary - row[3],
+                    }
+                    leaf["end"] = boundary
+                    resolved[row[0]] = leaf
+                    if stack:
+                        stack[-1]["children"] += 1
+                        stack[-1]["direct"] += 1
+                        stack[-1]["last_end"] = max(stack[-1]["last_end"], boundary)
+                    next_offset = events[event_index + 1][0] if event_index + 1 < len(events) else size
+                    continue
                 # Only a header can end a pack: trailing data streams after the
                 # last counting entry still belong to it and must not close it.
                 while stack:

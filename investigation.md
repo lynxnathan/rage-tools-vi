@@ -4140,3 +4140,38 @@ recursive total — before it can close packs reliably. `textures` (17/21) has t
 friendly semantics; `data.rpf` does not. Deriving extents without that semantic
 map means solving it per archive, which is the next step rather than another
 sweep.
+
+## Journal: what the 699 counts, and the exact/mismatch discriminator (2026-11-21)
+
+**699 is a genuine table-row count.** `data.rpf`'s root Front B is 6,992 bytes
+and `align16(10 × 699) = 6,992`, so the root's entry table really has 699 rows —
+the same 10-byte record law as every other pack (all 42 packs fit 9N, 10N, or
+12N+12; none is unexplained). Front A is 62,640 bytes, i.e. 89.6 bytes per row
+of name/path material.
+
+What the rows are *not*: the root's payload before the first child header
+(`0x12000`) holds **0 streams**, the archive has 41 nested packs, and the
+recursive total is 23,034. So at least 658 of the 699 rows carry no payload in
+the root's own region. They are directory/virtual rows — the same
+count-includes-directories question the project already has open for
+`common.rpf` (418 declared vs 394 payload groups).
+
+**The 11 exact packs vs the 31 others.** The residuals split into two families:
+
+- `-1 … -4` on the thirteen localization packs (N = 1,115, structs 1,115–1,119):
+  struct false positives inside data-only streams.
+- `+12 … +617` on packs such as `0x15000` (N = 683, structs 66 + 1 child),
+  `0x690000` (181 vs 49), `0x964000` (156 vs 6), `0x11d10000` (1,168 vs 597):
+  entries that are **not struct-rooted at all**, so no counter can reach N.
+
+The exact packs are those whose entries happen to be struct-rooted throughout.
+So the discriminator is not a header flag or a front-region size; it is the
+payload class mix inside the pack.
+
+**Decoupling was implemented and does not change the numbers.** `pack_extents.py`
+now closes a pack physically at `next_header - padding` when its own window
+already holds exactly N struct roots (leaf fast path), using the count only to
+classify leaf versus parent. Results are unchanged (`textures` 17/21, `data`
+11/42), because the failures are not stack drift: they are packs (including
+`data.rpf`'s root) whose N counts rows that have no payload at all. No closing
+policy can reconcile those physically; only a directory-aware row model can.

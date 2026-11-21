@@ -15,6 +15,12 @@ Last updated: 2026-11-21.
 - [ ] **Overnight unified pass** once `levels` is done: exact `+0xa0` harvest
   gated to the 208-byte bvh4 table, plus the struct-root/segment harvest across
   all archives. `cache/` on the NVMe is the scratch location.
+- [ ] **Model directory/virtual rows in the entry count.** `data.rpf`'s root
+  has 699 table rows (Front B = `align16(10 × 699)`) but 41 children and 0 own
+  streams, so ≥658 rows carry no payload; `common.rpf` shows the same shape
+  (418 vs 394). Solve the row model, then retry the extents resolver.
+- [ ] **Run the extents resolver on `navmeshes.rpf`** (struct/entry 0.96, the
+  cleanest 1:1 archive) after `levels` finishes, before returning to `data.rpf`.
 - [ ] **Define N per archive before the count oracle can generalise.**
   `tools/pack_extents.py` gives 16-aligned ends everywhere it has run
   (`textures` 21/21, `data` 42/42) but exact counts only where N counts direct
