@@ -3640,3 +3640,52 @@ What this rules out: the 208-byte record is not an array header for the data
 payload is not dense geometry but a header plus sparse per-node records and a
 bitmask. Naming the records still needs the node layout, which is the next step
 in this thread.
+
+## Journal: `core_bvh4` entry shape and the `+0xa4` pair (2026-11-21)
+
+Operator hypothesis: the `u16` pair at descriptor `+0xa4` (low always a multiple
+of 64, high always a multiple of 256) telegraphs the payload's internal
+sub-region spans, and the 64-byte records / `0x81` runs / permutation list are a
+cache-line BVH4 node table with a leaf bitmask.
+
+### Confirmed
+
+- **Entry shape is `[descriptor][data]`, contiguous.** Over 4,000 sampled
+  descriptors, the next stream is the entry's data and the stream after it is
+  another 208-byte descriptor in **3,967 of 4,000** cases (33 exceptions). So
+  `core_bvh4` is a packed list of two-stream entries, which is why the archive
+  shows ~1.92 streams per declared entry: 269,106 entries × 2 streams, plus
+  about 24,857 single-stream entries.
+- **`+0xa0` is the allocated payload size; the payload header carries the used
+  size.** Payload `u64` at `+0x20` equals `last_nonzero_byte + 3` exactly in
+  every sampled payload, and the descriptor's `+0xa0` is that value rounded up
+  to a multiple of 64 (differences 0, 64, 128, 192). `+0xa0` itself is always a
+  multiple of 256. So the zero padding past the used size is 0–192 bytes, not a
+  whole chunk; the 65,536-multiple decoded sizes in the index come from the
+  stream-level padding, which is separate.
+- **Payload `+0x28` = `+0x20` − 256** in every sampled payload (the header's
+  second word is the used size minus one 256-byte block).
+- **Alignment.** 208 = 13 × 16, each basis row is padded to 16 bytes, and the
+  body starts at `+0x100`. The 64-byte record stride is real.
+
+### Not supported
+
+- **`+0xa4` does not read as a span or count.** Testing `lo/64` as a node count
+  against the payload gives no match: for example a 6,669,824-byte payload with
+  `lo = 9,216` has 16,273 non-zero 64-byte blocks, and `hi = 5,888`. `lo ≤ used`
+  in 16/16 samples but `hi > used` in one (`+0xa4 = 0x05000180`, `+0xa0 = 1,280`,
+  used = 1,152). Neither field starts a `0x81` run, and `hi < lo` in 3 of 16
+  samples, so the pair is not ordered offsets either. Their semantics remain
+  open; the multiples-of-64/256 pattern is alignment, not yet a span.
+- **`0x81` is not a stable bitmask.** The longest `0x81` run ranges from 1 to
+  2,048 bytes across samples and never begins at `lo` or `hi`; the bimodal value
+  `0b10000001` is plausibly coincidence inside numeric node data.
+- **The 1…21 list is real but not a `u32` permutation.** In the 1,536-byte
+  sample the values are packed at a **3-byte stride** (`u16` value + one byte),
+  reading `04 06 07 08 0b 0d 0e 11 14 01 03 05 0a 13 09 0c 10 0f 12 15`. A
+  `u32`-stride permutation detector finds only runs of 3–8, so the packing stride
+  matters for any reorder-table reading.
+
+Tools: `tools/bvh4_payload_probe.py`. Next discriminator for `+0xa4`: decode one
+small pack completely (8–20 entries) and check whether the pair matches offsets
+or counts inside *its own* payloads rather than across the corpus.
