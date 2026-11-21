@@ -3537,3 +3537,24 @@ All 295 stereo streams fit the model with that divisor and none fit without it.
 
 Artifact: `handoff/audio-opus-trim-model.tsv`; tool:
 `tools/audio_opus_trim_model.py`.
+
+## Journal: ACE1 streams span several `0x55` blocks (2026-11-21)
+
+Chasing the unassigned ACE1 trailer fields found a layout fact first. Reading
+the framing table's `data_size` as one chunk locates the `fffface1` magic in
+only 57 of the 73 ACE1 streams. In the other 16 the magic repeats at exact
+163,840-byte intervals, which is the recorded `data_size`, so an ACE1 stream
+whose impulse response is longer than one block continues in the following
+`0x55` blocks: each block holds a float32 prefix plus its own `0x2000`-byte
+trailer. Example: `0000000698be4000.awc` has magics at +206,656, +419,648,
++583,488, +747,328, i.e. at least four blocks.
+
+The trailer fields themselves are 15 little-endian `u32` values after the
+magic, not 15 `u16` pairs. Field 0 is constant per stream (52,4320 for 44 of
+them) and fields 1–14 are equal to one value per stream (1,245,200 for 47).
+Until the fields are assigned, the decode path must scan for the magic inside
+the stream's block range rather than assume the trailer ends the recorded chunk.
+
+Still open: what the 15 fields mean. They are not needed for the verified
+reconstruction, and the numbers (52,4320 = `0x80020`, 1,245,200 = `0x130010`)
+do not match tap counts, rates, or block offsets directly.
