@@ -45,11 +45,12 @@ def log(record: dict, out: Path, dry: bool):
         handle.write(json.dumps(record, ensure_ascii=True) + "\n")
 
 
-def guard(path: Path, force: bool, resume: bool, what: str):
+def guard(path: Path, force: bool, resume: bool, what: str, dry: bool = False):
     if not path.exists():
         return
     if force:
-        shutil.rmtree(path)
+        if not dry:
+            shutil.rmtree(path)
         return
     if resume:
         return
@@ -62,7 +63,8 @@ def run(command: list[str], out: Path, dry: bool, label: str):
     if dry:
         return
     record = {"label": label, "command": command}
-    result = subprocess.run(command, cwd=ROOT, text=True)
+    env = {**os.environ, "PYTHON": os.environ.get("PYTHON", sys.executable)}
+    result = subprocess.run(command, cwd=ROOT, text=True, env=env)
     record["returncode"] = result.returncode
     log(record, out, dry)
     if result.returncode:
@@ -98,7 +100,7 @@ def extract(source: Path, out: Path, args):
         manifest = target / "manifest.tsv"
         if not index_path.is_file() and not args.dry_run:
             raise SystemExit(f"index missing for {name}: {index_path}")
-        guard(target, args.force, args.resume, f"{name} extraction")
+        guard(target, args.force, args.resume, f"{name} extraction", args.dry_run)
         command = [sys.executable, "tools/bulk_extract.py", str(archive),
                    str(index_path), str(target), "--workers", str(args.workers),
                    "--manifest", str(manifest)]
@@ -115,7 +117,7 @@ def audio(source: Path, out: Path, args):
     if target.exists() and args.resume:
         print(f"= audio output exists: {target} (resume; use --force to rebuild)")
         return
-    guard(target, args.force, False, "audio-awc output")
+    guard(target, args.force, False, "audio-awc output", args.dry_run)
     command = ["bash", "tools/rebuild_audio.sh", str(source / ARCHIVES["audio"]),
                str(out / "extracted")]
     run(command, out, args.dry_run, "audio")
@@ -123,7 +125,7 @@ def audio(source: Path, out: Path, args):
 
 def pilot(source: Path, out: Path, args):
     target = out / "extraction-index-pilot"
-    guard(target, args.force, True, "pilot output")
+    guard(target, args.force, True, "pilot output", args.dry_run)
     run([sys.executable, "tools/extraction_index_pilot.py",
          "--output", str(target / "index.html")],
         out, args.dry_run, "pilot")
@@ -166,7 +168,7 @@ def main():
     source = args.source.resolve()
     out = args.output.resolve()
     if args.command == "all":
-        guard(out / "extracted", args.force, args.resume, "output/extracted")
+        guard(out / "extracted", args.force, args.resume, "output/extracted", args.dry_run)
         index(source, out, args)
         extract(source, out, args)
         audio(source, out, args)
