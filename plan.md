@@ -471,6 +471,8 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/bruteforce_ueba.py` | Sweep AWC payloads through a synthetic UEBA/Bink Audio wrapper |
 | `tools/test_awc_xma2.py` | Build XMA2 WAVE wrappers from AWC data chunks and decode |
 | `tools/extract_awc_xma2.py` | Decode codec-`0x05` AWC streams to PCM WAV with manifest |
+| `tools/rebuild_audio.sh` | Rebuild audio.rpf AWC/XMA2 output from the source archive |
+| `tools/export_all.sh` | Rebuild all large-archive indexes/extractions and verify them |
 | `tools/quadtree.py` | Build resource-local quadtrees and an HTML view |
 | `tools/verify_quadtree.py` | Verify quadtree completeness and structural invariants |
 | `tools/mmap_extract.py` | Bounded-memory selective zlib extraction |
