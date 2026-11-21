@@ -16,6 +16,9 @@ Last updated: 2026-11-21.
   cancellation, strengthen archive/index provenance beyond sampled identity,
   add asset previews, and measure throughput on the largest archives. Verify
   resumable indexing on other filesystems and operating systems.
+- [ ] **Group `core_bvh4` entries by their 208-byte descriptor** and compare
+  per pack with the declared count (269,106 descriptors vs 293,963 direct
+  declared entries), then decode the descriptor fields.
 - [ ] **Resolve per-pack extents with an independent locator.** Needed for the
   pack hierarchy and per-pack entry coverage; the flat stream index cannot
   supply it (nested metadata merges into opaque spans). See the hierarchy

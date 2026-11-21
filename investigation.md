@@ -3451,3 +3451,43 @@ All 22 source archives now have stream indexes under `output/index/`
 appdata0, core_licenses_data, core_restofworld, core_restofworld001,
 shared_minigame000, shared_minigame000_bvh4, story000_restofworld,
 story000_script). Total index time under two minutes for the 14.
+
+## Journal: 208-byte plaintext descriptor inside `core_bvh4` entries (2026-11-21)
+
+While checking whether multi-stream entries can be grouped, `core_bvh4.rpf`
+turned out to have a strong marker: **269,106 zlib streams decode to exactly
+208 bytes**, and 58.8% of all its streams decode to ≤ 4 KiB. In the extracted
+manifest those 269,106 rows have 235,533 distinct SHA-256 values, so the record
+is mostly unique per entry but repeats in groups (3,198 / 2,319 / 1,768 copies
+of the three most common bodies).
+
+A sample record (`output/extracted/core_bvh4/00/00000000000ad010.bin`):
+
+```
++0x00  00 00 00 00 00 00 00 00  80 00 00 50 00 00 00 00
++0x10  01 00 00 00 00 00 00 00  a0 00 00 50 00 00 00 00
++0x20  00 00 00 60 00 00 00 00  b0 00 00 50 00 00 00 00
++0x30  c0 00 00 50 00 00 00 00  50 00 00 50 00 00 00 00
++0x40  d4 15 e6 99 5e 8e 81 73  00 00 00 00 00 00 00 00
++0x50  00 00 80 3f 00 00 00 00  00 00 00 00 00 00 00 00
+```
+
+The layout is 16-byte pairs: six 64-bit words whose high half is a
+`0x50000000`/`0x60000000`-tagged address, then two 32-bit hashes at `+0x40` and
+`+0x44`, then `1.0f` at `+0x50`. This is a plaintext per-entry descriptor (not
+a masked metadata region), so it is the first place in the project where an
+entry carries readable fields *inside* the payload.
+
+Two follow-ups failed and should not be repeated:
+
+- The `+0x40` word is not a simple name hash: JOAAT and CRC32 over the 3,524
+  names in `tools/bone_names.txt` and the script-object handoff tables produce
+  no match against 4,000 sampled values.
+- Its low 12 bits are not an entry index. A chance pattern in an early sample
+  (1, 2, 3, 4, 4, 10) dissolved once 200 descriptors were decoded in archive
+  offset order: the low bits are uniform.
+
+What it does buy is entry grouping: in `core_bvh4`, an entry starts at each
+208-byte descriptor stream, so declared N can be compared with descriptor count
+per pack without a trailer locator. 269,106 descriptors against 293,963 direct
+declared entries leaves 24,857 entries without one.
