@@ -2537,3 +2537,62 @@ not reproduce any of the ten values, so `+0x28` is not a hash of a simple
 content-type name. Its practical value is grouping: it separates the tiny
 resource packs (median N = 7) from the large spatial packs (median N = 1,547),
 which is what the families 6–8 bytes-per-entry finding already suggested.
+
+## 2026-11-21 — Annoyed Tools navigation and CLI
+
+The GUI test jumps to archive-relative offset `0x100000000` in `anim.rpf` and
+checks the displayed hex page, exercising a position beyond 4 GiB. The index
+reader seeks by archive offset with a bounded binary search over ordered TSV
+ranges. `seek_real_large_index` tests containment at several offsets including
+beyond 4 GiB; this requires ordered, non-overlapping ranges.
+
+The crate exposes `annoyed-index` and `annoyed-extract` as separate CLI
+programs using the same bounded-memory library. `tools/explorer_cli_e2e.sh`
+checks indexing, the control payload hash and cleanup after an incomplete stream.
+
+The explorer scans page-aligned RPF9 header candidates in bounded 64 MiB
+batches. A control test finds the root and `0x1000` header in
+`core_licenses_data.rpf`; a `data.rpf` test finds 42 plausible headers, matching
+the previous count. The Xvfb test selects the `0x1000` candidate and checks its
+raw bytes. Candidate headers do not establish pack endpoints or entries.
+
+## Journal: the 9→10 byte widening is per record, and Front B is pack-unique (2026-11-21)
+
+Operator hypothesis: the stride flip at N = 255 is an 8-bit per-record field
+(an entry/segment index) widening to `u16`, like a classic count overflow.
+Two independent checks, one in favour and one blocking.
+
+**Per record, not per pack.** A per-pack header byte would give
+`align16(9N + c)`, which differs from `align16(10N)` for most N. The measured
+law is `align16(10N)` exactly for all 494 family-1 `0x00090f02` headers, so the
+extra byte scales with N: the widening is inside every record. That part of the
+hypothesis is confirmed.
+
+**The threshold reading is still open, and now sharper.** A per-record index
+running 0..N−1 fits a `u8` up to N = 256, so the flip belongs at N = 257. A
+per-record count running 1..N overflows one step earlier, at N = 256. The
+census has no header at N = 255 or 256 at all: family-1 `0x00090f01` stops at
+N = 254 and `0x00090f02` starts at N = 257. Both readings survive, and the
+cohort cannot separate them. The discriminating sample is a pack with
+N = 255 or 256, which this build does not contain.
+
+**Front B cannot be read by comparison.** I compared the Front B bodies of the
+thirteen `data.rpf` localization packs, which share N = 1,115, mode, format tag,
+and a byte-identical 29,856-byte trailer. If the mask were position-deterministic
+(a stream cipher with a fixed keystream, or CBC from a fixed chaining value),
+constant plaintext bytes would occupy the same offsets and stay equal. Instead
+**0 of 13,392 byte offsets are stable** across the thirteen bodies, and the
+majority byte appears in 1–3 of 13 bodies at every offset: agreement is at
+chance (`tools/front_b_stability.py`).
+
+So Front B either uses a pack-dependent chaining state or its plaintext is
+different in every record of every pack. Either way, cross-pack byte alignment
+is unavailable, and the record layout cannot be recovered by comparing siblings.
+The asymmetry against the trailer — identical across the same thirteen packs,
+unique per pack in Front B — is the sharpest statement so far about the mask:
+the trailer chain is pack-independent while the Front B chain is not.
+
+Consequence for the next crib: a keystream recovered from any Front B would
+have to come from the same pack as the plaintext guess, and the index-field
+prediction (a near-zero byte at a fixed residue class inside each record) can
+only be checked against such a per-pack keystream or a decoded field.
