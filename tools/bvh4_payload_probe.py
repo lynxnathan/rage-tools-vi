@@ -76,9 +76,9 @@ def main():
     parser.add_argument("--archive", type=Path,
                         default=Path("/run/media/lynxnathan/Mammoth/GTA6.Xbox.v1.0.2.1-CYBERLEEK/pack/core_bvh4/core_bvh4.rpf"))
     parser.add_argument("--index", type=Path, default=Path("output/index/core_bvh4.tsv"))
-    parser.add_argument("--cache", type=Path, default=Path("/tmp/bvh4-descriptors.bin"))
+    parser.add_argument("--cache", type=Path, default=Path("cache/bvh4-descriptors.bin"))
     parser.add_argument("--count", type=int, default=48)
-    parser.add_argument("--tsv", type=Path, default=Path("/tmp/bvh4-payload-probe.tsv"))
+    parser.add_argument("--tsv", type=Path, default=Path("cache/bvh4-payload-probe.tsv"))
     args = parser.parse_args()
 
     blob = args.cache.read_bytes()

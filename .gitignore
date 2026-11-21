@@ -1,4 +1,5 @@
 /target/
+/explorer/target/
 /output/
 /*.rpf
 /bus
@@ -7,3 +8,4 @@
 /.venv-docs/
 __pycache__/
 *.pyc
+/cache/

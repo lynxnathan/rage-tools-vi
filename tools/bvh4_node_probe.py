@@ -88,8 +88,8 @@ def main():
     parser.add_argument("--archive", type=Path,
                         default=Path("/run/media/lynxnathan/Mammoth/GTA6.Xbox.v1.0.2.1-CYBERLEEK/pack/core_bvh4/core_bvh4.rpf"))
     parser.add_argument("--index", type=Path, default=Path("output/index/core_bvh4.tsv"))
-    parser.add_argument("--descriptors", type=Path, default=Path("/tmp/bvh4-descriptors.bin"))
-    parser.add_argument("--payload-cache", type=Path, default=Path("/tmp/bvh4-payloads.bin"))
+    parser.add_argument("--descriptors", type=Path, default=Path("cache/bvh4-descriptors.bin"))
+    parser.add_argument("--payload-cache", type=Path, default=Path("cache/bvh4-payloads.bin"))
     parser.add_argument("--count", type=int, default=200)
     args = parser.parse_args()
 

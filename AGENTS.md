@@ -28,6 +28,10 @@ are appended here.
 - 2026-11-21: `investigation.md` holds the research record; append evidence
   as dated entries. `plan.md` is only the live check/todo list — do not record
   findings, tool tables, or completed-work lists there.
+- 2026-11-21: exploration copies may live on the local NVMe inside the repo
+  (untracked `cache/`), not only on the Mammoth volume. Keep archive slices,
+  decoded samples, and analysis caches local when re-reading the source would
+  cost minutes; never commit them.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling

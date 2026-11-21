@@ -118,7 +118,7 @@ def main():
     parser.add_argument("--census", type=Path, default=Path("handoff/header-census-full.tsv"))
     parser.add_argument("--sample", type=int, default=20000)
     parser.add_argument("--dump", type=int, default=3)
-    parser.add_argument("--cache", type=Path, default=Path("/tmp/bvh4-descriptors.bin"),
+    parser.add_argument("--cache", type=Path, default=Path("cache/bvh4-descriptors.bin"),
                         help="decoded sample cache; written on first run")
     parser.add_argument("--verify-padding", type=int, default=0,
                         help="re-read this many data streams and check zero padding past +0xa0")
