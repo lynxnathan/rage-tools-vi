@@ -3491,3 +3491,21 @@ What it does buy is entry grouping: in `core_bvh4`, an entry starts at each
 208-byte descriptor stream, so declared N can be compared with descriptor count
 per pack without a trailer locator. 269,106 descriptors against 293,963 direct
 declared entries leaves 24,857 entries without one.
+
+### Offset-only ownership cannot recover containment (second attempt)
+
+The stack sweep failed, so I tried the simpler rule: the innermost pack for an
+offset is the one with the largest absolute `front_end` at or below it. It is
+fast (14 s for all 4,373 packs and 2.1M items) and it is correct while packs are
+genuinely nested, but it cannot tell "inside my payload" from "my next sibling",
+so it chains siblings into a false parent/child line. The `script.rpf` control
+shows it directly: the root's Front A/B ends at `0x260`, the first child sits at
+`0x1000` with front_end `0x1480`, and the second child sits at `0xc4000`. The
+rule gives the second child to the first child instead of to the root.
+
+Both attempts fail for the same reason, and the conclusion is now firm:
+**archive offsets alone cannot recover the pack hierarchy.** The missing
+information is each pack's end, which needs an independent trailer locator (the
+trailer occupies the last `+0x0c` bytes and is followed by zero padding), not a
+better sweep. That is why per-pack extents are a plan item rather than a
+finished result.
