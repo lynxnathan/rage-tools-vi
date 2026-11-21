@@ -23,6 +23,8 @@ are appended here.
 - 2026-11-20: The lead waits up to five minutes for acknowledgment of an
   active handoff. If none arrives, record `NO_ACK` for that handoff once.
   This is a lead-side deadline. The worker starts when they receive the work.
+- 2026-11-21: Bus `wait` defaults to at most 1 second. Do not use long
+  timeouts; poll in a loop and answer immediately when a message arrives.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling
