@@ -335,16 +335,29 @@ entry identification, coverage, or decoding across the archive set.
   `0x6000..0x62dc`, 15 MB RSS, same sha256 as Rust.
 - Streaming index completed all eight remaining archives: 157,764,783,840
   stored / 2,190,635 zlib / 360,572,388,767 decoded / 26,072 unclassified.
-  Indexes total 184 MB under `output/downloads-corpus/index/`. Peak RSS 15.91 GB
+  Indexes total 184 MB under `output/index/`. Peak RSS 15.91 GB
   (audio), 8.16 GB (story000), 8.11 GB (movies); levels 1.21 GB.
 - The Rust 16 MiB `MAX_PAYLOAD_SIZE` would lose **96 streams**. Tested stream
   `0xed61e010..0xee4ff55f` (20,578,304 bytes): mmap extracts with sha256
   `e9600e6f…c7c9`; Rust fails at the start.
 
+## Reproducible pipeline (2026-11-21)
+
+- Canonical entry point: `tools/pipeline.py` with `index`, `extract`, `audio`,
+  `pilot`, `verify`, and `all` subcommands.
+- A non-empty output requires `--resume` or `--force`; `--dry-run` prints every
+  command and preserves existing output. Each run appends provenance to
+  `output/pipeline-runs.jsonl`.
+- `all --dry-run` passes end to end. `tools/rebuild_audio.sh` now takes the
+  framing table from the selected output root and forces the same interpreter
+  for the audio decoders.
+- Legacy `tools/export_all.sh` remains the shell wrapper for the same archive
+  set; new work should use `pipeline.py`.
+
 ## Full output rebuild (2026-11-21)
 
-- `output/` was deleted and rebuilt from the external source tree; the canonical
-  export command is `tools/export_all.sh SOURCE_ROOT OUTPUT_ROOT`.
+- `output/` was deleted and rebuilt from the external source tree with
+  `tools/pipeline.py --source SOURCE_ROOT --output output all --resume`.
 - Indexed all 8 large archives: **2,190,635 zlib streams / 360,572,388,767
   decoded bytes**. `levels` and `movies` are index-only; `levels` alone decodes
   to 174.9 GB.
@@ -352,10 +365,13 @@ entry identification, coverage, or decoding across the archive set.
   `packs` 144,366 / 9.74 GB; `navmeshes` 90,305 / 20.55 GB; `core_bvh4`
   565,596 / 129.93 GB; `story000` 141,163 / 13.77 GB; `audio` 838 / 54.1 MB.
   All 6/6 verification rows PASS (missing 0, extra 0, failures 0).
-- Rebuilt `audio.rpf` AWC/XMA2 with `tools/rebuild_audio.sh`: 6,625 AWC
-  containers / 23.51 GB and 151 XMA2 WAVs / 86 MB.
-- Current output is ~209 GB; local disk has ~100 GB free. Move to the external
-  volume before extracting `levels`.
+- Rebuilt audio output: 6,625 AWC / 23.51 GB, 151 XMA2 WAVs, 2,081 Opus WAVs,
+  and 73 ACE1 impulse responses. All verified where applicable.
+- The ~200 GB output is being relocated to the Mammoth volume; read-only
+  inputs and code stay on the NVMe. A watcher creates
+  `output -> /run/media/lynxnathan/Mammoth/rage-tools-vi-output` when the
+  transfer finishes. Only after that should `levels` (174.9 GB decoded) be
+  extracted.
 
 ## Bulk extraction
 
@@ -425,6 +441,9 @@ entry identification, coverage, or decoding across the archive set.
 
 ### Now
 
+- [ ] **Relocate output to Mammoth.** Read-only inputs stay on the NVMe; the
+  output symlink is created after the background `rsync` completes. Re-run
+  `tools/pipeline.py verify` afterward.
 - [ ] **Front A milestone on `story000_bvh4.rpf`.** The N = 4 pack has four
   exact XML ranges. The bounded entry probe found no offset/size pair in the
   tested layouts. Resume with independent table framing and decoding
