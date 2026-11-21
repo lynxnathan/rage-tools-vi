@@ -2094,3 +2094,20 @@ Final `0x0B` export: **2,081/2,081 WAVs, 2.5 GiB, zero decode failures**.
 This supersedes the earlier 2,067/2,081 count in the previous journal entry.
 Artifacts: `handoff/audio-opus-decode.tsv`, `tools/extract_awc_opus.py`,
 `handoff/data-awc-opus-exceptions.md`.
+
+## Journal: read-only extraction pilot for audio and levels (2026-11-21)
+
+Built `tools/extraction_pilot.py`, a local read-only HTTP browser over the
+rebuilt corpus. It joins `output/index/audio.tsv` to the verified
+`output/extracted/audio/manifest.tsv` and `output/verification.tsv`, and reads
+`output/index/levels.tsv` without extracting payloads. Pages are bounded at 100
+ranges; uncertain pack membership stays at archive level.
+
+Validation: `audio.rpf` `0x5000..0x6316` resolves to extracted manifest SHA-256
+`725398e5f5267e1da78a82b8582a68950d72c3dc8adb0d97b54eda40274c19f2`;
+`levels.rpf` `0x1d000..0x1d701` matches the index and reports `indexed-only`
+with no extracted file; `/archive?name=levels&page=1000` returns HTTP 200.
+No reindex, bulk extraction, or payload copy was performed.
+
+Command: `python3 tools/extraction_pilot.py --port 8766` (open
+`http://127.0.0.1:8766/`). Report: `handoff/extraction-pilot.md`.

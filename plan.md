@@ -289,6 +289,19 @@ entry identification, coverage, or decoding across the archive set.
   assign the first trailer pair values. See
   `handoff/data-awc-ace1-ir.md`.
 
+## Extraction pilot (audio + levels)
+
+- `tools/extraction_pilot.py` serves a read-only local browser over
+  `output/index/{audio,levels}.tsv`, `output/extracted/audio/manifest.tsv`, and
+  `output/verification.tsv`.
+- Root shows `audio.rpf` as verified and `levels.rpf` as indexed-only. Range
+  pages are bounded at 100 rows; `levels` stays index-only with no payload
+  extraction. Uncertain pack membership remains at archive level.
+- Validation: audio `0x5000..0x6316` shows manifest SHA `725398e5…c19f2`;
+  levels `0x1d000..0x1d701` matches the index and says no extracted file;
+  levels page 1000 returns HTTP 200. Command and details:
+  `handoff/extraction-pilot.md`.
+
 ## Large archive pilot
 
 - `anim.rpf` read-only index: 4,407,626,384 bytes, 259,138 spans, 130,509 zlib,
