@@ -3933,3 +3933,56 @@ the hierarchy semantics — a pack's declared entries include its child packs.
 Manifest regenerated: 294,614 entries (269,106 pairs, 25,507 structs, 1 orphan)
 against ΣN = 295,244, i.e. 630 short, all inside the ±few packs. Coverage stays
 at 129.9 GB of decoded stream output including chunk padding.
+
+## Journal: porting the struct grammar to story000 and levels (2026-11-21)
+
+`tools/struct_grammar_probe.py` runs the core_bvh4 grammar on any archive. Only
+the sampled decodes touch the archive (80 streams), so it ran alongside the
+levels extraction.
+
+### The tagged-pointer struct is engine-wide
+
+Of 80 small streams sampled from `story000.rpf`, **60 (75 %) begin with two or
+more `0x5xxxxxxx`/`0x6xxxxxxx` tagged self-relative pointers**, at sizes 720,
+1,200, 1,632, 2,000, 2,064, 3,248 and others. None is 208 bytes. So the container
+header is not a `*_bvh4` speciality: the same serialized struct family opens the
+payloads of a normal story archive.
+
+### The entry grammar does not port
+
+Exact per-pack agreement between the entry count and the declared N:
+
+| Archive | Model | Exact packs |
+| --- | --- | ---: |
+| `core_bvh4` | struct stream + its data stream | **1,214 / 1,282 (94.7 %)** |
+| `story000` | struct + attached > 64 KiB streams | 76 / 442 (17.2 %) |
+| `story000` | one stream per entry | 18 / 442 (4.1 %) |
+| `story000` | one 64 KiB chain per entry | 24 / 442 (5.4 %) |
+| `levels` | struct + attached > 64 KiB streams | — (not applicable) |
+| `levels` | one stream per entry | 318 / 2,051 (15.5 %) |
+| `levels` | one 64 KiB chain per entry | 377 / 2,051 (18.4 %) |
+| `anim` | one 64 KiB chain per entry | 99 / 236 (41.9 %) |
+
+So the **split** of the struct into its own stream is specific to the bvh4
+spatial packs; in story000 the struct sits at offset 0 of the entry's payload and
+the entries themselves hold a variable number of streams. `levels` is 2.12
+streams per declared entry overall but ~1.0 per pack in most packs, so its
+multi-stream entries concentrate in the large packs rather than following a
+uniform rule.
+
+### The core_bvh4 residual is the child-pack rule
+
+The 53 non-matching packs are all *short* (N greater than the counted entries):
+41 by 1, twelve by 2–5. A pack window ends at the next header, so a pack with a
+nested child loses that child and everything after it from the count — and each
+child contributes exactly 1 to the parent's N. The root pack demonstrated this
+directly (1,286 declared entries, 1,281 child packs, 0 streams in its window).
+Closing the last 630 entries therefore needs pack extents, not another in-memory
+pass; the census windows cannot supply the parent's end.
+
+### Consequence
+
+The overnight plan stands: once `levels` finishes extracting, one unified pass
+can harvest exact payload sizes (`+0xa0`) and struct headers across all archives.
+The cheap port already answered the design question — the struct is universal,
+the two-stream split is not.
