@@ -57,25 +57,36 @@ def main():
             stream = window[at]
             if stream[2] == DESCRIPTOR and at + 1 < len(window):
                 data = window[at + 1]
-                entries.append(("pair", stream, data))
+                entries.append(("pair", [stream], [data]))
                 used.update({at, at + 1})
                 at += 2
             else:
                 at += 1
-        leftovers = [stream for index, stream in enumerate(window) if index not in used]
-        for stream in leftovers:
+        # Leftovers: a small struct starts an entry and any following large
+        # streams (> 64 KiB) are that entry's data.
+        leftovers = [(index, stream) for index, stream in enumerate(window)
+                     if index not in used]
+        current = None
+        for _, stream in leftovers:
             if stream[2] <= HEADER_ONLY_MAX:
-                entries.append(("header_only", stream, None))
+                current = ("struct", [stream], [])
+                entries.append(current)
+            elif current is not None:
+                current[2].append(stream)
             else:
-                entries.append(("unpaired_large", stream, None))
+                current = ("orphan", [stream], [])
+                entries.append(current)
         entries.sort(key=lambda entry: entry[1][0])
 
         declared_ok = len(entries) == count
         verified_packs += declared_ok
         stats["packs"] += 1
         stats["declared_ok" if declared_ok else "declared_short"] += 1
-        for index, (shape, first, second) in enumerate(entries):
+        for index, (shape, heads, extras) in enumerate(entries):
             stats[shape] += 1
+            first = heads[0]
+            stored = sum(stream[1] - stream[0] for stream in heads + extras)
+            decoded = sum(stream[2] for stream in heads + extras)
             rows.append({
                 "pack": f"0x{head:x}",
                 "entry": index,
@@ -83,15 +94,14 @@ def main():
                 "declared_count": count,
                 "declared_ok": int(declared_ok),
                 "stream": f"0x{first[0]:x}",
-                "stored": first[1] - first[0],
-                "decoded": first[2],
-                "data": "" if second is None else f"0x{second[0]:x}",
-                "data_stored": "" if second is None else second[1] - second[0],
-                "data_decoded": "" if second is None else second[2],
+                "stored": stored,
+                "decoded": decoded,
+                "extra_streams": len(extras),
+                "data": "" if not extras else f"0x{extras[0][0]:x}",
             })
 
     fields = ["pack", "entry", "shape", "declared_count", "declared_ok", "stream",
-              "stored", "decoded", "data", "data_stored", "data_decoded"]
+              "stored", "decoded", "extra_streams", "data"]
     args.tsv.parent.mkdir(parents=True, exist_ok=True)
     with args.tsv.open("w") as out:
         out.write("\t".join(fields) + "\n")
@@ -100,9 +110,9 @@ def main():
 
     print(f"entries {len(rows)} in {stats['packs']} packs")
     print(f"  declared_ok packs {stats['declared_ok']}, short {stats['declared_short']}")
-    for shape in ("pair", "header_only", "unpaired_large"):
+    for shape in ("pair", "struct", "orphan"):
         print(f"  {shape}: {stats[shape]}")
-    decoded = sum(row["decoded"] for row in rows) + sum(row["data_decoded"] or 0 for row in rows)
+    decoded = sum(row["decoded"] for row in rows)
     print(f"  decoded bytes covered: {decoded:,}")
     print(f"wrote {args.tsv}")
 

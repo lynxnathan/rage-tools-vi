@@ -3915,3 +3915,21 @@ decoded.
 This is the first archive with a payload-derived entry enumeration: every entry
 boundary comes from the descriptor/data pairing, not from a decoded index table,
 and the declared count is an independent cross-check.
+
+### Refined entry model: a struct owns the data streams after it
+
+The 1,877 `unpaired_large` streams were not separate entries: 1,868 of them
+follow another unpaired stream, not a paired data stream. So the general shape
+is `[small struct][zero or more > 64 KiB data streams]`, and the 208-byte
+descriptor is simply the struct variant that always has exactly one data stream.
+
+Regrouping with that rule (a small stream starts an entry, following large
+streams attach to it) raises the exact per-pack match from 1,141 to **1,214 of
+1,282 packs**, with residuals of ±1 in 41 packs, ±2–5 in 12, and one outlier:
+the **root pack**, whose 1,286 entries are the nested packs rather than streams
+(entries counted 0 in the stream window). That outlier independently confirms
+the hierarchy semantics — a pack's declared entries include its child packs.
+
+Manifest regenerated: 294,614 entries (269,106 pairs, 25,507 structs, 1 orphan)
+against ΣN = 295,244, i.e. 630 short, all inside the ±few packs. Coverage stays
+at 129.9 GB of decoded stream output including chunk padding.

@@ -12,12 +12,13 @@ lists **296,490 entries** over 1,282 packs:
 | Shape | Entries |
 | --- | ---: |
 | `pair` (descriptor + data) | 269,106 |
-| `header_only` (single struct ≤ 64 KiB) | 25,507 |
-| `unpaired_large` (> 64 KiB, not paired) | 1,877 |
+| `struct` (small struct, plus any following > 64 KiB streams) | 25,507 |
+| `orphan` | 1 |
 
-**1,141 of 1,282 packs** have an entry count exactly equal to their declared N,
-and the manifest is +1,246 entries against ΣN = 295,244 (0.42 %), with the
-residual inside `unpaired_large`.
+**1,214 of 1,282 packs** have an entry count exactly equal to their declared N.
+The residual is ±1 in 41 packs, ±2–5 in 12, and one outlier: the root pack,
+whose 1,286 "entries" are the nested packs rather than streams — an independent
+confirmation that a pack's declared count includes its child packs.
 
 ## Descriptor (208 bytes, 13 × 16)
 
