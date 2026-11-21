@@ -3509,3 +3509,31 @@ information is each pack's end, which needs an independent trailer locator (the
 trailer occupies the last `+0x0c` bytes and is followed by zero padding), not a
 better sweep. That is why per-pack extents are a plan item rather than a
 finished result.
+
+## Journal: AWC Opus trim split is determined (2026-11-21)
+
+The exported Opus WAVs are untrimmed, so the total trim per stream is
+`decoded_frames - declared_samples / channels`. Two facts fix the split:
+
+1. Every stream decodes exactly 960 frames per packet (min = median = max over
+   all 2,081 rows), so end padding is at most one packet: **0 ≤ end_trim ≤ 960**.
+2. Over the 2,081 exported streams, the total trim ranges from 1,920 to 2,880,
+   and 278 streams sit exactly at 1,920.
+
+If the pre-skip were larger than 1,920, those 278 streams would have negative
+end trim. If it were smaller, `2880 - pre_skip` would exceed one packet for the
+longest stream. So **pre-skip = 1,920 frames (40 ms at 48 kHz)** exactly, and
+end trim is `total_trim - 1920` in 0..960.
+
+Fit: 2,079 of 2,081 streams satisfy the model (99.90%). The two exceptions are
+exactly the two known seek-table anomalies (`terminal_mismatch` and `mismatch`),
+so they are already explained and not a counterexample. In the fitted set the
+end trim is min 0, p25 118, median 394, p75 683, max 960, consistent with an
+arbitrary content length on a 20 ms grid.
+
+Stereo also settles an earlier ambiguity: `declared_samples` counts samples
+across channels, so the per-channel length is `declared_samples / channels`.
+All 295 stereo streams fit the model with that divisor and none fit without it.
+
+Artifact: `handoff/audio-opus-trim-model.tsv`; tool:
+`tools/audio_opus_trim_model.py`.

@@ -67,8 +67,6 @@ Last updated: 2026-11-21.
   appdata 5,216 B, core 4,976 B). See `handoff/unclassified-summary.tsv`.
 - [ ] **Packs active-learning queue**: label representative/uncertain streams,
   then train a supervised classifier behind the deterministic verifier.
-- [ ] **Opus pre-skip and end-trim** for AWC codec `0x0B`: establish pre-skip
-  independently to split the current trim bound.
 - [ ] **ACE1 trailer pairs**: assign the first trailer pair values beyond the
   final prefix block count.
 - [ ] **Locate compiled shader bytecode**, if the corpus contains any; the
