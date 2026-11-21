@@ -15,11 +15,13 @@ Last updated: 2026-11-21.
 - [ ] **Overnight unified pass** once `levels` is done: exact `+0xa0` harvest
   gated to the 208-byte bvh4 table, plus the struct-root/segment harvest across
   all archives. `cache/` on the NVMe is the scratch location.
-- [ ] **Validate the extents resolver on a second archive.** `tools/pack_extents.py`
-  gives 16-aligned ends for all 21 `textures.rpf` packs and exact counts for 17;
-  run it on `navmeshes.rpf` from a local copy, then fix the two residual sources:
-  struct false positives (data streams opening with pointer-looking bytes) and
-  root-child attribution.
+- [ ] **Define N per archive before the count oracle can generalise.**
+  `tools/pack_extents.py` gives 16-aligned ends everywhere it has run
+  (`textures` 21/21, `data` 42/42) but exact counts only where N counts direct
+  items (`textures` 17/21; `data` 11/42 because its root declares 699 while
+  holding 41 child packs and 0 own streams). Establish, per archive, whether N
+  counts leaf entries, child packs, or a recursive total, then resume
+  `navmeshes` and `data`.
 - [ ] **Explorer (`explorer/`)**: finish the paged hierarchy, wire export
   cancellation, strengthen archive/index provenance beyond sampled identity,
   add asset previews, and measure throughput on the largest archives. Verify

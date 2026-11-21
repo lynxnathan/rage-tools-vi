@@ -4087,3 +4087,56 @@ padding rule.
 Artifact: `handoff/pack-extents-textures.tsv`; tool: `tools/pack_extents.py`
 (validated on `textures.rpf` only, and it decodes streams, so it wants a local
 archive copy).
+
+## Journal: the count oracle does not generalise (data.rpf) and what N counts (2026-11-21)
+
+Running `tools/pack_extents.py` on the local `data.rpf` (42 packs, 28,509
+streams, nested children) gives **42/42 ends 16-byte aligned** — the padding
+boundary holds — but only **11/42 packs with direct items == N**. The failure is
+not the locator, it is the oracle.
+
+`data.rpf`'s root declares **699** entries. Its payload before the first child
+header (`0x12000`) holds **0 streams**, after the last child header
+(`0x1a279000`) there are 2,922, and the archive has 41 nested packs. So 699 is
+neither the number of child packs (41), nor the root's own streams (0), nor the
+recursive total (23,034). Every pack stays unsaturated, the stack never closes a
+sibling, and the whole file collapses into one nesting chain — hence structs 0 /
+children 1 for the root and the chain visible in the output.
+
+### Struct roots ≈ entries, but only for a cluster of archives
+
+Taking the struct share from the corpus sweep and dividing by declared entries
+(estimated, ±sample error):
+
+| Archive | Structs / entries |
+| --- | ---: |
+| `core_bvh4` | 1.02 |
+| `data` | 0.98 |
+| `textures` | 1.05 |
+| `navmeshes` | 0.96 |
+| `shared_minigame000_bvh4` | 0.97 |
+| `story000_bvh4` | 1.00 |
+| `core_restofworld` | 1.09 |
+| `core_restofworld001` | 1.04 |
+| `story000_restofworld` | 0.93 |
+| `shared_minigame000` | 0.78 |
+| `packs` | 0.81 |
+| `anim` | 1.20 |
+| `levels` | 1.21 |
+| `story000` | 0.65 |
+| `script` | 0.01 |
+| `audio` | 0.02 |
+
+So "one struct root per entry" is a real identity for `data`, `navmeshes`,
+`textures`, `core_bvh4` and the bvh4/rest-of-world packs (0.93–1.09), and it
+degrades exactly where the payloads are not struct-rooted (`script`, `audio`,
+`shaders`) or where entries own several streams (`anim`, `levels`).
+
+### Consequence for extents
+
+The padding locator is archive-independent and can be trusted. The count oracle
+needs the archive's own definition of N — direct entries, child packs, or a
+recursive total — before it can close packs reliably. `textures` (17/21) has the
+friendly semantics; `data.rpf` does not. Deriving extents without that semantic
+map means solving it per archive, which is the next step rather than another
+sweep.
