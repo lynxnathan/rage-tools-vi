@@ -2358,6 +2358,10 @@ bytes per stream; the virtual-desktop test locates `story000_terrain_bvh`
 through that prefix and verifies raw and decoded exports of control ranges.
 Prefix search cannot find names appearing later in a stream.
 
+`tools/explorer_large_e2e.sh` opens the 481,544,304-byte `data.rpf` under Xvfb,
+starts indexing, cancels through the GUI, and checks that the partial index is
+removed. This is a responsiveness/cancellation check, not a 209 GB benchmark.
+
 ## Journal: corpus-wide RPF9 header census (2026-11-21)
 
 Enumerated every RPF9 header in the 22-archive source tree on Mammoth
@@ -2430,3 +2434,33 @@ remaining route is key material or a known-plaintext crib, not more scanning.
 Next: decode the family-2..8 extra table `S` (candidate directory or resource
 descriptor table), and test whether the four `+0x50` profiles are cipher keys
 by seeking any known-plaintext crib.
+
+## Journal: declared entries versus indexed streams (2026-11-21)
+
+The header census gives a declared entry count for every pack, so the whole
+corpus can be checked against the zlib stream indexes. ΣN sums every pack in a
+file, including nested packs, and is therefore an upper bound on distinct
+entries; the index counts verified zlib streams.
+
+| Archive | Packs | ΣN declared | Indexed zlib streams | Streams / ΣN |
+| --- | ---: | ---: | ---: | ---: |
+| anim | 236 | 84,940 | 130,510 | 1.54 |
+| audio | 104 | 7,283 | 838 | 0.12 |
+| core_bvh4 | 1,282 | 295,244 | 565,596 | 1.92 |
+| common | 1 | 418 | 954 | 2.28 |
+| data | 42 | 23,075 | 28,509 | 1.24 |
+| levels | 2,051 | 526,538 | 1,117,857 | 2.12 |
+| navmeshes | 29 | 64,779 | 90,305 | 1.39 |
+| packs | 60 | 80,470 | 144,366 | 1.79 |
+| story000 | 442 | 160,082 | 141,163 | 0.88 |
+| textures | 21 | 1,387 | not indexed | — |
+
+The ratios are consistent with 64 KiB stream chaining, opaque or non-zlib
+payloads, and nested packs counted once per parent. `story000` is the only
+file whose verified streams are fewer than its declared entries, so its
+non-zlib payload share is the one to inspect first when the unclassified spans
+are triaged. `audio` is dominated by AWC containers, as expected.
+
+`levels.rpf` extraction was started after this check: 1,117,857 streams,
+174.9 GB decoded, 8 workers, about 47 MB/s write to Mammoth. It is the last
+index-only archive.

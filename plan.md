@@ -59,6 +59,8 @@ entry identification, coverage, or decoding across the archive set.
   used 3,908 KiB peak RSS; this excludes the GUI.
 - The virtual X11 test `tools/explorer_e2e.sh` opens the story control, previews
   its first XML stream, and compares the exported payload to its known SHA-256.
+- `tools/explorer_large_e2e.sh` opens `data.rpf` and checks GUI cancellation
+  and cleanup during indexing in a virtual X11 display.
 
 ### Archive metadata
 
@@ -294,6 +296,16 @@ entry identification, coverage, or decoding across the archive set.
   `handoff/unclassified-summary.tsv`, `handoff/unclassified-gaps.md`.
 - Still missing: authoritative entry names/semantics for those unclassified
   bytes; the range layer is complete.
+- Declared-entry versus indexed-stream coverage from the header census (ΣN
+  over every pack in the file, including nested packs, versus that file's
+  verified zlib streams): `anim` 84,940 / 130,510, `audio` 7,283 / 838,
+  `core_bvh4` 295,244 / 565,596, `common` 418 / 954, `data` 23,075 / 28,509,
+  `levels` 526,538 / 1,117,857, `navmeshes` 64,779 / 90,305, `packs` 80,470 /
+  144,366, `story000` 160,082 / 141,163. Ratios of 0.9–2.3 follow from 64 KiB
+  stream chaining, opaque payloads, and packs counted once per parent.
+- `levels.rpf` extraction started 2026-11-21 on Mammoth: 1,117,857 zlib
+  streams, 174.9 GB decoded, 8 workers at about 47 MB/s write, resume via
+  `tools/bulk_extract.py --resume`. This is the last index-only archive.
 
 ## Audio (Xbox AWC)
 
@@ -480,6 +492,11 @@ entry identification, coverage, or decoding across the archive set.
 ## Roadmap
 
 ### Now
+
+- [ ] **Finish `levels.rpf` extraction and verify it.** 1,117,857 zlib streams,
+  174.9 GB decoded, running on Mammoth at about 47 MB/s. Follow with
+  `tools/verify_bulk.py` and a rebuild of the extraction browser so every
+  index-only archive disappears.
 
 - [x] **Relocate output to Mammoth.** `output` is now a symlink to
   `/run/media/lynxnathan/Mammoth/rage-tools-vi-output` (199 GB extracted), and
