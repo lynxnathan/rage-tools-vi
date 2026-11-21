@@ -15,6 +15,9 @@ Last updated: 2026-11-21.
 - [ ] **Overnight unified pass** once `levels` is done: exact `+0xa0` harvest
   gated to the 208-byte bvh4 table, plus the struct-root/segment harvest across
   all archives. `cache/` on the NVMe is the scratch location.
+- [ ] **Explain the +2…+6 chain excess in `data.rpf`.** Chains equal N in
+  14/42 packs; the rest run 2–6 high (multi-chain entries or undetected
+  continuations). Index-only; resolve before trusting the chain model.
 - [ ] **Model directory/virtual rows in the entry count.** `data.rpf`'s root
   has 699 table rows (Front B = `align16(10 × 699)`) but 41 children and 0 own
   streams, so ≥658 rows carry no payload; `common.rpf` shows the same shape

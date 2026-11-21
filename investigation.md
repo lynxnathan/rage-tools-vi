@@ -4175,3 +4175,40 @@ classify leaf versus parent. Results are unchanged (`textures` 17/21, `data`
 11/42), because the failures are not stack drift: they are packs (including
 `data.rpf`'s root) whose N counts rows that have no payload at all. No closing
 policy can reconcile those physically; only a directory-aware row model can.
+
+## Journal: row-tag parsing is masked; data.rpf entries are chains (2026-11-21)
+
+Proposal: read the row-type discriminator out of the 10-byte Front B records.
+That is the right place to look structurally, but the bytes are not readable —
+the mask evidence is already decisive and unchanged:
+
+- Front B byte entropy vs a same-size uniform sample: deficit median 0.000,
+  p75 0.009, max 0.357; only 64 of 4,373 regions exceed 0.15 and all are 16–80
+  byte samples (`tools/metadata_entropy.py`).
+- All 4,373 first and last 16-byte blocks are distinct; across the thirteen
+  same-N localization packs **0 of 13,392 byte offsets are stable**
+  (`tools/front_b_stability.py`), while their trailers are byte-identical.
+
+So row tags cannot be inspected without key material or a crib. The stride is
+knowable from the size law (`align16(10N)`), the *role* is not.
+
+### The payload-side answer for data.rpf is chains, not structs
+
+Counting 64 KiB-chain groups per pack (continuation = predecessor decoded
+exactly 65,536 and next stream on the align16 boundary of its end):
+
+- **14/42 packs have chains == N exactly**;
+- most others sit at **+2 … +6** (the localization packs are +2 to +5 on
+  N = 1,115);
+- two packs are pure directory rows: the root (N = 699, **0 chains**) and
+  `0x964000` (N = 156, **0 chains**);
+- one outlier `0xb07000` (N = 147, 361 chains).
+
+The stream count alone explains the earlier confusion: `0x15000` has 695
+streams against 683 rows, and the 12-stream difference is exactly its
+continuation chains.
+
+So `data.rpf` entries are one chain each, not struct-rooted, and the residual
+`+2…+6` is a small systematic excess (multi-chain entries or undetected
+continuations) rather than directory rows. The directory-row model is
+independently confirmed by the two zero-chain packs.
