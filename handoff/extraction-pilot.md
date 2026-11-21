@@ -1,49 +1,52 @@
-# Extraction pilot: audio.rpf + levels.rpf
+# Standalone RPF extraction browser
 
-2026-11-21. Small static read-only browser for the rebuilt corpus. No archive
-was reindexed, no payload was re-extracted, and no payload was copied.
+2026-11-21. Open the generated HTML directly from disk. The generator uses
+the eight rebuilt indexes, six extracted manifests, and
+`output/verification.tsv`. It reads one control file per verified archive to
+check its size and SHA-256. It performs no reindex, extraction, or copying.
 
 ## Run
 
 ```sh
 python3 tools/extraction_index_pilot.py
-# open output/extraction-index-pilot/index.html
+# Open output/extraction-index-pilot/index.html.
 ```
 
-Inputs: `output/index/audio.tsv`, `output/index/levels.tsv`,
-`output/extracted/audio/manifest.tsv`, and `output/verification.tsv`.
-The generator joins audio ranges to the verified manifest, validates one
-decoded file's size and SHA-256, and emits bounded sample pages for levels.
+| Archive | Index ranges shown | Total index ranges | Verified ranges shown |
+| --- | ---: | ---: | ---: |
+| `audio.rpf` | 1,629 | 1,629 | 838 |
+| `anim.rpf` | 96 | 258,152 | 46 |
+| `core_bvh4.rpf` | 96 | 1,113,186 | 46 |
+| `levels.rpf` | 96 | 2,199,213 | 0 |
+| `movies.rpf` | 3 | 3 | 0 |
+| `navmeshes.rpf` | 96 | 178,941 | 46 |
+| `packs.rpf` | 96 | 285,069 | 47 |
+| `story000.rpf` | 96 | 279,306 | 46 |
 
-## What it shows
+Audio exposes every indexed range. The other roots use up to three
+first, middle, and last sample pages of at most 32 rows per page. The movies
+index fits in one three-row page. Each page identifies its row span and each
+root lists the full index path. The HTML contains 2,208 rows (797,094 bytes).
 
-- Root cards for `audio.rpf` (**verified**) and `levels.rpf`
-  (**indexed-only**), with source extents, stored/decoded totals, and kinds.
-- Bounded 32-row sample pages for levels (first, middle, last) because the full
-  index has 2,199,213 ranges; no payload is read.
-- Drill-down ranges with start/end, status, source archive, extracted path and
-  SHA-256 for verified audio, or `No extracted file is listed` for levels.
-- Back navigation to the archive and root; uncertain pack membership remains
-  at archive level.
+Range details display the archive-relative start and exclusive end. Verified
+zlib rows join their manifest by both endpoints and include the extracted file
+path and SHA-256. Levels and movies are index-only. Unclassified ranges show
+`Unresolved`, and ranges without manifest rows show
+`No extracted file is listed for this range`. Pack membership remains at
+archive level.
 
-## Validation
-
-`python3 tools/extraction_index_pilot.py` prints:
-
-- `audio 0x5000–0x6316 matched the decoded file and SHA-256
-  725398e5f5267e1da78a82b8582a68950d72c3dc8adb0d97b54eda40274c19f2`
-- `levels 0x1d000–0x1d701 matched the index; no bulk extraction manifest`
-
-The emitted `output/extraction-index-pilot/index.html` is 602 KB. The
-headless browser test passes with the cached Playwright modules:
+## Chromium validation
 
 ```sh
 NODE_PATH=/home/lynxnathan/.npm/_npx/e41f203b7505f1fb/node_modules \
   node tools/verify_extraction_index_pilot.cjs
 ```
 
-It checks audio drill-down and SHA, unresolved audio, all three levels statuses,
-source extents, and back navigation to the two roots. No install was needed.
+The Playwright check opens the local HTML and drills into a range and back to
+the root for every archive. It checks the sample limits, full audio coverage,
+unresolved audio and movies ranges, and no-file details for levels and movies.
+It verifies the audio hash at `0x5000..0x6316` and the anim hash at
+`0x6000..0x62dc`. The latter is
+`cbdb4e9d1ecbe7ff0a197f759c47c0c5f0f88ebb0830ee6af958ef6949b430e4`.
 
-Artifact: `output/extraction-index-pilot/index.html`; generator:
-`tools/extraction_index_pilot.py`.
+Artifact: `output/extraction-index-pilot/index.html`.

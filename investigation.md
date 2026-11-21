@@ -2208,3 +2208,26 @@ Under that convention the child end is at or before `0x1cab4000`, or
 zero separator and include either 11 or 379 trailing zeros. The exact
 endpoint remains open pending a trailer start or decoded parent extent.
 Bounded windows and commands are in `handoff/data-last-child.md`.
+
+## Journal: eight-root standalone extraction browser (2026-11-21)
+
+The browser now reads all eight rebuilt TSV indexes and joins sampled zlib
+extents to six existing extraction manifests backed by PASS rows in
+`output/verification.tsv`. It presents all 1,629 audio ranges, 96 ranges each
+for anim, core_bvh4, levels, navmeshes, packs, and story000, and all three
+movies rows in one sample page. The 797,094-byte HTML contains 2,208 ranges.
+The run performed no archive indexing, extraction, or payload copying.
+
+Run `python3 tools/extraction_index_pilot.py` to build the page. Chromium
+verified all eight roots, first-page range drill-down and back navigation,
+the sample limits, and unresolved and no-file states. The anim control at
+archive-relative `0x6000..0x62dc` matched the existing 2,808-byte file and
+SHA-256
+`cbdb4e9d1ecbe7ff0a197f759c47c0c5f0f88ebb0830ee6af958ef6949b430e4`.
+The browser reported no extracted file for the levels control
+`0x1d000..0x1d701` and for the movies front and opaque range.
+
+```sh
+NODE_PATH=/home/lynxnathan/.npm/_npx/e41f203b7505f1fb/node_modules \
+  node tools/verify_extraction_index_pilot.cjs
+```

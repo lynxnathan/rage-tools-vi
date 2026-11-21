@@ -304,18 +304,18 @@ entry identification, coverage, or decoding across the archive set.
   open until an independently decoded start and stored size or end are
   available. Evidence: `handoff/story000-bvh4-entry-proof.md`.
 
-## Extraction pilot (audio + levels)
+## Standalone extraction browser
 
-- `tools/extraction_index_pilot.py` builds a static read-only browser over
-  `output/index/{audio,levels}.tsv`, `output/extracted/audio/manifest.tsv`, and
-  `output/verification.tsv`; artifact `output/extraction-index-pilot/index.html`.
-- Root shows `audio.rpf` as verified and `levels.rpf` as indexed-only. Audio
-  ranges join the manifest with SHA-256; levels uses bounded first/middle/last
-  32-row sample pages. Uncertain pack membership remains at archive level.
-- Validation: audio `0x5000..0x6316` matches the decoded file and manifest SHA
-  `725398e5…c19f2`; levels `0x1d000..0x1d701` matches the index and says no
-  extracted file. The Playwright drill-down/back test also passes with the
-  cached `NODE_PATH` modules. Command and details: `handoff/extraction-pilot.md`.
+- `python3 tools/extraction_index_pilot.py` builds
+  `output/extraction-index-pilot/index.html` using all eight rebuilt indexes,
+  six existing manifests, and `output/verification.tsv`. The page covers every
+  audio row and up to three 32-row sample pages per other archive, for 2,208
+  visible ranges. Levels and movies are index-only.
+- Verified ranges show the extracted path and SHA-256; unresolved ranges,
+  archive-relative extents, and archive-level pack membership are preserved.
+- The Chromium verifier passed navigation and return for all eight roots,
+  audio and anim hashes, and explicit no-file details for both index-only
+  archives. The exact command and coverage are in `handoff/extraction-pilot.md`.
 
 ## Large archive pilot
 

@@ -167,7 +167,8 @@ function render() {
     }
     return;
   }
-  for (const child of quadrants(children)) {
+  const visible = stack.length === 1 && children.length <= 8 ? children : quadrants(children);
+  for (const child of visible) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'tile';

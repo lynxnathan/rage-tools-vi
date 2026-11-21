@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Build a local RPF range browser from the rebuilt audio and levels TSVs."""
+"""Build a standalone RPF range browser from the eight rebuilt indexes."""
 
 import argparse
 import csv
 import hashlib
-from itertools import islice
+from itertools import chain, islice
 import json
 from pathlib import Path
 
@@ -12,9 +12,8 @@ from extraction_tree import HTML
 
 
 OUTPUT = Path("output")
-AUDIO_INDEX = OUTPUT / "index/audio.tsv"
-LEVELS_INDEX = OUTPUT / "index/levels.tsv"
-AUDIO_MANIFEST = OUTPUT / "extracted/audio/manifest.tsv"
+ARCHIVES = ("audio", "anim", "core_bvh4", "levels", "movies", "navmeshes", "packs", "story000")
+INDEX_ONLY = {"levels", "movies"}
 VERIFICATION = OUTPUT / "verification.tsv"
 PAGE_SIZE = 32
 
@@ -28,7 +27,67 @@ def extent(row):
     return tuple(int(row[field], 16) for field in ("start", "end"))
 
 
-def range_item(row, archive, extracted=None):
+def index_pages(path, full):
+    if full:
+        records = list(rows(path))
+        return len(records), [(0, records)] if records else []
+
+    with path.open("rb") as source:
+        total = sum(1 for _ in source) - 1
+    if total <= 0:
+        return 0, []
+
+    starts = sorted({0, max(0, (total - PAGE_SIZE) // 2), max(0, total - PAGE_SIZE)})
+    pages = []
+    cursor = 0
+    with path.open(encoding="utf-8", newline="") as source:
+        header = source.readline()
+        for start in starts:
+            stop = min(total, start + PAGE_SIZE)
+            start = max(start, cursor)
+            if start >= stop:
+                continue
+            lines = islice(source, start - cursor, stop - cursor)
+            page = list(csv.DictReader(chain((header,), lines), delimiter="\t"))
+            if len(page) != stop - start:
+                raise ValueError(f"Index changed during sampling: {path}")
+            pages.append((start, page))
+            cursor = stop
+    return total, pages
+
+
+def verification_record(name, verification):
+    matches = [row for row in verification if Path(row["archive"]).name == name]
+    if len(matches) != 1:
+        raise ValueError(f"Expected one verification record for {name}")
+    record = matches[0]
+    if (record["status"] != "PASS" or int(record["manifest"]) != int(record["index"])
+            or any(int(record[field]) for field in ("missing", "extra", "failures"))):
+        raise ValueError(f"Manifest lacks matching PASS verification for {name}")
+    return record
+
+
+def match_manifest(path, pages, expected_count):
+    expected = {extent(row): row for _, page in pages for row in page if row["kind"] == "zlib"}
+    matched = {}
+    count = 0
+    for extracted in rows(path):
+        count += 1
+        key = extent(extracted)
+        if key not in expected:
+            continue
+        if key in matched or any(
+            int(expected[key][field]) != int(extracted[field])
+            for field in ("stored_bytes", "decoded_bytes")
+        ):
+            raise ValueError(f"Index and manifest disagree at {key[0]:#x} in {path}")
+        matched[key] = extracted
+    if count != expected_count or matched.keys() != expected.keys():
+        raise ValueError(f"Verification count or sampled zlib extents disagree with {path}")
+    return matched
+
+
+def range_item(row, archive, manifest, extracted):
     start, end = extent(row)
     status = "Unresolved" if row["kind"] == "unclassified" else "Indexed only"
     item = {
@@ -44,75 +103,68 @@ def range_item(row, archive, extracted=None):
     if extracted:
         item.update(kind=f"Decoded / verified · {row['kind']}",
                     file=extracted["path"], sha256=extracted["sha256"],
-                    manifest=str(AUDIO_MANIFEST), availability="")
+                    manifest=str(manifest), availability="")
     return item
 
 
-def audio_root():
-    records = list(rows(AUDIO_MANIFEST))
-    manifest = {extent(row): row for row in records}
-    checks = [row for row in rows(VERIFICATION) if Path(row["archive"]).name == "audio.rpf"]
-    if (len(checks) != 1 or checks[0]["status"] != "PASS"
-            or int(checks[0]["manifest"]) != len(records) or len(manifest) != len(records)):
-        raise ValueError("Audio manifest lacks a matching PASS verification record")
-
-    source = checks[0]["archive"]
-    entries = []
-    for row in rows(AUDIO_INDEX):
-        extracted = manifest.pop(extent(row), None)
-        if extracted and (row["kind"] != "zlib" or any(
-            int(row[field]) != int(extracted[field]) for field in ("stored_bytes", "decoded_bytes")
-        )):
-            raise ValueError(f"Audio index and manifest disagree at {row['start']}")
-        entries.append(range_item(row, source, extracted))
-    if manifest:
-        raise ValueError("Some audio manifest extents are absent from the index")
-
-    control = next(entry for entry in entries if "sha256" in entry)
-    control_path = Path(control["file"])
-    with control_path.open("rb") as payload:
+def verify_control(name, page_items):
+    control = next(item for _, page in page_items for item in page if "sha256" in item)
+    path = Path(control["file"])
+    with path.open("rb") as payload:
         actual = hashlib.file_digest(payload, "sha256").hexdigest()
-    if control_path.stat().st_size != control["decoded"] or actual != control["sha256"]:
-        raise ValueError(f"Audio control failed size/hash verification: {control_path}")
-    print(f"audio {control['name']} matched the decoded file and SHA-256 {actual}")
-    return {"name": "audio.rpf", "kind": "Verified archive · all indexed ranges",
-            "children": entries}
+    if path.stat().st_size != control["decoded"] or actual != control["sha256"]:
+        raise ValueError(f"{name} control failed size/hash verification: {path}")
+    print(f"{name} {control['name']} matched the decoded file and SHA-256 {actual}")
 
 
-def levels_root():
-    with LEVELS_INDEX.open("rb") as index:
-        total = sum(1 for _ in index) - 1
-    if total <= 0:
-        raise ValueError("Levels index is empty")
-    starts = sorted({0, max(0, (total - PAGE_SIZE) // 2), max(0, total - PAGE_SIZE)})
-    pages = []
-    cursor = 0
-    index_rows = rows(LEVELS_INDEX)
-    for start in starts:
-        if start < cursor:
-            continue
-        page = [range_item(row, "levels.rpf") for row in
-                islice(index_rows, start - cursor, start - cursor + PAGE_SIZE)]
-        cursor = start + len(page)
-        pages.append({"name": f"Index rows {start + 1:,}–{cursor:,}", "kind": "Sample page",
-                      "children": page})
+def archive_root(key, verification):
+    name = f"{key}.rpf"
+    index = OUTPUT / f"index/{key}.tsv"
+    manifest = OUTPUT / f"extracted/{key}/manifest.tsv"
+    full = key == "audio"
+    total, pages = index_pages(index, full)
+    if not pages:
+        raise ValueError(f"Index is empty: {index}")
+    if key in INDEX_ONLY:
+        if manifest.exists():
+            raise ValueError(f"Index-only archive now has an extraction manifest: {manifest}")
+        source, matched, status = name, {}, "Indexed only"
+    else:
+        record = verification_record(name, verification)
+        source, status = record["archive"], "Verified archive"
+        matched = match_manifest(manifest, pages, int(record["manifest"]))
 
-    sampled = sum(len(page["children"]) for page in pages)
-    control = next(item for page in pages for item in page["children"]
-                   if item["kind"] == "Indexed only · zlib")
-    if (OUTPUT / "extracted/levels/manifest.tsv").exists():
-        raise ValueError("Levels now has a bulk extraction manifest; update the pilot before using it")
-    print(f"levels {control['name']} matched the index; no bulk extraction manifest")
-    return {"name": "levels.rpf", "kind": "Indexed only · sampled ranges", "children": pages,
-            "note": f"Showing {sampled:,} of {total:,} index ranges in bounded sample pages. "
-                    f"Full index: {LEVELS_INDEX}. Pack membership is unresolved."}
+    page_items = [
+        (start, [range_item(row, source, manifest, matched.get(extent(row))) for row in page])
+        for start, page in pages
+    ]
+    if matched:
+        verify_control(name, page_items)
+    shown = sum(len(page) for _, page in page_items)
+    print(f"{name}: {shown:,} of {total:,} index ranges shown, {len(matched):,} verified rows shown")
+
+    root = {"name": name, "ranges": total}
+    if full:
+        return dict(root, kind=f"{status} · all indexed ranges", children=page_items[0][1])
+    return dict(
+        root,
+        kind=f"{status} · bounded sample",
+        children=[
+            {"name": f"Index rows {start + 1:,}–{start + len(page):,}",
+             "kind": "Sample page", "children": page}
+            for start, page in page_items
+        ],
+        note=f"Showing {shown:,} of {total:,} index ranges in bounded sample pages. "
+             f"Full index: {index}. Pack membership is unresolved.",
+    )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=OUTPUT / "extraction-index-pilot/index.html")
     args = parser.parse_args()
-    roots = [audio_root(), levels_root()]
+    verification = list(rows(VERIFICATION))
+    roots = [archive_root(key, verification) for key in ARCHIVES]
     data = json.dumps(roots, separators=(",", ":"), ensure_ascii=True).replace("<", "\\u003c")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(HTML.replace("__ARCHIVES__", data), encoding="utf-8")
