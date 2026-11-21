@@ -61,6 +61,12 @@ entry identification, coverage, or decoding across the archive set.
   its first XML stream, and compares the exported payload to its known SHA-256.
 - `tools/explorer_large_e2e.sh` opens `data.rpf` and checks GUI cancellation
   and cleanup during indexing in a virtual X11 display.
+- `tools/explorer_anim_e2e.sh` checks opening and navigating the existing
+  4.4 GB `anim.rpf` index under Xvfb.
+- The ignored release test `local_anim_corpus` scanned that archive in 61.20 s
+  and matched all 130,510 stream ranges and sizes to its existing index.
+- Direct offset lookup uses a bounded binary search on ordered range indexes;
+  tests cover the existing `anim.rpf` index beyond 4 GiB.
 
 ### Archive metadata
 
@@ -494,9 +500,12 @@ entry identification, coverage, or decoding across the archive set.
 ### Now
 
 - [ ] **Finish `levels.rpf` extraction and verify it.** 1,117,857 zlib streams,
-  174.9 GB decoded, running on Mammoth at about 47 MB/s. Follow with
-  `tools/verify_bulk.py` and a rebuild of the extraction browser so every
-  index-only archive disappears.
+  174.9 GB decoded. Running on Mammoth with 16 workers and `--resume` after a
+  slow start; measured at about 21 MB/s, so roughly two hours remain. Then:
+  `python3 tools/pipeline.py --source SRC --output output verify` (the filter
+  skips archives without a manifest) and
+  `python3 tools/pipeline.py --source SRC --output output pilot`; the pilot now
+  derives index-only archives from manifest presence.
 
 - [x] **Relocate output to Mammoth.** `output` is now a symlink to
   `/run/media/lynxnathan/Mammoth/rage-tools-vi-output` (199 GB extracted), and
