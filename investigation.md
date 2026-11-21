@@ -4370,3 +4370,46 @@ hash function.
 junk string (sentences, decimals, `platform:/tw7_interiors.rpf`), so that set is
 still unexplained. The weight hashes produced one chance hit under FNV-1a
 (`EMICRANIA`), and the `+0x28` values produced none.
+
+## Journal: 60 of 612 bone hashes named — three rig families (2026-11-21)
+
+`tools/bone_name_probe.py` generates `<prefix><side><part><suffix>` candidates
+over a curated 153-word anatomy/rig vocabulary (no harvested words, so no
+chance-collision risk) and matches them against the 612 class-0 table hashes.
+
+**Result: 60 names resolved**, in three families and eight roots:
+
+| Family | Names | Meaning |
+| --- | ---: | --- |
+| `mh_` | 30 | muscle helpers (bicep, tricep, pec, latissimus, teres, armpit, knee, calf, thigh, hip, butt, sterno, finger01) |
+| `rb_` | 20 | ragdoll bodies (shoulder01–03, hip, and the rest of the ring) |
+| `skel_` | 10 | skeleton bones (calf, foot, forearm, hand, scapula) |
+
+Per root:
+
+| Root | Names | Index range | Mirror offset |
+| --- | ---: | --- | --- |
+| `0xc3ae138b` | 22 | 70–132 | `l`→`r` = +25 |
+| `0x96d8bd92` | 19 | 71–116 | `l`→`r` = +12 |
+| `0x48dcbb01` | 8 | 0–33 | `l`→`r` = +17 |
+| `0x40e56d68` | 3 | 6–9 | scrotum + testicles |
+| `0x8667f0e4` | 2 | 44–46 | teres pair |
+| `0x89a5d573` | 2 | 27–28 | shoulder03 pair |
+| `0x9567cdf4` | 2 | 85–86 | hip pair |
+| `0xcf91b2f9` | 2 | 124–125 | armpit pair |
+
+Two structural facts fall out:
+
+- **Rigs are left/right symmetric with a constant index offset per root**
+  (+25, +17, +12). So one named side localises its mirror, even where the name
+  is still unknown — the remaining hashes can at least be annotated as mirrors.
+- **The families are distinct namespaces**: `skel_` is the skeleton epidermis,
+  `mh_` the sub-dermal muscle helpers, `rb_` the ragdoll ring. That is why a
+  single vocabulary (or the earlier `bone_names.txt`, which has no prefixes at
+  all) could not resolve them.
+
+Corpus-derived vocabulary (147k words) pushes the count to 82, but ~15 of those
+are JOAAT collisions on ordinary words (`l_tempered2`, `rb_gefundenes3`,
+`pack_l_beschimpfungen`), so the curated 60 is the number to trust.
+
+Artifact: `handoff/bone-hash-names.tsv` (60 rows, sorted by root then index).

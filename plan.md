@@ -67,10 +67,11 @@ Last updated: 2026-11-21.
 - [ ] **Multi-mip texture tail.** No descriptor with `+0x3e >= 2` exists in the
   corpus, so tail placement, mip order, and multi-mip pitch stay open. Reopen
   with a multi-mip dictionary. See `handoff/texture-mip-tail-blocker.md`.
-- [ ] **Expand the bone vocabulary to name the remaining 604 hashes.** The hash
-  is now known: `JOAAT(lowercase("skel_<side>_<part>"))`, 8 confirmed in root
-  `0x48dcbb01` (`handoff/bone-hash-names.tsv`). Harvest more `skel_` names, then
-  name the rest and validate the families with the ordered skeleton.
+- [ ] **Name the remaining 552 bone hashes.** 60 verified across eight roots
+  and three families (`skel_`, `mh_`, `rb_`), with a constant per-root `l`/`r`
+  index offset (+25, +17, +12). Grow the anatomy/rig vocabulary, use the mirror
+  offset to annotate unknown mirrors, and validate against the ordered families.
+  See `handoff/bone-hash-names.tsv`.
 - [ ] **Name the `0x8f18aff0` weight hashes**: the 57 shared bone hashes and the
   195 other hashes, then join weights to vertices/parts.
 
