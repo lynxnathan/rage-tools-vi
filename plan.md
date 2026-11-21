@@ -419,6 +419,11 @@ entry identification, coverage, or decoding across the archive set.
   exact XML ranges. The bounded entry probe found no offset/size pair in the
   tested layouts. Resume with independent table framing and decoding
   parameters or a plaintext record that predicts both range endpoints.
+- [ ] **Bound the last `data.rpf` child at `0x1a279000` (active, bus #0151).**
+  Check bounded trailer candidates against the control child at `0x120d7000`
+  and the root trailer boundary. Require two independent structural checks
+  for an end-exclusive endpoint. This can advance extraction coverage while
+  Front A awaits independent decoding evidence.
 - [x] **Bone geometry classification.** Exported per-bone centroids/extents and
   clustered the roots into 16 skeleton families.
 - [ ] **Name the skeleton families.** Validate the bone hash namespace and order
