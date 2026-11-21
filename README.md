@@ -27,7 +27,7 @@ Rust 16 MiB payload cap.
 | `tools/` | Python extraction, indexing, verification, and semantic probes |
 | `docs/` | MkDocs Material site with Mermaid/UML diagrams |
 | `handoff/` | Verified TSV/JSON manifests and semantic reports |
-| `plan.md` | Roadmap, state, and working loop |
+| `plan.md` | Live check/todo list only |
 | `investigation.md` | Append-only evidence journal |
 
 ## Build

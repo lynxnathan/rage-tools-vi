@@ -4,9 +4,9 @@ Reverse engineering of **GTA VI / Leonida RPF9 archives**, with the long-term
 goal of enumerating every stored entry and decoding the bytes behind it.
 
 !!! info "Documentation map"
-    This site is the navigable model of the project. The append-only evidence
-    journal is `investigation.md` and the living roadmap is `plan.md` at the
-    repository root. The diagrams below are the UML/system view that ties those
+    This site is the navigable model of the project. The append-only research
+    record is `investigation.md` and the live check/todo list is `plan.md` at
+    the repository root. The diagrams below are the UML/system view that ties those
     files together.
 
 ## First milestone
@@ -146,7 +146,8 @@ classDiagram
 - Offsets are absolute archive offsets.
 - Ranges are start-inclusive and end-exclusive.
 - `*.rpf` samples and `output/` are local and untracked.
-- `plan.md` is the roadmap/state; `investigation.md` is append-only evidence.
+- `plan.md` is the live check/todo list; `investigation.md` is the append-only
+  research record.
 - Handoff artifacts live under `handoff/`.
 
 ```bash

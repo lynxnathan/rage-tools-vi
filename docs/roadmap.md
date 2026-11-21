@@ -1,7 +1,8 @@
 # Roadmap
 
-The roadmap is a living section. `plan.md` remains the canonical todo/state;
-this page is the visual projection.
+The roadmap is a living section. `plan.md` is the canonical live check/todo
+list and this page is the visual projection; evidence lives in
+`investigation.md`.
 
 ## Milestones
 

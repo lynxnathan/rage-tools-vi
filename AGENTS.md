@@ -25,6 +25,9 @@ are appended here.
   This is a lead-side deadline. The worker starts when they receive the work.
 - 2026-11-21: Bus `wait` defaults to at most 1 second. Do not use long
   timeouts; poll in a loop and answer immediately when a message arrives.
+- 2026-11-21: `investigation.md` holds the research record; append evidence
+  as dated entries. `plan.md` is only the live check/todo list — do not record
+  findings, tool tables, or completed-work lists there.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling
@@ -166,9 +169,11 @@ Each workstream also keeps `handoff/<stream>-status.md` with four sections:
 
 ## Documentation
 
-- `plan.md` is the current roadmap, todo, and state. Keep it current.
-- `investigation.md` is an append-only journal. Add new evidence as dated
-  entries at the end. Do not rewrite or reorganize existing entries.
+- `plan.md` is only the live check/todo list. Open checks only; no findings and
+  no completed-work log.
+- `investigation.md` carries the research record. It is an append-only journal;
+  add new evidence as dated entries at the end. Do not rewrite or reorganize
+  existing entries, and do not keep research state in `plan.md`.
 - `format.md` documents the CLI report formats.
 
 ## Evidence
