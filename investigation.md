@@ -3986,3 +3986,53 @@ The overnight plan stands: once `levels` finishes extracting, one unified pass
 can harvest exact payload sizes (`+0xa0`) and struct headers across all archives.
 The cheap port already answered the design question — the struct is universal,
 the two-stream split is not.
+
+## Journal: live unified harvest with the two guards (2026-11-21)
+
+`tools/struct_harvest.py` runs the guarded pass; `handoff/struct-harvest.tsv` holds
+the struct rows. Both guards are in.
+
+### Guard 1 — `+0xa0` only on the exact bvh4 descriptor
+
+The gate requires 208 bytes *and* the full 16-word pointer table
+(`0x50000080/0xa0/0xb0/0xc0/0x50` with `1` at `+0x10` and `0x60000000` at
+`+0x20`). Over 400 sampled streams per archive: 198/400 in `core_bvh4` pass,
+0/400 in `story000` and 0/400 in `levels`. Before the gate was exact, the first
+run matched 0 descriptors because it tested the wrong word slots; with the table
+check it matches every 208-byte descriptor sampled.
+
+### Guard 2 — segment nibbles
+
+Pointer candidates are `u32` with upper nibble `5..0xA` and low four bits zero
+(every observed self-relative pointer is 16-byte aligned). Scanning the whole
+payload produced dozens of false pointers per 6 MB body, so the scan is limited
+to the struct header at `+0x00` or `+0x100`.
+
+| Archive | Structs in sample | Max nibble | External ptrs / struct | Implied attachments |
+| --- | ---: | --- | ---: | ---: |
+| `core_bvh4` | 217/400 | `6` in 201, `5` in 16 | **0.93** | **0.92** |
+| `story000` | 278/400 | `5` in 248, `8` in 17 | 0.46 | n/a (entries > streams) |
+| `levels` | 193/400 | `5` in 147, `8` in 14 | 0.95 | 1.13 |
+
+So the nibble count is **exact for bvh4** (0.93 against 0.92) but does not
+generalise: adding past-body tag-5 pointers raises `levels` to 1.55, and counting
+*distinct* targets over 2,500 decoded streams gives 0.51 + 0.03 = 0.54 against
+1.13. The serializer's external segment nibbles are not the attachment counter
+outside `*_bvh4`.
+
+### The robust universal signal is the struct-root count
+
+Decoding every stream of 18 small `levels` packs (N = 8–24) gives:
+
+- **struct streams ≈ declared N**: deltas 0 (4 packs), +1 (5), +2 (3), −1 (2),
+  −2 (2), +3, +4, −3;
+- streams per pack are 1.5–2.5 × N, confirming that the extra non-struct streams
+  are the entries' data.
+
+That matches the archive totals: `levels` struct share ≈ 37–48 % of streams
+against an entries/streams ratio of 46.9 %, and `core_bvh4` descriptors plus
+small structs give 294,614 against 295,244 declared entries.
+
+For the overnight pass the attachment guard should therefore be the
+**struct-root count per pack**, with the nibble histogram kept as a diagnostic
+(it is exact only for the bvh4 split).
