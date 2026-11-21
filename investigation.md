@@ -3689,3 +3689,40 @@ cache-line BVH4 node table with a leaf bitmask.
 Tools: `tools/bvh4_payload_probe.py`. Next discriminator for `+0xa4`: decode one
 small pack completely (8–20 entries) and check whether the pair matches offsets
 or counts inside *its own* payloads rather than across the corpus.
+
+## Journal: BVH4 tail, 0x81 fills, and +0xa4 after the three checks (2026-11-21)
+
+Operator checks run over 160 decoded payloads (cached; `tools/bvh4_node_probe.py`).
+
+**Tail rule holds.** `+0x20 % 4 == 0` in 160/160, `used - last_non_zero == 3` in
+160/160, and `+0x28 == +0x20 - 256` in 160/160. The four bytes before the used
+end are therefore a little-endian `u32` whose three high bytes are zero: observed
+values are 1..15 (all ≤ 255), with `8` (26), `7` (25), `6` (23), `9` (17), `10`
+(15) most common. Median payload size rises monotonically with that value
+(768 bytes at 1, 78,848 at 8, 6,669,824 at 14), so it is a count — most plausibly
+a tree depth or level count. A `log2` size class is **falsified**: `tail ==
+round(log2(used/256))` in only 77/160 (48%).
+
+**`0x81` as `int8 -127` per-lane sentinel is falsified.** Inside the 64-byte
+frame, 0x81 occupies every offset almost uniformly (5,760–5,955 occurrences per
+offset; 93,126 below offset 16 against 279,192 above, i.e. the uniform 25/75
+split). `0x7F` is 50× rarer (5,734 bytes) and peaks at offsets ≡ 1 (mod 4)
+(~190–228 against ~40–70 elsewhere), which is a float-byte signature, not a
+paired min/max lane.
+
+**But whole-node fills are real.** 35 payloads contain an exactly **2,048-byte**
+(32 × 64) run of 0x81, and those runs start on 64-byte boundaries — 32
+consecutive empty node slots. Of 348 runs ≥ 256 bytes overall, only 105 start on
+a 64-byte boundary and only 40 are 64-multiples in length, so the short runs are
+numeric coincidences and only the 2,048-byte fills are structural.
+
+**`+0xa4` remains open, and the proposed split has no support.** `hi == 0` in
+just 2 of 160 payloads, so the flat-versus-tree split cannot be tested; the first
+32 payload header bytes are zero in all 160, so there is nothing there to
+correlate against. `lo/64` takes 4 (64 payloads), 5 (28), 6 (9), 13 (5), which
+looks like a small per-entry count rather than an offset or a workspace budget.
+
+The remaining discriminator is unchanged and now the only one worth running:
+decode one small pack completely (8–20 entries), where every descriptor,
+payload, and declared entry can be matched, and read `+0xa4` against that pack's
+own totals.
