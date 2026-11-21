@@ -3883,3 +3883,9 @@ the top ten cover 21,173 of the 27,004 unpaired records.
 This is enough to stop treating the descriptor as a bespoke record and to start
 treating both it and the header-only entries as size-class variants of one
 container struct.
+
+Element ids are not a shared vocabulary: sampling 1,200 of the 11,953
+272-byte records yields 4,800 distinct 8-byte element hashes and 1,200 distinct
+four-hash combinations — every element id is unique. They are per-instance or
+per-content identifiers, so name matching would need the generating hash, not a
+dictionary.
