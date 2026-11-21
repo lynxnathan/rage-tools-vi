@@ -2283,3 +2283,17 @@ coherent portrait. Mean premultiplied RGBA seam delta is 5.2591 for row-major
 pages against 7.4762 for compact Morton and 34.1674 for tight linear. The
 physical page-row stride is `0x3000`; cropped linear pitch is 688 bytes.
 See `handoff/texture-bc7-control.md` for the address equation and PNG command.
+
+## Journal: multi-mip texture control search blocked (2026-11-21)
+
+Completed the bounded #0166 search after the script session lost credits. A
+full pass over `textures.rpf` in 8 MiB windows, formats `0x4D` and `0x62` with
+`--min-mips 2`, found zero descriptor-backed multi-mip textures across all
+24 windows. The same probe with `--min-mips 1` still recovers the verified
+`trophy` and `switch_jason` controls, so the filter is exercised.
+
+Packed mip-tail placement, mip ordering, and multi-mip pitch stay open. Reopen
+only with a dictionary whose descriptor mip-count byte (`+0x3e`) is at least 2.
+Evidence: `handoff/texture-mip-tail-blocker.md`;
+tool: `tools/texture_control_probe.py` (adds `--min-mips`). No full texture
+extraction was performed.

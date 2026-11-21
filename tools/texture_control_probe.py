@@ -53,7 +53,7 @@ def graphics_end(system, count):
     return end
 
 
-def find_control(window, base, code, name):
+def find_control(window, base, code, name, min_mips):
     header_hits = valid_dictionaries = 0
     for start in range(0, len(window) - 1, 16):
         cmf, flg = window[start : start + 2]
@@ -80,7 +80,8 @@ def find_control(window, base, code, name):
         except (zlib.error, ValueError):
             continue
         valid_dictionaries += 1
-        candidates = [row for row in records if row[5] == code and (name is None or row[0] == name)]
+        candidates = [row for row in records if row[5] == code
+                      and (name is None or row[0] == name) and system[row[2] + 0x3E] >= min_mips]
         if candidates:
             selected = min(candidates, key=lambda row: row[-1])
             return selected, system, graphics, ranges, count
@@ -302,12 +303,15 @@ def main():
     parser.add_argument("--bytes", type=lambda value: int(value, 0), default=0x1000)
     parser.add_argument("--format", type=lambda value: int(value, 0), choices=(0x4D, 0x62), default=0x4D)
     parser.add_argument("--name")
+    parser.add_argument("--min-mips", type=int, default=1)
     parser.add_argument("--png-out", type=Path)
     parser.add_argument("--address-bits", action="store_true",
                         help="also compare all 8! address-bit permutations on a 64×64 BC3 control")
     args = parser.parse_args()
     if args.start < 0 or args.start % 16 or not 0 < args.bytes <= MAX_WINDOW:
         parser.error("start must be nonnegative and 16-byte aligned; window must be 1 byte to 8 MiB")
+    if not 1 <= args.min_mips <= 16:
+        parser.error("--min-mips must be between 1 and 16")
     if args.address_bits and (args.format != 0x4D or args.png_out is None):
         parser.error("--address-bits requires --format 0x4d and --png-out")
     with args.archive.open("rb") as source:
@@ -316,7 +320,7 @@ def main():
     print(f"source {args.archive}, window {args.start:#x}..{args.start + len(window):#x}")
     try:
         selected, system, graphics, ranges, count = find_control(
-            window, args.start, args.format, args.name
+            window, args.start, args.format, args.name, args.min_mips
         )
     except ValueError as error:
         parser.exit(1, f"{error}\n")
@@ -325,7 +329,8 @@ def main():
     print("stored zlib ranges " + ", ".join(f"{start:#x}..{end:#x}" for start, end in ranges))
     print(f"validated dictionary textures {count}, system bytes {len(system):#x}")
     print(f"{name} ({name_hash:#010x}), {width}x{height}, format {code:#x}, "
-          f"graphics {offset:#x}..{offset + size:#x}, SHA-256 {sha256(data).hexdigest()}")
+          f"{system[descriptor + 0x3E]} mips, graphics {offset:#x}..{offset + size:#x}, "
+          f"SHA-256 {sha256(data).hexdigest()}")
     print(f"system descriptor {descriptor:#x}..{descriptor + 0x60:#x}")
     for pos in range(0, 0x60, 16):
         print(f"  +{pos:02x} {system[descriptor + pos:descriptor + pos + 16].hex(' ')}")
