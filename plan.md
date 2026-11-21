@@ -253,11 +253,18 @@ entry identification, coverage, or decoding across the archive set.
 - `audio.rpf` contains `ADAT` AWC containers inside a large unclassified span.
 - Extracted **6,625 AWC containers / 23,510,389,456 bytes** with SHA-256;
   local report `handoff/audio-awc.md`, tool `tools/extract_awc.py`.
-- Header: version 1, flags `0xff21`, 6–24 streams, 48000 Hz, chunks `0x55`
-  data / `0x36` peak / `0xA3` seektable / `0x76` format.
-- Decode blocked: vgmstream rejects the variant; reconstructed XMA2 WAV fails
-  (`channel len > samples_per_frame`); XMA1/byte-swap/block variants fail.
-- Next: reverse `0x76` + stream-info, or obtain the GTA VI codec/key.
+- Header: version 1, flags `0xff21`, 6–24 streams, chunks `0x55` data /
+  `0x36` peak / `0xA3` seektable / `0x76` format.
+- `0x76` is a 32-byte descriptor: sample counts at `+0x00`/`+0x0c`, rate at
+  `+0x08`, codec at `+0x1c`, sub-ID at `+0x1d`. Corpus scan: 2,320 parsed streams;
+  codec `0x0b` 2,081 / `0x05` 166 / `0x02` 73; rates 48k, 32k, 12k, 28k.
+- Data chunks are multiples of 2,048. Many begin `a0 00 f8` and repeat it at
+  offset **162** (1,451 rows): a real internal framing signal.
+- Decode blocked: vgmstream rejects the variant; reconstructed XMA2 WAV
+  decodes silence/artifacts; synthetic UEBA/Bink Audio decodes transients only
+  (`channel len > samples_per_frame` remains for XMA2).
+- Next: split packets at the `a0 00 f8`/162 marker and rebuild the `0x76`
+  codec header; if silence persists, test AWC/XXTEA encryption and key source.
 
 ## Large archive pilot
 
@@ -459,6 +466,9 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/extraction_inventory.py` | Normalize extraction manifests into one inventory |
 | `tools/extract_entry.py` | General archive/range extraction entry point |
 | `tools/extract_awc.py` | Scan/extract ADAT AWC containers from raw audio spans |
+| `tools/awc_framing.py` | Inventory AWC `0x76` descriptors, data sizes, and frame markers |
+| `tools/bruteforce_ueba.py` | Sweep AWC payloads through a synthetic UEBA/Bink Audio wrapper |
+| `tools/test_awc_xma2.py` | Build XMA2 WAVE wrappers from AWC data chunks and decode |
 | `tools/quadtree.py` | Build resource-local quadtrees and an HTML view |
 | `tools/verify_quadtree.py` | Verify quadtree completeness and structural invariants |
 | `tools/mmap_extract.py` | Bounded-memory selective zlib extraction |
@@ -504,6 +514,9 @@ entry identification, coverage, or decoding across the archive set.
 - Where is the compiled shader bytecode, if it is present in this corpus?
 - What are the actual codec, top-mip offset, mip order, pitch, and tile order for
   format 0x4D and 0x62 textures?
+- What do AWC codec IDs `0x0b`, `0x05`, and `0x02` map to, and is the
+  `a0 00 f8`/162 marker a packet boundary or frame header?
+- Is the AWC `0x55` payload encrypted (AWC/XXTEA), and where is the GTA VI key?
 - What hash produces the 612 class-0 bone-table names, and what are their names?
 - What do the `0x1ebb416b` index/high-byte IDs and `0x8f18aff0` hashes name?
 - Do the high-1/high-2 pairs in the 48-byte entries encode endpoints, layers,

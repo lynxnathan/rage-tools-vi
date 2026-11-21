@@ -1863,3 +1863,52 @@ XMA2 WAV (ffmpeg) reaches the xma2 decoder but fails with
 alignments fail too. The next requirement is the GTA VI `0x76`/stream-info
 layout or the codec key/format, not another blind XMA2 wrapper.
 Artifact: `handoff/audio-awc.md`; tool: `tools/extract_awc.py`.
+
+## Journal: GTA VI AWC framing and Bink/XMA2 tests (2026-11-21)
+
+The GTA VI AWC container is a new `ADAT` layout, not the GTA V AWC layout that
+vgmstream parses. Header: `u16` version 1 at `+0x04`, `u16` flags `0xff21` at
+`+0x06`, `u16` streams at `+0x08`, `u32` data offset at `+0x0c`, `u16[streams]`
+chunk indexes at `+0x10`, and a `u64` chunk table from `0x50` to `data_offset`.
+The chunk packing remains `type:8 / size:28 / offset:28`.
+
+The `0x76` format chunk is 32 bytes: sample count at `+0x00` and `+0x0c`,
+sample rate at `+0x08`, an unknown `u16` at `+0x0a` (probably
+peak/headroom/block metric), codec ID at `+0x1c`, codec sub-ID at `+0x1d`, and
+zero at `+0x1e`. `tools/awc_framing.py --limit 0` parsed **2,320 parsed stream rows**
+from the 6,625 containers into `handoff/audio-awc-framing.tsv`: codec `0x0b`
+2,081, `0x05` 166, `0x02` 73; rates 48,000 (2,143), 32,000 (165), 12,000 (10),
+28,000 (1), 32,016 (1); sub-IDs `0x01` 2,025 and `0x02` 295. This disproves the
+earlier “all streams are 0x0B/48k” assumption.
+
+A real framing signal surfaced: many 2,048-byte `0x55` data chunks begin with
+`a0 00 f8` and repeat those bytes at offset **162**. 1,451 streams show the
+`0,162` pair; 840 have no marker in the first 16 hits, 23 have one, and six
+larger streams repeat the pattern `162,...,162,266,162,...`. The marker is not
+a fixed prefix; it is a packet/frame boundary candidate.
+
+Decode attempts this session:
+
+- vgmstream's AWC parser rejects the new header, as expected.
+- `tools/test_awc_xma2.py` builds a proper `XMA2WAVEFORMATEX` WAVE around each
+  `0x55` chunk and tries mono/stereo and encoder versions. ffmpeg reaches the
+  XMA2 decoder but emits silence or low-level artifacts; no tonal speech.
+- `tools/bruteforce_ueba.py` builds an `ABEU` v1 header and wraps payloads as
+  `[0x9999][u16 size][payload]`. vgmstream accepts the synthetic container and
+  reports `RAD Game tools Bink Audio`. A whole chunk yields a ~90 ms burst then
+  zeros; splitting at 2,048/1,024/512 bytes yields silence. The 5,140-candidate
+  offset sweep produced only three non-silent bursts; the best flatness 0.189 /
+  harmonic 0.619 was a transient, not continuous audio.
+
+Current interpretation: the container and `0x76` metadata are usable, and the
+codec is not GTA V XMA2/Vorbis/Opus directly. `0x0B` is new; `Bink2Scarlett.dll`
+and the UEBA path make **Bink Audio 2** the strongest hypothesis, but it is not
+proven while payloads decode to transients. The next concrete test is splitting
+at the `a0 00 f8`/162 marker and rebuilding the `0x76` codec header. If that
+still yields silence, test whether `0x55` is AWC/XXTEA-encrypted; GTA V has an
+encrypted-data flag and `.awckey`, and no GTA VI key was found in the sampled
+build tree.
+
+Artifacts: `handoff/audio-awc.md`, `handoff/audio-awc-decode.md`,
+`handoff/audio-awc-framing.tsv`, `tools/awc_framing.py`,
+`tools/bruteforce_ueba.py`, `tools/test_awc_xma2.py`.
