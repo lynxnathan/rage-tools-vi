@@ -16,6 +16,10 @@ Last updated: 2026-11-21.
   cancellation, strengthen archive/index provenance beyond sampled identity,
   add asset previews, and measure throughput on the largest archives. Verify
   resumable indexing on other filesystems and operating systems.
+- [ ] **Publish the full `core_bvh4` descriptor inventory** (269,106 entries:
+  two ids, basis, true payload size, data stream). Run when the disk is free.
+- [ ] **Identify the two `core_bvh4` descriptor ids** at `+0x40`/`+0x44` and the
+  `u16` pair at `+0xa4`, and find the 24,857 declared entries with no descriptor.
 - [ ] **Group `core_bvh4` entries by their 208-byte descriptor** and compare
   per pack with the declared count (269,106 descriptors vs 293,963 direct
   declared entries), then decode the descriptor fields.

@@ -3558,3 +3558,56 @@ the stream's block range rather than assume the trailer ends the recorded chunk.
 Still open: what the 15 fields mean. They are not needed for the verified
 reconstruction, and the numbers (52,4320 = `0x80020`, 1,245,200 = `0x130010`)
 do not match tap counts, rates, or block offsets directly.
+
+## Journal: the 208-byte `core_bvh4` descriptor decoded (2026-11-21)
+
+Sampled 4,000 of the 269,106 descriptor streams (every 44th) directly from the
+archive and decoded all of them. Tool: `tools/bvh4_descriptor_probe.py`
+(`--checks --verify-padding`).
+
+### Layout
+
+| Offsets | Content | Evidence |
+| --- | --- | --- |
+| `+0x00..+0x3F` | constant template: `0`, `0`, `0x50000080`, `0`, `1`, `0`, `0x500000a0`, `0`, `0x60000000`, `0`, `0x500000b0`, `0`, `0x500000c0`, `0`, `0x50000050`, `0` | one distinct value per word in all 4,000 |
+| `+0x40`, `+0x44` | two per-entry 32-bit ids | 3,811 distinct of 4,000 each |
+| `+0x50..+0x7F` | right-handed orthonormal 3×3 basis, rows at `+0x50`, `+0x60`, `+0x70`, each row padded to 16 bytes | orthonormal 4,000/4,000, det > 0 4,000/4,000, worst error 4.2e-05 |
+| `+0x80` | zero | constant |
+| `+0x88` | `0x00000101` | constant |
+| `+0x90..+0x9F` | zero | constant |
+| `+0xa0` | exact decoded payload size of the entry's data stream | see below |
+| `+0xa4` | two `u16` fields, low multiple of 64, high multiple of 256 or 0 | 1,331 distinct |
+| `+0xa8..+0xCF` | zero | constant |
+
+### `+0xa0` is the entry's true payload size
+
+The stream immediately after a descriptor is the entry's data. Comparing
+`+0xa0` with that stream's decoded size over all 4,000 samples: equal in 1,551,
+smaller in 2,449, **never larger**. Every one of the 2,449 differences is a
+multiple of 256, and re-decoding 260 random streams confirmed that all bytes
+past `+0xa0` are **zero**.
+
+So the decoded payload is padded to a 256-byte-multiple chunk boundary, which is
+exactly why the `core_bvh4` index reports decoded sizes at exact multiples of
+65,536. The descriptor gives the true size, and the correction is available for
+every entry without decoding the payload.
+
+### Entry shape
+
+`core_bvh4` entries are `descriptor + one data stream`, roughly two zlib streams
+per entry, matching the 1.92 streams/entry ratio from the reconciliation. There
+are 269,106 descriptors against 293,963 direct declared entries, so 24,857
+declared entries carry no descriptor stream.
+
+### Still open
+
+- The two ids at `+0x40`/`+0x44` are not JOAAT or CRC32 of the 3,524-name bone
+  corpus or the 1,087 path/name tokens available locally, and not CRC32 or
+  JOAAT of the entry payload or of the stored bytes. Their magnitudes differ per
+  record, so they are not a (hash, size) pair.
+- The `u16` pair at `+0xa4` does not satisfy any simple product relation with
+  `+0xa0` (ratios are non-integral), so it is not a (stride, count) pair for the
+  payload.
+- The six `0x500000xx`/`0x60000000` template constants are plausible tagged
+  self-pointers into a 0xD0-byte struct (offsets `0x50`..`0xc0` land inside the
+  record), but they never vary in the sample, so the tag semantics are unproven.
