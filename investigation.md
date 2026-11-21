@@ -4057,3 +4057,33 @@ two guards into an engine-wide fingerprint:
   `packs` 45 %, and `script` 1 % (object graph, not structs).
 
 Docs page added: `docs/extraction/structs.md`.
+
+## Journal: pack extents from zero padding (2026-11-21)
+
+The count-oracle resolver alone failed: stopping at count saturation truncates
+the last entry's trailing data streams, and a first top-down version double-visited
+headers (39 results for 21 packs) while derailing every parent's end.
+
+The missing signal is **zero padding**. In `textures.rpf` every header after the
+root is preceded by a contiguous zero run of 1,008–4,032 bytes (20/20 headers).
+So the end of the pack immediately before a header is `header - padding`, and
+that boundary is exact for the last sibling. Combing that with the count oracle
+(a pack closes only when its direct items — struct-root streams plus child
+packs — reach its declared N, and only at a header event, never at a stream)
+gives:
+
+- **21/21 pack ends 16-byte aligned**;
+- **17/21 packs with direct items exactly equal to N**;
+- the root resolves to 0xb70e020 of 0xb7a9d40 bytes, and the big pack at
+  `0xa20b000` counts 1,315 struct roots against N = 1,315 exactly.
+
+Residuals are ±1, ±2, and one −44/−12 depending on the struct detector's hit
+threshold; the best threshold is two tagged pointers, and raising it to three or
+four loses real structs faster than it removes false positives. The remaining
+error is therefore in **struct classification** (a data stream occasionally opens
+with pointer-looking bytes) and in attributing the root's children, not in the
+padding rule.
+
+Artifact: `handoff/pack-extents-textures.tsv`; tool: `tools/pack_extents.py`
+(validated on `textures.rpf` only, and it decodes streams, so it wants a local
+archive copy).
