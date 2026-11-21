@@ -2060,3 +2060,37 @@ Artifacts: `handoff/audio-opus-decode.tsv`, `handoff/audio-ace1-decode.tsv`,
 `handoff/data-awc-opus.md`, `handoff/data-awc-ace1-ir.md`. The reproducible
 runner is `tools/rebuild_audio.sh`; it now expects 151 XMA2, 2,067 Opus, and
 73 ACE1 WAVs.
+
+## Journal: all 14 Opus export exceptions decoded (2026-11-21)
+
+Reran the bounded `tools/data_opus_exceptions.py` probe from bus #0136.
+All 14 rows parsed and decoded at 48 kHz. The 11 streams with nominal
+12 or 28 kHz descriptors have seek tables on the 48 kHz decode clock.
+Optional nominal-rate copies resample the PCM. Sequential decoding also
+produced 29,760 frames for `00000001126d9000.awc` stream 2 with an
+inconsistent seek table, and 50,880 for `000000027dcd2000.awc` stream 0
+without a seek table. `00000002f5c82000.awc` stream 0 contains 62 identical
+`fc ff fe` packets and valid stereo silence. Its 59,520 zero frames agree
+with the seek entries.
+
+The 14 supplemental untrimmed WAVs in `output/extracted/audio-opus-exceptions/`
+complete the 2,081-stream export together with the initial 2,067 WAVs.
+That supplemental directory also contains 11 optional resampled copies.
+Exact trim and runtime seek handling for the two seek exceptions are open.
+Commands and per-case limits are in `handoff/data-awc-opus-exceptions.md`.
+
+## Journal: Opus exception rows normalized (2026-11-21)
+
+The 14 rows that the first bulk pass rejected were replayed independently and
+all are valid Opus. They are now part of the primary export, not a side folder:
+
+- 11 non-48 kHz sources (10×12 kHz, 1×28 kHz) decode at 48 kHz; the source rate
+  is retained in the manifest.
+- 5 seek flags remain (3 terminal mismatches, 1 mismatch, 1 missing); the
+  sequential untrimmed PCM is preserved.
+- 1 stream is valid encoded stereo silence (`fc ff fe` packets) and is preserved.
+
+Final `0x0B` export: **2,081/2,081 WAVs, 2.5 GiB, zero decode failures**.
+This supersedes the earlier 2,067/2,081 count in the previous journal entry.
+Artifacts: `handoff/audio-opus-decode.tsv`, `tools/extract_awc_opus.py`,
+`handoff/data-awc-opus-exceptions.md`.

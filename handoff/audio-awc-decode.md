@@ -110,11 +110,11 @@ libopus decodes the controls at 48 kHz; every `0xA3` block boundary matches
 cumulative decoded frames × channels. `tools/data_awc_opus_probe.py` verifies
 the controls; `tools/extract_awc_opus.py` performs the bulk export.
 
-Bulk result: **2,067/2,081 streams / 2.5 GB untrimmed WAV**. The 14 exceptions
-are 11 sample-rate entries (10×12 kHz, 1×28 kHz), 2 seek mismatches, and 1
-silent stream. Pre-skip/end-trim is only bounded by the
-controls; the export stays untrimmed and records declared units, channels, and
-decoded frames.
+Bulk result: **2,081/2,081 streams / 2.5 GB untrimmed WAV**, zero decode
+failures. 11 non-48 kHz streams are decoded at 48 kHz with source rate
+recorded; 5 seek flags and 1 encoded silence are preserved. Pre-skip/end-trim
+is only bounded by the controls; the export stays untrimmed and records
+declared units, channels, and decoded frames.
 
 ## Current interpretation
 
@@ -172,6 +172,6 @@ python3 tools/extract_awc_ace1.py --limit 0
 - `tools/extract_awc_opus.py` — codec-`0x0B` Opus bulk export with manifest.
 - `tools/extract_awc_ace1.py` — codec-`0x02` ACE1 impulse-response export.
 - `output/extracted/audio-xma2/` — 151 decoded WAVs + manifest (local-only).
-- `output/extracted/audio-opus/` — 2,067 decoded WAVs + manifest (local-only).
+- `output/extracted/audio-opus/` — 2,081 decoded WAVs + manifest (local-only).
 - `output/extracted/audio-ace1/` — 73 float WAVs + manifest (local-only).
 - `output/audio-tests/` — local-only WAV/spectrogram experiments (ignored).

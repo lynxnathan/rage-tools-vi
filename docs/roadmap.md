@@ -50,7 +50,7 @@ stateDiagram-v2
 
 | Priority | Task | Evidence | Blocker |
 | --- | --- | --- | --- |
-| 1 | Opus trim and 0x02 semantics | 2,067 Opus WAVs / 73 ACE1 IRs | pre-skip and trailer pairs |
+| 1 | Opus trim and 0x02 semantics | 2,081 Opus WAVs / 73 ACE1 IRs | pre-skip and trailer pairs |
 | 2 | Name or align the 612 bone hashes | `handoff/script-bones.tsv` | hash namespace |
 | 3 | Geometry-classify bones | `handoff/script-bone-points.tsv` | no model orientation |
 | 4 | Decode remaining typed arrays | `0xb066759f`, `0xb1ee00d0` | field semantics |
@@ -69,7 +69,7 @@ stateDiagram-v2
 - [x] Flatten the 44 class-0 bone tables and 3,043 bones.
 - [x] Rebuild all six verified archive extractions after a clean output wipe.
 - [x] Decode 151 AWC codec-`0x05` streams as XMA2 WAV.
-- [x] Decode 2,067 AWC codec-`0x0B` streams as untrimmed Opus WAV.
+- [x] Decode 2,081 AWC codec-`0x0B` streams as untrimmed Opus WAV.
 - [x] Decode 73 AWC codec-`0x02` streams as ACE1 impulse responses.
 
 ## Parked

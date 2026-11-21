@@ -270,12 +270,15 @@ entry identification, coverage, or decoding across the archive set.
   with declared sample count, channels, and decoded frames. The controls
   constrain total trim to decoded frames minus declared count / channels.
   Establish pre-skip independently to split the trim between start and end.
-  `tools/extract_awc_opus.py` exported **2,067/2,081 streams / 2.5 GB**
-  untrimmed WAV; 14 exceptions are recorded (11 sample-rate, 2 seek mismatches,
-  1 silent). Artifact: `handoff/audio-opus-decode.tsv`.
-- Bulk Opus manifest records 11 rejected sample-rate entries (ten 12 kHz and
-  one 28 kHz), two seek mismatches, and one entirely silent stream.
-- **Codec `0x02` = ACE1 impulse responses** in all 12 streams tested. The
+  `tools/extract_awc_opus.py` exported **2,081/2,081 streams / 2.5 GB**
+  untrimmed WAV, zero decode failures; 11 non-48 kHz sources are recorded,
+  5 seek flags and 1 encoded silence are preserved. Artifact: `handoff/audio-opus-decode.tsv`.
+- All 14 initial Opus exceptions decode sequentially at 48 kHz and have
+  supplemental untrimmed WAVs, bringing the combined export to **2,081/2,081**.
+  The 11 non-48-kHz descriptors still use 48 kHz seek counts. One seek table
+  is inconsistent, one is missing, and one stream encodes valid stereo
+  silence. See `handoff/data-awc-opus-exceptions.md`.
+- **Codec `0x02` = ACE1 impulse responses** in all 73 exported streams. The
   float32 LE prefix stores half-spectra of 2,048-point real FFT windows
   at 1,024-sample hops. Restore the omitted Nyquist terms from the zero
   leading half and neighboring overlaps, then trim to the tap count at
@@ -504,6 +507,7 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/extract_awc.py` | Scan/extract ADAT AWC containers from raw audio spans |
 | `tools/awc_framing.py` | Inventory AWC `0x76` descriptors, data sizes, and frame markers |
 | `tools/data_awc_opus_probe.py` | Decode bounded AWC `0x0B` Opus controls and validate `0xA3` seek offsets |
+| `tools/data_opus_exceptions.py` | Replay the 14 initial Opus export exceptions and write supplemental WAVs |
 | `tools/data_awc_trim_controls.py` | Measure Opus trim bounds and inspect AWC `0x02` ACE1 trailers |
 | `tools/data_awc_ace1_ir.py` | Reconstruct AWC `0x02` impulse responses and write float WAV controls |
 | `tools/bruteforce_ueba.py` | Sweep AWC payloads through a synthetic UEBA/Bink Audio wrapper |

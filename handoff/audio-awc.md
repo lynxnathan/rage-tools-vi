@@ -45,9 +45,10 @@ containers into `handoff/audio-awc-framing.tsv`.
   of `[u16le size][size-byte Opus packet]`, zero-padded. libopus decodes the
   tested mono and stereo controls directly, and every `0xA3` block boundary
   matches cumulative frames × channels. `tools/extract_awc_opus.py` exported
-  **2,067/2,081 streams / 2.5 GB untrimmed WAV**; 14 exceptions are recorded
-  11 sample-rate entries (10×12 kHz, 1×28 kHz), 2 seek mismatches, 1 silent. Pre-skip/end-trim remain open;
-  keep the bulk untrimmed.
+  **2,081/2,081 streams / 2.5 GB untrimmed WAV**, zero decode failures.
+  11 non-48 kHz streams are decoded at 48 kHz with source rate recorded;
+  5 seek flags and 1 encoded silence are preserved. Pre-skip/end-trim remain
+  open; keep the bulk untrimmed.
 - **Codec `0x02` = ACE1 impulse responses: decoded.** Each `0x2000`-byte
   prefix tile is 1,024 complex float32 bins of a 2,048-point real FFT with the
   Nyquist bin omitted. Inverse-transform, restore the missing alternating
@@ -88,6 +89,6 @@ Full experiment log: `handoff/audio-awc-decode.md`.
 - `tools/extract_awc_opus.py` — codec-`0x0B` Opus bulk export
 - `tools/extract_awc_ace1.py` — codec-`0x02` ACE1 impulse-response export
 - `output/extracted/audio-xma2/` — 151 decoded WAVs + manifest (local-only)
-- `output/extracted/audio-opus/` — 2,067 decoded WAVs / 2.5 GB + manifest (local-only)
+- `output/extracted/audio-opus/` — 2,081 decoded WAVs / 2.5 GB + manifest (local-only)
 - `output/extracted/audio-ace1/` — 73 float32 impulse responses / 6 MB + manifest
 - `output/audio-awc-verification.tsv` — not yet generated

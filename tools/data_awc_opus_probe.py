@@ -81,17 +81,16 @@ def load_opus():
     return lib
 
 
-def decode_stream(lib, payload, seek, info, output):
-    stream, sub_id, rate, declared, offset = info
-    if rate != RATE or len(payload) % BLOCK_BYTES:
-        raise ValueError(f"unsupported rate {rate} or data length {len(payload)}")
+def decode_packets(lib, payload, sample_rate=RATE):
+    if not payload or len(payload) % BLOCK_BYTES:
+        raise ValueError(f"invalid data length {len(payload)}")
     blocks = [
         split_block(payload[start:start + BLOCK_BYTES])
         for start in range(0, len(payload), BLOCK_BYTES)
     ]
     channels = max(1 + ((packet[0] >> 2) & 1) for block in blocks for _, packet in block)
     error = ctypes.c_int()
-    state = lib.opus_decoder_create(RATE, channels, ctypes.byref(error))
+    state = lib.opus_decoder_create(sample_rate, channels, ctypes.byref(error))
     if not state or error.value:
         raise RuntimeError(f"opus_decoder_create failed: {error.value}")
     pcm = bytearray()
@@ -104,7 +103,7 @@ def decode_stream(lib, payload, seek, info, output):
             count = counts[-1]
             for position, packet in block:
                 last_packet_start = count
-                expected = lib.opus_packet_get_nb_samples(packet, len(packet), RATE)
+                expected = lib.opus_packet_get_nb_samples(packet, len(packet), sample_rate)
                 decoded = lib.opus_decode(state, packet, len(packet), frame, MAX_FRAME, 0)
                 if expected <= 0 or decoded != expected:
                     raise ValueError(f"packet +{position:#x}: expected {expected}, libopus returned {decoded}")
@@ -114,6 +113,14 @@ def decode_stream(lib, payload, seek, info, output):
             counts.append(count)
     finally:
         lib.opus_decoder_destroy(state)
+    return pcm, channels, counts, packets, last_packet_start, blocks[0][0][1]
+
+
+def decode_stream(lib, payload, seek, info, output):
+    stream, sub_id, rate, declared, offset = info
+    if rate != RATE or len(payload) % BLOCK_BYTES:
+        raise ValueError(f"unsupported rate {rate} or data length {len(payload)}")
+    pcm, channels, counts, packets, last_packet_start, first = decode_packets(lib, payload)
     expected_seek = list(struct.unpack(f"<{len(seek) // 4}I", seek)) if len(seek) % 4 == 0 else []
     scales = [scale for scale in {1, channels}
               if [count * scale for count in counts[:-1]] == expected_seek[:-1]]
@@ -128,7 +135,6 @@ def decode_stream(lib, payload, seek, info, output):
             wav.setsampwidth(2)
             wav.setframerate(RATE)
             wav.writeframes(pcm)
-    first = blocks[0][0][1]
     terminal_is_last_start = any(last_packet_start * scale == expected_seek[-1] for scale in scales)
     print(stream, hex(sub_id), hex(offset), len(payload), packets, len(first), hex(first[0]),
           ",".join(map(str, counts)), ",".join(map(str, expected_seek)), declared, channels,

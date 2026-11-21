@@ -47,7 +47,7 @@ if len(awc) != 6625:
     raise SystemExit(f"unexpected AWC count: {len(awc)}")
 if len(xma2_wavs) != 151:
     raise SystemExit(f"unexpected XMA2 WAV count: {len(xma2_wavs)}")
-if len(opus_wavs) != 2067:
+if len(opus_wavs) != 2081:
     raise SystemExit(f"unexpected Opus WAV count: {len(opus_wavs)}")
 if len(ace1_wavs) != 73:
     raise SystemExit(f"unexpected ACE1 WAV count: {len(ace1_wavs)}")

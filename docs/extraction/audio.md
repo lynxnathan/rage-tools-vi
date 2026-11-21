@@ -52,10 +52,10 @@ The `a0 00 f8` prefix is a 160-byte packet (`f8` is its TOC); the next packet
 starts at 162. libopus decodes the controls at 48 kHz, and every `0xA3` block
 boundary matches cumulative decoded frames × channels.
 
-Bulk export: **2,067/2,081 streams / 2.5 GB untrimmed WAV**. The 14 exceptions
-are 11 sample-rate entries (10×12 kHz, 1×28 kHz), 2 seek mismatches, and 1 silent stream. Pre-skip
-and end-trim are bounded by controls but not exactly determined, so the export
-records declared units, channels, and decoded frames without trimming.
+Bulk export: **2,081/2,081 streams / 2.5 GB untrimmed WAV**, zero decode
+failures. 11 non-48 kHz streams are decoded at 48 kHz with source rate
+recorded; 5 seek flags and 1 encoded silence are preserved. Pre-skip and
+end-trim are bounded by controls but not exactly determined.
 
 ### `0x02` = ACE1 impulse responses
 
