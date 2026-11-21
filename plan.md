@@ -9,9 +9,17 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] **Finish `levels.rpf` extraction, verify, rebuild the browser.**
-  1,117,857 streams / 174.9 GB, running on Mammoth (16 workers, `--resume`).
-  Then `tools/pipeline.py --source SRC --output output verify` and `pilot`.
+- [ ] **Finish `levels.rpf` extraction, verify, rebuild the browser.** 1,117,857
+  streams / 174.9 GB, at 89 GB on Mammoth (16 workers, `--resume`). Then
+  `tools/pipeline.py --source SRC --output output verify` and `pilot`.
+- [ ] **Overnight unified pass** once `levels` is done: exact `+0xa0` harvest
+  gated to the 208-byte bvh4 table, plus the struct-root/segment harvest across
+  all archives. `cache/` on the NVMe is the scratch location.
+- [ ] **Validate the extents resolver on a second archive.** `tools/pack_extents.py`
+  gives 16-aligned ends for all 21 `textures.rpf` packs and exact counts for 17;
+  run it on `navmeshes.rpf` from a local copy, then fix the two residual sources:
+  struct false positives (data streams opening with pointer-looking bytes) and
+  root-child attribution.
 - [ ] **Explorer (`explorer/`)**: finish the paged hierarchy, wire export
   cancellation, strengthen archive/index provenance beyond sampled identity,
   add asset previews, and measure throughput on the largest archives. Verify
@@ -19,14 +27,7 @@ Last updated: 2026-11-21.
 - [ ] **Publish the full `core_bvh4` descriptor inventory** (269,106 entries:
   two ids, basis, true payload size, data stream). Run when the disk is free.
 - [ ] **Identify the two `core_bvh4` descriptor ids** at `+0x40`/`+0x44` and the
-  `u16` pair at `+0xa4`, and find the 24,857 declared entries with no descriptor.
-- [ ] **Group `core_bvh4` entries by their 208-byte descriptor** and compare
-  per pack with the declared count (269,106 descriptors vs 293,963 direct
-  declared entries), then decode the descriptor fields.
-- [ ] **Resolve per-pack extents with an independent locator.** Needed for the
-  pack hierarchy and per-pack entry coverage; the flat stream index cannot
-  supply it (nested metadata merges into opaque spans). See the hierarchy
-  attempt recorded in `investigation.md`.
+  `u16` pair at `+0xa4` (bounded like an offset pair, role open).
 - [ ] **Re-index the eight large archives** once, to pick up the corrected
   `chain_start` column (`tools/stream_index.py`).
 - [ ] **Identify the extra Front B table `S` in mode families 2–8** (0 … 36 kB,
@@ -54,6 +55,9 @@ Last updated: 2026-11-21.
 
 ## Next
 
+- [ ] **Decode the struct field map per size class.** The `{ptr, u16 count, u16
+  cap}` containers are byte-identical within a size class, but the record size
+  is not a clean function of the count; identify the remaining varying field.
 - [ ] **Map the type/class IDs and transforms.** Group property/key IDs by
   parent/child shape, use the bone corpus to name part records, and decode the
   value entries and packed transform representation.
