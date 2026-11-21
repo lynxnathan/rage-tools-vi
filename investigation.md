@@ -3611,3 +3611,32 @@ declared entries carry no descriptor stream.
 - The six `0x500000xx`/`0x60000000` template constants are plausible tagged
   self-pointers into a 0xD0-byte struct (offsets `0x50`..`0xc0` land inside the
   record), but they never vary in the sample, so the tag semantics are unproven.
+
+## Journal: inside the `core_bvh4` entry payload (2026-11-21)
+
+Following the descriptor, the entry's data stream has its own shape.
+
+**256-byte header.** `+0x00..+0x1F` is zero, `+0x20` and `+0x28` hold two `u64`
+values, and `+0x30..+0xFF` is zero. In six sampled payloads the `+0x20` value is
+either the payload size exactly (three cases) or the payload size minus 64 or
+128 (three cases), and `+0x28` is `+0x20` minus a multiple of 256 (256 in five
+cases, 1,024 in one). The first non-zero byte is always at `+0x100`.
+
+**Sparse body.** Non-zero bytes are ~8% of the payload. One 1,536-byte sample
+has seven non-zero clusters: the header pair, a 64-byte record at `+0x100`
+beginning `06 00 02 81 12 00 00 00`, a run at `+0x1A1` of `0x81` bytes, and a
+list at `+0x1B0` that reads as a permutation of 1…21. The 64-byte record
+contains plausible floats (`0x404F3802`, `0x402FD800`) after a 32-bit value,
+which is consistent with a node record holding bounds and a child/sibling
+index. Other clusters repeat at `+0x483`, `+0x503`, `+0x543`, `+0x5A8`.
+
+**Descriptor ids are not referenced by the payload.** Searching the decoded
+payload for the 32-bit descriptor ids at `+0x40`/`+0x44` found zero hits in 34
+sampled entries, so the ids identify the descriptor rather than pointing into
+the data.
+
+What this rules out: the 208-byte record is not an array header for the data
+(it carries an orientation and a size, not pointers into the payload), and the
+payload is not dense geometry but a header plus sparse per-node records and a
+bitmask. Naming the records still needs the node layout, which is the next step
+in this thread.
