@@ -94,6 +94,7 @@ nav:
       - Audio (AWC/XMA2): extraction/audio.md
       - Packs signatures: extraction/packs-signatures.md
       - BVH4 entries: extraction/bvh4-entries.md
+      - Serialized structs: extraction/structs.md
       - Quadtree view: extraction/quadtree.md
   - Data:
       - data.rpf: data/data-rpf.md

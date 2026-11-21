@@ -4036,3 +4036,24 @@ small structs give 294,614 against 295,244 declared entries.
 For the overnight pass the attachment guard should therefore be the
 **struct-root count per pack**, with the nibble histogram kept as a diagnostic
 (it is exact only for the bvh4 split).
+
+### Corpus-wide struct map
+
+`handoff/struct-summary.tsv` (22 archives, 100 sampled streams each) turns the
+two guards into an engine-wide fingerprint:
+
+- **Tag 6 is the `*_bvh4` signature.** `core_bvh4` (0.93 external pointers per
+  struct against 0.92 implied) and `shared_minigame000_bvh4` (0.98 against 0.94)
+  are the only archives with tag 6 dominant and exactly one external pointer per
+  struct.
+- **Tag 5 dominates elsewhere** at 82–99 % of structs: `anim`, `data`, `levels`,
+  `navmeshes`, `packs`, `story000`, `textures` address in-stream
+  sub-structures only.
+- **Tags 7–10 mark the script/audio family**: `script` (tag 10, 4.0 external),
+  `story000_script` (tag 8, 3.6), `audio` (tag 10, 2.4), `common` (tag 7, 2.0),
+  `shaders` (tag 7, 2.7).
+- **Struct share tracks entry density**: `data` 79 %, `anim` 78 %, `story000`
+  73 %, `navmeshes` 69 %, `levels` 57 %, `textures` 52 %, `core_bvh4` 53 %,
+  `packs` 45 %, and `script` 1 % (object graph, not structs).
+
+Docs page added: `docs/extraction/structs.md`.

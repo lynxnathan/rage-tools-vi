@@ -1,689 +1,855 @@
 archive	stream	kind	decoded	self_pointers	external	max_tag	allocated	pair_lo	pair_hi
+anim.rpf	0x1c37010	struct	196608	0	0	5			
+anim.rpf	0x2a0e010	struct	262144	2	0	5			
+anim.rpf	0x457e010	struct	196608	2	0	5			
+anim.rpf	0x5336010	struct	196608	3	0	5			
+anim.rpf	0x6ecd010	struct	196608	1	0	5			
+anim.rpf	0x7c8c010	struct	131072	1	0	5			
+anim.rpf	0x8a3d010	struct	262144	4	0	5			
+anim.rpf	0xa5b8010	struct	131072	0	0	5			
+anim.rpf	0xc137010	struct	196608	1	0	5			
+anim.rpf	0xcef6010	struct	196608	1	0	5			
+anim.rpf	0xdca5010	struct	327680	4	0	5			
+anim.rpf	0xea62010	struct	262144	4	0	5			
+anim.rpf	0x105f5010	struct	262144	0	0	5			
+anim.rpf	0x113c5d60	struct	27344	0	3	8			
+anim.rpf	0x1218d010	struct	196608	1	0	5			
+anim.rpf	0x12f5ac30	struct	8656	0	1	6			
+anim.rpf	0x13d1f010	struct	262144	3	0	5			
+anim.rpf	0x14aec010	struct	196608	1	0	5			
+anim.rpf	0x158a6010	struct	196608	1	0	5			
+anim.rpf	0x16739010	struct	262144	2	0	5			
+anim.rpf	0x17196010	struct	30320	3	0	5			
+anim.rpf	0x17d71010	struct	56608	3	0	5			
+anim.rpf	0x1873b010	struct	65536	3	0	5			
+anim.rpf	0x198d4010	struct	30288	3	0	5			
+anim.rpf	0x1c18a010	struct	44032	2	0	5			
+anim.rpf	0x1fcc0010	struct	262144	1	0	5			
+anim.rpf	0x264c3010	struct	65536	0	0	5			
+anim.rpf	0x2b5e5010	struct	589824	0	0	5			
+anim.rpf	0x30790010	struct	262144	0	0	5			
+anim.rpf	0x36112010	struct	49952	2	0	5			
+anim.rpf	0x37c3c010	struct	3952	2	0	5			
+anim.rpf	0x39764010	struct	32240	2	0	5			
+anim.rpf	0x3eaca010	struct	131072	2	0	5			
+anim.rpf	0x41963010	struct	196608	2	0	5			
+anim.rpf	0x49a19010	struct	65536	2	0	5			
+anim.rpf	0x4ce0f010	struct	1966080	0	0	5			
+anim.rpf	0x505d8010	struct	8656	2	0	5			
+anim.rpf	0x5a6ac010	struct	55616	2	0	5			
+anim.rpf	0x5d943010	struct	18560	2	0	5			
+anim.rpf	0x62b44010	struct	21440	2	0	5			
+anim.rpf	0x67e2e010	struct	49728	2	0	5			
+anim.rpf	0x6bd9e6c0	struct	63696	0	2	9			
+anim.rpf	0x7540f010	struct	38688	2	0	5			
+anim.rpf	0x76c86010	struct	12256	0	5	9			
+anim.rpf	0x7947d010	struct	47136	2	0	5			
+anim.rpf	0x818f9660	struct	1008	0	0	5			
+anim.rpf	0x86e41010	struct	42080	0	3	10			
+anim.rpf	0x88bfc010	struct	37280	2	0	5			
+anim.rpf	0x8bfee010	struct	15200	2	0	5			
+anim.rpf	0x8eb6b010	struct	48976	2	0	5			
+anim.rpf	0x916f0010	struct	65536	0	0	5			
+anim.rpf	0x93b4e010	struct	55680	0	3	10			
+anim.rpf	0x95ed8010	struct	65536	0	4	10			
+anim.rpf	0x98f27010	struct	131072	0	0	5			
+anim.rpf	0xa084b010	struct	22576	0	4	10			
+anim.rpf	0xa4074010	struct	131072	0	0	5			
+anim.rpf	0xac86e280	struct	3840	1	0	5			
+anim.rpf	0xb15d2010	struct	65536	1	0	5			
+anim.rpf	0xb43fe010	struct	30656	0	3	10			
+anim.rpf	0xb7430010	struct	27504	0	5	10			
+anim.rpf	0xba290010	struct	32896	2	0	5			
+anim.rpf	0xbd16fe10	struct	38240	0	2	8			
+anim.rpf	0xc0fb9010	struct	65536	0	0	5			
+anim.rpf	0xc6bf26d0	struct	35888	0	4	9			
+anim.rpf	0xcc2f9010	struct	65536	1	0	5			
+anim.rpf	0xd5fe1010	struct	29424	2	0	5			
+anim.rpf	0xda37a010	struct	65024	2	0	5			
+anim.rpf	0xe10a9010	struct	23120	0	3	10			
+anim.rpf	0xe6e38fa0	struct	6992	0	0	5			
+anim.rpf	0xed102010	struct	12720	0	5	10			
+anim.rpf	0xfa1fc010	struct	131072	0	0	5			
+anim.rpf	0x1020d2010	struct	14720	2	0	5			
+anim.rpf	0x1026d5010	struct	4160	2	0	5			
+anim.rpf	0x102ccb010	struct	3840	2	0	5			
+anim.rpf	0x10399a010	struct	36384	2	0	5			
+anim.rpf	0x104a3b010	struct	196608	0	0	5			
+anim.rpf	0x105176010	struct	7120	2	0	5			
+anim.rpf	0x10567d010	struct	6832	2	0	5			
+audio.rpf	0x5000	struct	17964	0	2	8			
+audio.rpf	0x767780	struct	65536	0	2	10			
+audio.rpf	0x77dbc0	struct	65536	0	1	10			
+audio.rpf	0x84b1f0	struct	65536	0	3	9			
+audio.rpf	0x8c1d80	struct	65536	0	6	9			
+audio.rpf	0x9946f0	struct	65536	0	2	7			
+audio.rpf	0x9e2600	struct	65536	1	1	8			
+audio.rpf	0xa3b100	struct	65536	1	3	6			
+audio.rpf	0xaea0d0	struct	65536	0	2	10			
+audio.rpf	0xb19a70	struct	65536	0	2	6			
+audio.rpf	0xb38530	struct	65536	0	2	8			
+audio.rpf	0xbb4a40	struct	65536	0	2	8			
+audio.rpf	0xbc7b80	struct	65536	0	2	7			
+audio.rpf	0xbe3110	struct	65536	0	2	10			
+audio.rpf	0xc550f0	struct	65536	0	2	10			
+audio.rpf	0xcbac90	struct	65536	0	2	8			
+audio.rpf	0xe300d0	struct	65536	0	2	10			
+audio.rpf	0xf23840	struct	65536	0	3	9			
+audio.rpf	0xf72260	struct	65536	0	3	9			
+audio.rpf	0xfc0b90	struct	65536	0	4	10			
+audio.rpf	0x106d2b0	struct	65536	0	3	9			
+common.rpf	0xb000	struct	65536	0	2	7			
+common.rpf	0x12490	struct	1603	0	2	7			
+common.rpf	0x1f000	struct	4550	0	2	7			
+common.rpf	0x29b70	struct	48421	0	2	7			
+common.rpf	0x4c270	struct	65536	0	1	7			
+common.rpf	0x57000	struct	34987	0	2	7			
+common.rpf	0x6d000	struct	11404	0	2	7			
+common.rpf	0x73000	struct	4816	0	2	6			
+common.rpf	0x130000	struct	22612	0	2	7			
+common.rpf	0x1b0000	struct	65536	0	2	7			
+common.rpf	0x1f0e40	struct	65536	0	2	7			
+common.rpf	0x258410	struct	65536	0	2	6			
+common.rpf	0x32dd80	struct	47483	0	2	7			
+common.rpf	0x337000	struct	8058	0	3	7			
+common.rpf	0x33e000	struct	13978	0	2	7			
+common.rpf	0x346000	struct	15290	0	2	7			
+common.rpf	0x350000	struct	15361	0	2	6			
+common.rpf	0x358950	struct	65536	0	2	6			
+common.rpf	0x376000	struct	65536	0	2	7			
+common.rpf	0x38abd0	struct	63980	0	2	7			
+common.rpf	0x39fd30	struct	63936	0	2	7			
+common.rpf	0x3d4750	struct	65536	0	3	7			
+common.rpf	0x5a2540	struct	65536	0	2	6			
+common.rpf	0x60d970	struct	65536	0	2	7			
+common.rpf	0x620250	struct	65536	0	2	7			
 core_bvh4.rpf	0x11010	bvh4	208	5	1	6	19200	832	2304
-core_bvh4.rpf	0x1fa9010	bvh4	208	5	1	6	619520	1536	1024
-core_bvh4.rpf	0x3a8e010	bvh4	208	5	1	6	59136	512	2048
-core_bvh4.rpf	0x614b010	bvh4	208	5	1	6	196096	512	256
-core_bvh4.rpf	0x7bd3010	bvh4	208	5	1	6	11776	384	1792
-core_bvh4.rpf	0x9760010	bvh4	208	5	1	6	846592	2624	1536
-core_bvh4.rpf	0xad7d010	bvh4	208	5	1	6	470016	2304	512
-core_bvh4.rpf	0xceb9010	bvh4	208	5	1	6	165632	896	3840
-core_bvh4.rpf	0xfa6b010	bvh4	208	5	1	6	355584	2432	512
-core_bvh4.rpf	0x12465010	bvh4	208	5	1	6	39680	768	2816
-core_bvh4.rpf	0x14b12010	bvh4	208	5	1	6	1285376	1920	1280
-core_bvh4.rpf	0x1644b010	bvh4	208	5	1	6	761344	256	3584
-core_bvh4.rpf	0x17fad010	bvh4	208	5	1	6	66560	576	512
-core_bvh4.rpf	0x19ddc010	bvh4	208	5	1	6	578560	1344	0
-core_bvh4.rpf	0x1b8e2010	bvh4	208	5	1	6	35840	576	256
-core_bvh4.rpf	0x1d790870	bvh4	208	5	1	6	768	256	512
-core_bvh4.rpf	0x1fd16010	bvh4	208	5	1	6	22016	512	2304
-core_bvh4.rpf	0x256c7010	bvh4	208	5	1	6	60672	384	1792
-core_bvh4.rpf	0x288b8010	bvh4	208	5	1	6	2200320	3328	2560
-core_bvh4.rpf	0x2baf6010	bvh4	208	5	1	6	50688	256	6144
-core_bvh4.rpf	0x2ceb75f0	bvh4	208	5	1	6	768	256	512
-core_bvh4.rpf	0x30048010	bvh4	208	5	1	6	2710784	10752	9216
-core_bvh4.rpf	0x339a4010	bvh4	208	5	1	6	16896	320	1024
-core_bvh4.rpf	0x35599010	bvh4	208	5	1	6	89856	1600	0
-core_bvh4.rpf	0x3905b010	bvh4	208	5	1	6	74496	640	3072
-core_bvh4.rpf	0x3a41f010	bvh4	208	5	1	6	207104	2880	6656
-core_bvh4.rpf	0x3b983010	bvh4	208	5	1	6	768	320	0
-core_bvh4.rpf	0x3dbbc010	bvh4	208	5	1	6	88320	576	2048
-core_bvh4.rpf	0x4271d010	bvh4	208	5	1	6	36096	256	256
-core_bvh4.rpf	0x47fe0010	bvh4	208	5	1	6	335872	1088	3328
-core_bvh4.rpf	0x4c1b6010	bvh4	208	5	1	6	1126656	6464	256
-core_bvh4.rpf	0x4ff8d010	bvh4	208	5	1	6	175616	576	512
-core_bvh4.rpf	0x56705010	bvh4	208	5	1	6	200960	3456	0
-core_bvh4.rpf	0x5a0b2010	bvh4	208	5	1	6	987648	320	5120
-core_bvh4.rpf	0x608f1010	bvh4	208	5	1	6	184064	320	3072
-core_bvh4.rpf	0x64ddf690	bvh4	208	5	1	6	1024	256	512
-core_bvh4.rpf	0x68d9b010	bvh4	208	5	1	6	121600	256	3840
-core_bvh4.rpf	0x6cb75010	bvh4	208	5	1	6	2048	320	512
-core_bvh4.rpf	0x71694010	bvh4	208	5	1	6	513792	1856	0
-core_bvh4.rpf	0x74547010	bvh4	208	5	1	6	6400	320	1536
-core_bvh4.rpf	0x75d9e010	bvh4	208	5	1	6	71680	320	1024
-core_bvh4.rpf	0x78c97010	bvh4	208	5	1	6	12544	832	3072
-core_bvh4.rpf	0x7b7d5010	bvh4	208	5	1	6	56320	1088	2560
-core_bvh4.rpf	0x808c6010	bvh4	208	5	1	6	1477120	4160	1792
-core_bvh4.rpf	0x844e8cd0	struct	160	3	0	5			
-core_bvh4.rpf	0x86b33010	bvh4	208	5	1	6	1064960	1088	3584
-core_bvh4.rpf	0x897ae010	bvh4	208	5	1	6	13312	320	2560
-core_bvh4.rpf	0x8e851010	bvh4	208	5	1	6	12800	320	8192
-core_bvh4.rpf	0x93bd6430	struct	160	3	0	5			
-core_bvh4.rpf	0x959b7010	bvh4	208	5	1	6	3828736	1408	11008
-core_bvh4.rpf	0x98440010	bvh4	208	5	1	6	4408320	1088	256
-core_bvh4.rpf	0xa084a010	bvh4	208	5	1	6	423680	832	1536
-core_bvh4.rpf	0xa2623010	bvh4	208	5	1	6	6269696	2048	1280
-core_bvh4.rpf	0xa48a6010	bvh4	208	5	1	6	65024	832	2304
-core_bvh4.rpf	0xa7f86010	bvh4	208	5	1	6	1192448	576	2560
-core_bvh4.rpf	0xaaf70010	bvh4	208	5	1	6	205056	576	4608
-core_bvh4.rpf	0xae636010	bvh4	208	5	1	6	47616	1024	4096
-core_bvh4.rpf	0xaf81d100	bvh4	208	5	1	6	768	320	512
-core_bvh4.rpf	0xb2768010	bvh4	208	5	1	6	617472	2304	256
-core_bvh4.rpf	0xb40e7010	bvh4	208	5	1	6	1339904	1664	6912
-core_bvh4.rpf	0xb71f0010	bvh4	208	5	1	6	31488	256	0
-core_bvh4.rpf	0xbb6f0010	bvh4	208	5	1	6	501248	1792	3328
-core_bvh4.rpf	0xbd176010	bvh4	208	5	1	6	44032	320	3840
-core_bvh4.rpf	0xc1529010	bvh4	208	5	1	6	4815872	5120	6144
-core_bvh4.rpf	0xc4bf9230	struct	192	3	0	5			
-core_bvh4.rpf	0xcbfd1010	bvh4	208	5	1	6	25344	320	3072
-core_bvh4.rpf	0xcff14010	bvh4	208	5	1	6	65792	320	1024
-core_bvh4.rpf	0xd393e010	bvh4	208	5	1	6	27904	1088	2816
-core_bvh4.rpf	0xd687b010	bvh4	208	5	1	6	165632	1024	3328
-core_bvh4.rpf	0xda0eb010	bvh4	208	5	1	6	2562816	8448	3840
-core_bvh4.rpf	0xdea5a010	bvh4	208	5	1	6	124928	320	4096
-core_bvh4.rpf	0xdfcd7270	struct	160	3	0	5			
-core_bvh4.rpf	0xe2167010	bvh4	208	5	1	6	6908672	2304	15360
-core_bvh4.rpf	0xe5aaf010	bvh4	208	5	1	6	1772544	640	256
-core_bvh4.rpf	0xe820e010	bvh4	208	5	1	6	294912	1344	3584
-core_bvh4.rpf	0xebcab010	bvh4	208	5	1	6	139520	320	3328
-core_bvh4.rpf	0xedc1c010	bvh4	208	5	1	6	90880	1344	1792
-core_bvh4.rpf	0xef64a1e0	bvh4	208	5	1	6	1024	384	1024
-core_bvh4.rpf	0xf222b010	bvh4	208	5	1	6	79360	1024	0
-core_bvh4.rpf	0xf3be7010	bvh4	208	5	1	6	508672	1024	768
-core_bvh4.rpf	0xf836e010	bvh4	208	5	1	6	126208	1088	6656
-core_bvh4.rpf	0xfa727010	bvh4	208	5	1	6	679168	256	1792
-core_bvh4.rpf	0xfb05a4c0	bvh4	208	5	1	6	1280	384	768
-core_bvh4.rpf	0xfba6f010	bvh4	208	5	1	6	70912	256	1024
-core_bvh4.rpf	0xfc01c220	bvh4	208	5	1	6	1024	384	768
-core_bvh4.rpf	0xfc5f8010	bvh4	208	5	1	6	8960	256	1024
-core_bvh4.rpf	0xfcbed010	bvh4	208	5	1	6	4096	320	512
-core_bvh4.rpf	0xfd166010	bvh4	208	5	1	6	6656	384	768
-core_bvh4.rpf	0xfd6eb010	bvh4	208	5	1	6	2816	256	1024
-core_bvh4.rpf	0xfdc70010	bvh4	208	5	1	6	2816	256	768
-core_bvh4.rpf	0xfe1f5010	bvh4	208	5	1	6	3328	256	1024
-core_bvh4.rpf	0xfe525010	bvh4	208	5	1	6	10240	256	1024
-core_bvh4.rpf	0xfe7ab010	bvh4	208	5	1	6	3072	384	768
-core_bvh4.rpf	0xfea2b150	bvh4	208	5	1	6	1536	256	768
-core_bvh4.rpf	0xfed96010	bvh4	208	5	1	6	18944	384	1536
-core_bvh4.rpf	0xff1f8010	bvh4	208	5	1	6	11008	256	256
-core_bvh4.rpf	0xff624360	bvh4	208	5	1	6	1536	256	1280
-core_bvh4.rpf	0xff8d0430	bvh4	208	5	1	6	768	256	768
-core_bvh4.rpf	0xffde5010	bvh4	208	5	1	6	2304	256	768
-core_bvh4.rpf	0x1002a2350	bvh4	208	5	1	6	1280	256	768
-core_bvh4.rpf	0x10077c010	bvh4	208	5	1	6	3584	384	1792
-core_bvh4.rpf	0x100b85410	struct	448	3	0	5			
-core_bvh4.rpf	0x1013d5010	bvh4	208	5	1	6	39936	256	4608
-core_bvh4.rpf	0x101aa0010	bvh4	208	5	1	6	70400	3584	2560
-core_bvh4.rpf	0x103f30010	bvh4	208	5	1	6	15360	256	4352
-core_bvh4.rpf	0x104401010	bvh4	208	5	1	6	239104	10496	2304
-core_bvh4.rpf	0x105ede010	bvh4	208	5	1	6	29952	256	2048
-core_bvh4.rpf	0x1062d2210	struct	800	3	0	5			
-core_bvh4.rpf	0x108dbf010	bvh4	208	5	1	6	41216	256	3584
-core_bvh4.rpf	0x10aa26010	bvh4	208	5	1	6	160768	1536	1280
-core_bvh4.rpf	0x10f315010	bvh4	208	5	1	6	63232	256	3584
-core_bvh4.rpf	0x10f633960	struct	272	3	0	5			
-core_bvh4.rpf	0x11554c010	bvh4	208	5	1	6	49408	256	2304
-core_bvh4.rpf	0x116e30010	bvh4	208	5	1	6	271104	13312	3072
-core_bvh4.rpf	0x119b40010	bvh4	208	5	1	6	231680	256	2816
-core_bvh4.rpf	0x11bca0010	bvh4	208	5	1	6	33536	256	1536
-core_bvh4.rpf	0x11c5706e0	struct	272	3	0	5			
-core_bvh4.rpf	0x11f247010	bvh4	208	5	1	6	2537728	11776	2816
-core_bvh4.rpf	0x12165c010	bvh4	208	5	1	6	58880	256	3072
-core_bvh4.rpf	0x122fc2010	bvh4	208	5	1	6	2970368	7936	4096
-core_bvh4.rpf	0x127731010	bvh4	208	5	1	6	32256	256	3840
-core_bvh4.rpf	0x127bc2560	struct	272	3	0	5			
-core_bvh4.rpf	0x12e9a3010	bvh4	208	5	1	6	40704	256	2560
-core_bvh4.rpf	0x133a04010	bvh4	208	5	1	6	483328	15360	2304
-core_bvh4.rpf	0x1348287e0	struct	272	3	0	5			
-core_bvh4.rpf	0x136a6a010	bvh4	208	5	1	6	688896	13056	2560
-core_bvh4.rpf	0x138860010	bvh4	208	5	1	6	47616	256	5120
-core_bvh4.rpf	0x1394f1010	bvh4	208	5	1	6	246016	10752	2560
-core_bvh4.rpf	0x13bb1b010	bvh4	208	5	1	6	25856	256	4608
-core_bvh4.rpf	0x13f55e010	bvh4	208	5	1	6	119552	256	2560
-core_bvh4.rpf	0x14060a010	bvh4	208	5	1	6	1900544	14080	3328
-core_bvh4.rpf	0x145e91010	bvh4	208	5	1	6	44288	256	2304
-core_bvh4.rpf	0x1495d0010	bvh4	208	5	1	6	1702912	12800	6144
-core_bvh4.rpf	0x14e94e010	bvh4	208	5	1	6	238336	256	2304
-core_bvh4.rpf	0x14f4db010	bvh4	208	5	1	6	1729280	6144	2304
-core_bvh4.rpf	0x158578010	bvh4	208	5	1	6	41472	256	1024
-core_bvh4.rpf	0x15cdfc010	bvh4	208	5	1	6	101376	256	4864
-core_bvh4.rpf	0x15e468010	bvh4	208	5	1	6	286976	13056	2304
-core_bvh4.rpf	0x160883010	bvh4	208	5	1	6	28416	256	6144
-core_bvh4.rpf	0x16102b5e0	struct	272	3	0	5			
-core_bvh4.rpf	0x1665b2010	bvh4	208	5	1	6	412416	256	2816
-core_bvh4.rpf	0x1756b3010	bvh4	208	5	1	6	264704	256	2560
-core_bvh4.rpf	0x17cf60010	bvh4	208	5	1	6	1228288	10496	2048
-core_bvh4.rpf	0x17f1f9010	bvh4	208	5	1	6	305408	11776	1536
-core_bvh4.rpf	0x18065d010	bvh4	208	5	1	6	14592	256	4096
-core_bvh4.rpf	0x18212b010	bvh4	208	5	1	6	267776	11520	2560
-core_bvh4.rpf	0x1833c4010	bvh4	208	5	1	6	20480	256	2048
-core_bvh4.rpf	0x187577010	bvh4	208	5	1	6	53504	256	2048
-core_bvh4.rpf	0x188942010	bvh4	208	5	1	6	2143744	10752	4096
-core_bvh4.rpf	0x18a1c0010	bvh4	208	5	1	6	82944	256	2816
-core_bvh4.rpf	0x18a9be110	struct	800	3	0	5			
-core_bvh4.rpf	0x18d519010	bvh4	208	5	1	6	203776	2048	1024
-core_bvh4.rpf	0x18ecd6290	struct	272	3	0	5			
-core_bvh4.rpf	0x190166010	bvh4	208	5	1	6	254208	11776	2304
-core_bvh4.rpf	0x190bfd010	bvh4	208	5	1	6	93184	256	3072
-core_bvh4.rpf	0x191fff010	bvh4	208	5	1	6	249856	5120	1280
-core_bvh4.rpf	0x193537010	bvh4	208	5	1	6	101632	256	2048
-core_bvh4.rpf	0x1941c9010	bvh4	208	5	1	6	116480	3072	768
-core_bvh4.rpf	0x19852f010	bvh4	208	5	1	6	43520	256	3072
-core_bvh4.rpf	0x1989128e0	struct	272	3	0	5			
-core_bvh4.rpf	0x19ec76010	bvh4	208	5	1	6	30720	256	2816
-core_bvh4.rpf	0x1a1bf3010	bvh4	208	5	1	6	40448	256	2560
-core_bvh4.rpf	0x1a1eea550	struct	272	3	0	5			
-core_bvh4.rpf	0x1a34fc010	bvh4	208	5	1	6	15616	256	2304
-core_bvh4.rpf	0x1a4ba3010	bvh4	208	5	1	6	20224	256	4608
-core_bvh4.rpf	0x1a558a010	bvh4	208	5	1	6	37376	256	2560
-core_bvh4.rpf	0x1a9c7d010	bvh4	208	5	1	6	62464	256	6400
-core_bvh4.rpf	0x1ae1ea010	bvh4	208	5	1	6	1065728	26624	6656
-core_bvh4.rpf	0x1af2bb010	bvh4	208	5	1	6	17408	256	3584
-core_bvh4.rpf	0x1b17b5010	bvh4	208	5	1	6	1561088	12032	2816
-core_bvh4.rpf	0x1b307b010	bvh4	208	5	1	6	15360	256	2560
-core_bvh4.rpf	0x1b51f0010	bvh4	208	5	1	6	11776	256	3840
-core_bvh4.rpf	0x1b5964010	bvh4	208	5	1	6	24064	256	3584
-core_bvh4.rpf	0x1b7fb5010	bvh4	208	5	1	6	258560	8192	2560
-core_bvh4.rpf	0x1b8f86010	bvh4	208	5	1	6	19968	256	2304
-core_bvh4.rpf	0x1baf93010	bvh4	208	5	1	6	290560	8704	4096
-core_bvh4.rpf	0x1bc537010	bvh4	208	5	1	6	14848	256	4096
-core_bvh4.rpf	0x1bcd1e010	bvh4	208	5	1	6	1102592	19968	4096
-core_bvh4.rpf	0x1be542010	bvh4	208	5	1	6	22784	256	3072
-core_bvh4.rpf	0x1bf271010	bvh4	208	5	1	6	794880	24832	3072
-core_bvh4.rpf	0x1c094c010	bvh4	208	5	1	6	113664	256	6400
-core_bvh4.rpf	0x1c154a010	bvh4	208	5	1	6	243968	7680	3072
-core_bvh4.rpf	0x1c40ad010	bvh4	208	5	1	6	33792	256	2304
-core_bvh4.rpf	0x1c443c010	bvh4	208	5	1	6	272896	7936	3072
-core_bvh4.rpf	0x1c73087f0	struct	272	3	0	5			
-core_bvh4.rpf	0x1c7bcd010	bvh4	208	5	1	6	273664	10496	2304
-core_bvh4.rpf	0x1c8231010	bvh4	208	5	1	6	4608	384	1280
-core_bvh4.rpf	0x1c876e010	bvh4	208	5	1	6	15872	256	2624
-core_bvh4.rpf	0x1c90c6010	bvh4	208	5	1	6	49920	320	5184
-core_bvh4.rpf	0x1c9cc5010	bvh4	208	5	1	6	519168	512	5120
-core_bvh4.rpf	0x1cac8f010	bvh4	208	5	1	6	3072	320	1792
-core_bvh4.rpf	0x1cb8a5010	bvh4	208	5	1	6	92928	1024	5184
-core_bvh4.rpf	0x1cc1d6010	bvh4	208	5	1	6	21760	832	3648
-core_bvh4.rpf	0x1ce005010	bvh4	208	5	1	6	22784	576	2112
-core_bvh4.rpf	0x1ce786010	bvh4	208	5	1	6	190720	256	4160
-core_bvh4.rpf	0x1cf15b010	bvh4	208	5	1	6	10752	256	3072
-core_bvh4.rpf	0x1d02c3010	bvh4	208	5	1	6	87296	320	4672
-core_bvh4.rpf	0x1d0fef200	bvh4	208	5	1	6	768	320	0
-core_bvh4.rpf	0x1d1826010	bvh4	208	5	1	6	4352	256	2112
-core_bvh4.rpf	0x1d2533010	bvh4	208	5	1	6	54272	256	1600
-core_bvh4.rpf	0x1d2dc96f0	bvh4	208	5	1	6	768	256	512
-core_bvh4.rpf	0x1d332d010	bvh4	208	5	1	6	108032	512	3136
-core_bvh4.rpf	0x1d40b1010	bvh4	208	5	1	6	9472	384	1024
-core_bvh4.rpf	0x1d55121e0	bvh4	208	5	1	6	2048	576	1280
-core_bvh4.rpf	0x1d5da1010	bvh4	208	5	1	6	31232	384	2624
-core_bvh4.rpf	0x1d67b6010	bvh4	208	5	1	6	272128	512	2368
-core_bvh4.rpf	0x1d7023010	struct	256	5	1	6			
-core_bvh4.rpf	0x1d7639010	bvh4	208	5	1	6	23552	512	1600
-core_bvh4.rpf	0x1d80b4010	bvh4	208	5	1	6	61184	256	8704
-core_bvh4.rpf	0x1d9c39010	bvh4	208	5	1	6	15360	512	2628
-core_bvh4.rpf	0x1da0b6010	bvh4	208	5	1	6	34816	512	4356
-core_bvh4.rpf	0x1df3d2010	struct	256	5	1	6			
-core_bvh4.rpf	0x1e42c5010	bvh4	208	5	1	6	4096	320	3584
-core_bvh4.rpf	0x1e943c010	bvh4	208	5	1	6	5120	512	1792
-core_bvh4.rpf	0x1ed3d5010	struct	544	5	1	6			
-core_bvh4.rpf	0x1ee7be120	bvh4	208	5	1	6	2048	256	768
-core_bvh4.rpf	0x1ee8a9450	bvh4	208	5	1	6	2048	256	768
-story000.rpf	0x12010	struct	65536	4	0	5			
-story000.rpf	0x3f7010	struct	65536	4	0	5			
-story000.rpf	0x841480	struct	57280	0	4	8			
-story000.rpf	0xaea010	struct	65536	1	0	5			
-story000.rpf	0x10465e0	struct	12416	0	2	7			
-story000.rpf	0x12eb410	struct	61712	0	4	8			
-story000.rpf	0x1596010	struct	131072	3	0	5			
-story000.rpf	0x1d8c010	struct	131072	1	0	5			
-story000.rpf	0x2034010	struct	65536	0	0	5			
-story000.rpf	0x2d95010	struct	131072	3	0	5			
-story000.rpf	0x358e010	struct	65536	1	0	5			
-story000.rpf	0x3839010	struct	65536	1	0	5			
-story000.rpf	0x3d83720	struct	56096	0	4	8			
-story000.rpf	0x42e2010	struct	65536	0	0	5			
-story000.rpf	0x483c010	struct	65536	3	0	5			
-story000.rpf	0x4aea010	struct	65536	1	0	5			
-story000.rpf	0x4d9cc90	struct	8848	0	1	6			
-story000.rpf	0x52e6010	struct	131072	2	0	5			
-story000.rpf	0x5595010	struct	65536	4	0	5			
-story000.rpf	0x5835010	struct	65536	1	0	5			
-story000.rpf	0x5aeb010	struct	65536	0	0	5			
-story000.rpf	0x5d90010	struct	65536	0	0	5			
-story000.rpf	0x62dd010	struct	65536	0	0	5			
-story000.rpf	0x6588010	struct	65536	0	0	5			
-story000.rpf	0x682e010	struct	65536	1	0	5			
-story000.rpf	0x6aeb010	struct	65536	3	0	5			
-story000.rpf	0x7039010	struct	131072	3	0	5			
-story000.rpf	0x7ae9010	struct	65536	0	0	5			
-story000.rpf	0x7d88010	struct	65536	0	0	5			
-story000.rpf	0x8034010	struct	63328	2	0	5			
-story000.rpf	0x82e7010	struct	65536	1	0	5			
-story000.rpf	0x88356d0	struct	47680	0	4	8			
-story000.rpf	0x8adb010	struct	131072	4	0	5			
-story000.rpf	0x8d80520	struct	60048	0	4	8			
-story000.rpf	0x9026010	struct	65536	0	0	5			
-story000.rpf	0x981c620	struct	54768	0	4	8			
-story000.rpf	0x9d89010	struct	65536	3	0	5			
-story000.rpf	0xa034010	struct	65536	2	0	5			
-story000.rpf	0xa2e2010	struct	131072	4	0	5			
-story000.rpf	0xa588460	struct	59328	0	4	8			
-story000.rpf	0xad82010	struct	65536	3	0	5			
-story000.rpf	0xb028010	struct	65536	2	0	5			
-story000.rpf	0xb57a010	struct	131072	4	0	5			
-story000.rpf	0xbacd010	struct	65536	0	0	5			
-story000.rpf	0xbd7b010	struct	65536	1	0	5			
-story000.rpf	0xc02b010	struct	131072	4	0	5			
-story000.rpf	0xc2d2520	struct	59216	0	4	8			
-story000.rpf	0xc583010	struct	65536	1	0	5			
-story000.rpf	0xc82e970	struct	47344	0	4	8			
-story000.rpf	0xcadc4c0	struct	64960	0	4	8			
-story000.rpf	0xcd86010	struct	65536	0	0	5			
-story000.rpf	0xd038730	struct	64000	0	4	8			
-story000.rpf	0xd2d9010	struct	65536	1	0	5			
-story000.rpf	0xdaef010	struct	65536	1	0	5			
-story000.rpf	0xe03e010	struct	131072	4	0	5			
-story000.rpf	0xe840010	struct	65536	4	0	5			
-story000.rpf	0xed8f010	struct	65536	0	0	5			
-story000.rpf	0xf58a010	struct	65536	1	0	5			
-story000.rpf	0x10107010	struct	30560	2	0	5			
-story000.rpf	0x1041a010	struct	65536	0	0	5			
-story000.rpf	0x107c5010	struct	131072	0	0	5			
-story000.rpf	0x10c88010	struct	65536	1	0	5			
-story000.rpf	0x11062010	struct	65536	2	0	5			
-story000.rpf	0x11439010	struct	65536	4	0	5			
-story000.rpf	0x11cf0010	struct	65536	2	0	5			
-story000.rpf	0x12167010	struct	262144	0	0	5			
-story000.rpf	0x1250f010	struct	24016	2	0	5			
-story000.rpf	0x127fe010	struct	47184	2	0	5			
-story000.rpf	0x12c07010	struct	24592	2	0	5			
-story000.rpf	0x1372c010	struct	196608	4	0	5			
-story000.rpf	0x13b56010	struct	262144	4	0	5			
-story000.rpf	0x13f40010	struct	44032	2	0	5			
-story000.rpf	0x146e4010	struct	65536	3	0	5			
-story000.rpf	0x14afa010	struct	524288	0	0	5			
-story000.rpf	0x14e9f010	struct	131072	0	0	5			
-story000.rpf	0x15650010	struct	262144	0	0	5			
-story000.rpf	0x15a73010	struct	131072	3	0	5			
-story000.rpf	0x16b93010	struct	65536	2	0	5			
-story000.rpf	0x18695010	struct	848	2	0	5			
-story000.rpf	0x193f8010	struct	14256	2	0	5			
-story000.rpf	0x19f68010	struct	3728	2	0	5			
-story000.rpf	0x1b212750	struct	976	2	0	5			
-story000.rpf	0x1be325c0	struct	1584	0	6	8			
-story000.rpf	0x1ce5b4b0	struct	960	2	0	5			
-story000.rpf	0x1e0ad260	struct	960	2	0	5			
-story000.rpf	0x1ec36010	struct	1312	2	0	5			
-story000.rpf	0x1f82b010	struct	32192	2	0	5			
-story000.rpf	0x2068d7b0	struct	1120	2	0	5			
-story000.rpf	0x21408010	struct	65536	2	0	5			
-story000.rpf	0x22df1010	struct	32384	2	0	5			
-story000.rpf	0x23ef2010	struct	30400	2	0	5			
-story000.rpf	0x24d30010	struct	40864	2	0	5			
-story000.rpf	0x25c71010	struct	864	2	0	5			
-story000.rpf	0x26e8a010	struct	131072	2	0	5			
-story000.rpf	0x27e00740	struct	1024	2	0	5			
-story000.rpf	0x2988a010	struct	10496	2	0	5			
-story000.rpf	0x2a85b010	struct	196608	2	0	5			
-story000.rpf	0x2bfd6010	struct	63264	2	0	5			
-story000.rpf	0x2ebb6010	struct	12000	2	0	5			
-story000.rpf	0x2fc0a010	struct	196608	2	0	5			
-story000.rpf	0x30a81010	struct	196608	2	0	5			
-story000.rpf	0x31c73010	struct	786432	2	0	5			
-story000.rpf	0x333aa010	struct	9280	2	0	5			
-story000.rpf	0x34067370	struct	976	2	0	5			
-story000.rpf	0x34a6e010	struct	65536	1	0	5			
-story000.rpf	0x35c70010	struct	6544	2	0	5			
-story000.rpf	0x378e2010	struct	196608	2	0	5			
-story000.rpf	0x384e8010	struct	65536	2	0	5			
-story000.rpf	0x394d2010	struct	131072	2	0	5			
-story000.rpf	0x3a5ca010	struct	9920	2	0	5			
-story000.rpf	0x3b55b010	struct	131072	0	0	5			
-story000.rpf	0x3c333010	struct	4384	2	0	5			
-story000.rpf	0x3da4b010	struct	262144	2	0	5			
-story000.rpf	0x3fcd5010	struct	58080	2	0	5			
-story000.rpf	0x41192010	struct	393216	2	0	5			
-story000.rpf	0x42cd14a0	struct	704	2	0	5			
-story000.rpf	0x44d9f010	struct	736	2	0	5			
-story000.rpf	0x45e45010	struct	6560	2	0	5			
-story000.rpf	0x477b7010	struct	1392	2	0	5			
-story000.rpf	0x48afa010	struct	14080	2	0	5			
-story000.rpf	0x49ec9010	struct	524288	2	0	5			
-story000.rpf	0x4b3cc010	struct	2848	2	0	5			
-story000.rpf	0x4c285010	struct	55024	2	0	5			
-story000.rpf	0x4c7b3130	struct	720	2	0	5			
-story000.rpf	0x4dd49540	struct	1024	2	0	5			
-story000.rpf	0x4f36a010	struct	10480	2	0	5			
-story000.rpf	0x5040b670	struct	992	2	0	5			
-story000.rpf	0x511f4010	struct	2960	2	0	5			
-story000.rpf	0x52779010	struct	11648	2	0	5			
-story000.rpf	0x54439010	struct	4256	2	0	5			
-story000.rpf	0x55bfe010	struct	4080	2	0	5			
-story000.rpf	0x57289010	struct	196608	2	0	5			
-story000.rpf	0x59a24010	struct	16960	2	0	5			
-story000.rpf	0x5c8c4950	struct	752	2	0	5			
-story000.rpf	0x5e105010	struct	8960	2	0	5			
-story000.rpf	0x5f873010	struct	131072	0	0	5			
-story000.rpf	0x609c8010	struct	196608	2	0	5			
-story000.rpf	0x61347670	struct	1072	2	0	5			
-story000.rpf	0x61cb3010	struct	60640	2	0	5			
-story000.rpf	0x62db6010	struct	720	2	0	5			
-story000.rpf	0x650fc010	struct	16096	2	0	5			
-story000.rpf	0x661f07d0	struct	880	2	0	5			
-story000.rpf	0x676ce6f0	struct	1072	2	0	5			
-story000.rpf	0x693b2010	struct	131072	2	0	5			
-story000.rpf	0x69d18010	struct	1184	2	0	5			
-story000.rpf	0x6a92a630	struct	704	2	0	5			
-story000.rpf	0x6ba1b010	struct	131072	2	0	5			
-story000.rpf	0x6c892050	struct	24432	0	0	5			
-story000.rpf	0x6d59a010	struct	196608	0	0	5			
-story000.rpf	0x6e47a8c0	struct	720	2	0	5			
-story000.rpf	0x6f896010	struct	2848	2	0	5			
-story000.rpf	0x71cf8010	struct	196608	2	0	5			
-story000.rpf	0x72bae010	struct	20144	2	0	5			
-story000.rpf	0x7474b010	struct	17360	2	0	5			
-story000.rpf	0x75847010	struct	2944	0	3	8			
-story000.rpf	0x77503010	struct	56400	2	0	5			
-story000.rpf	0x7a4fe010	struct	327680	2	0	5			
-story000.rpf	0x7bf4d010	struct	43760	2	0	5			
-story000.rpf	0x7f298550	struct	864	2	0	5			
-story000.rpf	0x802ed490	struct	704	2	0	5			
-story000.rpf	0x8141c010	struct	917504	0	0	5			
-story000.rpf	0x84371010	struct	65536	4	0	5			
-story000.rpf	0x848ee010	struct	65536	3	0	5			
-story000.rpf	0x85803010	struct	65536	3	0	5			
-story000.rpf	0x85d69320	struct	62096	0	3	8			
-story000.rpf	0x862ad010	struct	131072	4	0	5			
-story000.rpf	0x867e8010	struct	393216	4	0	5			
-story000.rpf	0x87173010	struct	65536	3	0	5			
-story000.rpf	0x8764b010	struct	65536	2	0	5			
-story000.rpf	0x88644010	struct	18800	2	0	5			
-story000.rpf	0x898ec010	struct	42640	2	0	5			
-story000.rpf	0x8acdd010	struct	65536	0	0	5			
-story000.rpf	0x8d746010	struct	63968	2	0	5			
-story000.rpf	0x8ed7c010	struct	786432	0	0	5			
-story000.rpf	0x95f19010	struct	65536	0	0	5			
-story000.rpf	0x9b8d1e40	struct	32800	0	2	10			
-story000.rpf	0x9cee5010	struct	8720	2	0	5			
-story000.rpf	0x9d5a1010	struct	5472	2	0	5			
-story000.rpf	0x9e081010	struct	65536	0	0	5			
-story000.rpf	0x9e9d2010	struct	9408	2	0	5			
-story000.rpf	0x9faaa010	struct	38080	2	0	5			
-story000.rpf	0xa67b7010	struct	196608	0	0	5			
-story000.rpf	0xad9b2140	struct	63968	0	5	10			
-story000.rpf	0xb1a9e010	struct	327680	0	3	10			
-story000.rpf	0xd941d010	struct	393216	1	0	5			
-story000.rpf	0xea410010	struct	4849664	0	0	5			
-story000.rpf	0xf3d15010	struct	3866624	0	0	5			
-story000.rpf	0x10b315010	struct	131072	0	0	5			
-story000.rpf	0x356280860	struct	65536	0	4	9			
-story000.rpf	0x357ac0010	struct	3136	2	0	5			
-story000.rpf	0x357d4a010	struct	7168	2	0	5			
-story000.rpf	0x358057010	struct	3200	2	0	5			
-story000.rpf	0x358274010	struct	63936	2	0	5			
-story000.rpf	0x35850b010	struct	11072	2	0	5			
-story000.rpf	0x358760010	struct	13552	2	0	5			
-story000.rpf	0x358a2f010	struct	1456	2	0	5			
-story000.rpf	0x358c6c010	struct	1184	2	0	5			
-story000.rpf	0x358f0f010	struct	1328	2	0	5			
-story000.rpf	0x35924e010	struct	11360	2	0	5			
-story000.rpf	0x3594371c0	struct	1120	2	0	5			
-story000.rpf	0x3596e0010	struct	27360	2	0	5			
-story000.rpf	0x359952010	struct	11552	2	0	5			
-story000.rpf	0x359c4f010	struct	3792	2	0	5			
-story000.rpf	0x359e9d010	struct	1632	2	0	5			
-story000.rpf	0x35a0f70d0	struct	1776	2	0	5			
-story000.rpf	0x35a41b010	struct	46736	2	0	5			
-story000.rpf	0x35a60e010	struct	19168	2	0	5			
-story000.rpf	0x35a87b010	struct	32496	2	0	5			
-story000.rpf	0x35ab16010	struct	17104	2	0	5			
-story000.rpf	0x35ae0d010	struct	25792	2	0	5			
-story000.rpf	0x35b065010	struct	38064	2	0	5			
-story000.rpf	0x35b2c2010	struct	3584	2	0	5			
-story000.rpf	0x35b519010	struct	28032	2	0	5			
-story000.rpf	0x35b7ac010	struct	13056	2	0	5			
-story000.rpf	0x35b9f3010	struct	65040	2	0	5			
-story000.rpf	0x35bc6f010	struct	1184	2	0	5			
-story000.rpf	0x35bf44410	struct	2032	2	0	5			
-story000.rpf	0x35c132010	struct	26160	2	0	5			
-story000.rpf	0x35c3eb010	struct	9712	2	0	5			
-story000.rpf	0x35c653010	struct	9680	2	0	5			
-story000.rpf	0x35c948010	struct	8144	2	0	5			
-story000.rpf	0x35cb7c020	struct	1200	2	0	5			
-story000.rpf	0x35cdec010	struct	12800	2	0	5			
-story000.rpf	0x35d137010	struct	4784	2	0	5			
-story000.rpf	0x35d316010	struct	42992	2	0	5			
-story000.rpf	0x35d590010	struct	3552	2	0	5			
-story000.rpf	0x35d809010	struct	5968	2	0	5			
-story000.rpf	0x35db0c010	struct	1424	2	0	5			
-story000.rpf	0x35dd63010	struct	12208	2	0	5			
-story000.rpf	0x35dfee010	struct	7952	2	0	5			
-story000.rpf	0x35e548010	struct	1984	2	0	5			
-story000.rpf	0x35e7c1010	struct	5632	2	0	5			
-story000.rpf	0x35ea55010	struct	13824	2	0	5			
-story000.rpf	0x35ed76010	struct	10368	2	0	5			
-story000.rpf	0x36021c010	struct	4336	2	0	5			
-story000.rpf	0x361553010	struct	8048	3	0	5			
-story000.rpf	0x3620ee010	struct	13776	3	0	5			
-story000.rpf	0x362dfb010	struct	5840	4	0	5			
-story000.rpf	0x363b5a010	struct	7040	3	0	5			
-story000.rpf	0x3640e0010	struct	5264	2	0	5			
-story000.rpf	0x364874010	struct	5824	4	0	5			
-story000.rpf	0x364efa010	struct	3888	1	0	5			
-story000.rpf	0x3674bfc50	struct	1441792	0	8	9			
-story000.rpf	0x36dad3ea0	struct	1900544	0	8	7			
-story000.rpf	0x372a96010	struct	42864	2	0	5			
-story000.rpf	0x373e9f010	struct	55600	2	0	5			
-story000.rpf	0x376e24b60	struct	393216	0	8	8			
-story000.rpf	0x37a84a010	struct	5840	4	0	5			
-story000.rpf	0x37b0ea010	struct	21344	4	0	5			
-story000.rpf	0x37be8ad10	struct	196608	0	8	7			
-story000.rpf	0x37f2c6d90	struct	196608	0	0	5			
-story000.rpf	0x38036b010	struct	131072	1	0	5			
-story000.rpf	0x387e80ae0	struct	917504	0	8	8			
-story000.rpf	0x38a02e5e0	struct	19088	0	6	10			
-story000.rpf	0x3924d0010	struct	15664	3	0	5			
-story000.rpf	0x3935b6010	struct	6144	4	0	5			
-story000.rpf	0x3946fc010	struct	16368	3	0	5			
-story000.rpf	0x395380010	struct	10736	3	0	5			
-story000.rpf	0x39c94a180	struct	50912	0	1	6			
-story000.rpf	0x3b1a0f010	struct	49104	2	0	5			
-story000.rpf	0x3b297bd70	struct	31568	0	0	5			
-story000.rpf	0x3b4f31980	struct	14320	0	2	9			
-story000.rpf	0x3b56c0010	struct	8048	3	0	5			
-story000.rpf	0x3b5f08010	struct	5856	4	0	5			
-story000.rpf	0x3b6972010	struct	17488	2	0	5			
-story000.rpf	0x3b9234640	struct	196608	0	3	10			
-story000.rpf	0x3bbae6b20	struct	196608	0	2	8			
-story000.rpf	0x3bc891010	struct	58192	2	0	5			
-story000.rpf	0x3bf9ed010	struct	16016	2	0	5			
-story000.rpf	0x3cc109010	struct	720896	2	0	5			
-story000.rpf	0x3d60dd010	struct	851968	3	0	5			
-story000.rpf	0x3e0166010	struct	65536	3	0	5			
-story000.rpf	0x3e256a010	struct	3728	2	0	5			
-story000.rpf	0x3e26cd400	struct	2368	2	0	5			
-story000.rpf	0x3e27dd010	struct	4688	2	0	5			
-story000.rpf	0x3e2910010	struct	11408	2	0	5			
-story000.rpf	0x3e2a5b010	struct	3408	2	0	5			
-story000.rpf	0x3e2c07010	struct	4368	2	0	5			
+core_bvh4.rpf	0x7bd4390	bvh4	208	5	1	6	768	256	512
+core_bvh4.rpf	0xfa85010	bvh4	208	5	1	6	9216	512	256
+core_bvh4.rpf	0x17fd3010	bvh4	208	5	1	6	2560	640	2048
+core_bvh4.rpf	0x1fd2a010	bvh4	208	5	1	6	2849536	3840	1536
+core_bvh4.rpf	0x3a4ab010	bvh4	208	5	1	6	221696	1344	768
+core_bvh4.rpf	0x51cb8010	struct	256	5	1	6			
+core_bvh4.rpf	0x5a229010	bvh4	208	5	1	6	78336	320	512
+core_bvh4.rpf	0x62aa2010	bvh4	208	5	1	6	764160	2880	5120
+core_bvh4.rpf	0x7dba5010	bvh4	208	5	1	6	884480	7424	1792
+core_bvh4.rpf	0x98766010	bvh4	208	5	1	6	3412224	3840	6144
+core_bvh4.rpf	0xab0b3010	bvh4	208	5	1	6	1455872	2176	5632
+core_bvh4.rpf	0xb0c57010	bvh4	208	5	1	6	1269760	1856	3328
+core_bvh4.rpf	0xb75a5010	bvh4	208	5	1	6	400128	1024	2560
+core_bvh4.rpf	0xbf0e2010	bvh4	208	5	1	6	485120	4352	3584
+core_bvh4.rpf	0xd68ad400	struct	1568	8	0	5			
+core_bvh4.rpf	0xdd2de010	bvh4	208	5	1	6	28160	320	3072
+core_bvh4.rpf	0xf2453010	bvh4	208	5	1	6	275456	4672	3584
+core_bvh4.rpf	0xfbacb760	bvh4	208	5	1	6	1536	384	1024
+core_bvh4.rpf	0xfd1a2010	bvh4	208	5	1	6	2816	256	1024
+core_bvh4.rpf	0xfe548320	bvh4	208	5	1	6	1792	256	1280
+core_bvh4.rpf	0xff23a010	bvh4	208	5	1	6	5376	320	512
+core_bvh4.rpf	0x1002c6010	bvh4	208	5	1	6	6656	256	768
+core_bvh4.rpf	0x100b991a0	struct	448	3	0	5			
+core_bvh4.rpf	0x1170bf010	bvh4	208	5	1	6	277248	15872	3584
+core_bvh4.rpf	0x12047abe0	struct	272	3	0	5			
+core_bvh4.rpf	0x1271a1010	bvh4	208	5	1	6	3792896	3328	3072
+core_bvh4.rpf	0x12ea41010	bvh4	208	5	1	6	47104	256	2048
+core_bvh4.rpf	0x134499010	bvh4	208	5	1	6	85248	256	2304
+core_bvh4.rpf	0x1388bf010	bvh4	208	5	1	6	16896	256	2048
+core_bvh4.rpf	0x13cfeb010	bvh4	208	5	1	6	710656	24832	2304
+core_bvh4.rpf	0x14e1f1010	bvh4	208	5	1	6	44032	256	2304
+core_bvh4.rpf	0x15860a010	bvh4	208	5	1	6	33024	256	1536
+core_bvh4.rpf	0x15d1c2010	bvh4	208	5	1	6	17664	256	3840
+core_bvh4.rpf	0x167032010	bvh4	208	5	1	6	177408	256	2560
+core_bvh4.rpf	0x1803ae010	bvh4	208	5	1	6	49920	256	5120
+core_bvh4.rpf	0x183441010	bvh4	208	5	1	6	12800	256	3072
+core_bvh4.rpf	0x18db9f010	bvh4	208	5	1	6	746752	5632	3328
+core_bvh4.rpf	0x190829010	bvh4	208	5	1	6	39424	256	2304
+core_bvh4.rpf	0x1935f4010	bvh4	208	5	1	6	129024	256	3328
+core_bvh4.rpf	0x1a5a407a0	struct	272	3	0	5			
+core_bvh4.rpf	0x1ab21a010	bvh4	208	5	1	6	105216	2304	2048
+core_bvh4.rpf	0x1b1d2d010	bvh4	208	5	1	6	791808	27392	8448
+core_bvh4.rpf	0x1b8656010	bvh4	208	5	1	6	263936	11776	3072
+core_bvh4.rpf	0x1bc2d2010	bvh4	208	5	1	6	28416	256	2560
+core_bvh4.rpf	0x1be5ca010	bvh4	208	5	1	6	36096	256	4352
+core_bvh4.rpf	0x1c917b440	bvh4	208	5	1	6	1024	384	1280
+core_bvh4.rpf	0x1cc294010	bvh4	208	5	1	6	43008	768	3648
+core_bvh4.rpf	0x1d05b6010	bvh4	208	5	1	6	126976	256	4160
+core_bvh4.rpf	0x1d2e18010	bvh4	208	5	1	6	2304	256	768
+core_bvh4.rpf	0x1d5e16010	bvh4	208	5	1	6	2560	320	1536
+core_bvh4.rpf	0x1d8274010	bvh4	208	5	1	6	16128	256	2112
+core_bvh4.rpf	0x1e5786010	bvh4	208	5	1	6	8448	256	1024
+core_licenses_data.rpf	0x3000	struct	763	0	2	7			
+core_licenses_data.rpf	0x31a0	struct	455	0	2	7			
+core_licenses_data.rpf	0x32b0	struct	786	0	2	7			
+core_restofworld.rpf	0x5a010	struct	288	2	0	5			
+core_restofworld.rpf	0x49f010	struct	432	3	0	5			
+core_restofworld.rpf	0x6dd010	struct	432	3	0	5			
+core_restofworld.rpf	0x7b7010	struct	432	3	0	5			
+core_restofworld.rpf	0x7dc010	struct	432	3	0	5			
+core_restofworld.rpf	0xaae010	struct	2768	3	0	5			
+core_restofworld.rpf	0xb0c010	struct	3520	3	0	5			
+core_restofworld.rpf	0xb2ba40	struct	14224	0	1	10			
+core_restofworld.rpf	0xb48010	struct	3872	2	0	5			
+core_restofworld.rpf	0xc79010	struct	2704	3	0	5			
+core_restofworld.rpf	0xcb7010	struct	3440	3	0	5			
+core_restofworld.rpf	0xcef010	struct	23648	2	0	5			
+core_restofworld.rpf	0xd80010	struct	5872	3	0	5			
+core_restofworld.rpf	0xdd5010	struct	3376	3	0	5			
+core_restofworld.rpf	0xe50010	struct	3408	3	0	5			
+core_restofworld.rpf	0xebc010	struct	4352	2	0	5			
+core_restofworld.rpf	0xf2a010	struct	6384	3	0	5			
+core_restofworld.rpf	0xfa4490	struct	4656	0	2	10			
+core_restofworld.rpf	0x1052010	struct	3360	3	0	5			
+core_restofworld.rpf	0x10af010	struct	3472	3	0	5			
+core_restofworld.rpf	0x113a010	struct	4464	2	0	5			
+core_restofworld.rpf	0x1195010	struct	3472	3	0	5			
+core_restofworld.rpf	0x11eb010	struct	18048	3	0	5			
+core_restofworld.rpf	0x1246010	struct	4496	2	0	5			
+core_restofworld.rpf	0x12a1010	struct	5936	3	0	5			
+core_restofworld.rpf	0x12bf5b0	struct	48848	0	3	9			
+core_restofworld.rpf	0x12f7010	struct	4384	2	0	5			
+core_restofworld.rpf	0x1384010	struct	22688	3	0	5			
+core_restofworld.rpf	0x13cb010	struct	3424	3	0	5			
+core_restofworld.rpf	0x1440010	struct	8944	2	0	5			
+core_restofworld.rpf	0x1497010	struct	3424	3	0	5			
+core_restofworld.rpf	0x14fa010	struct	5936	3	0	5			
+core_restofworld.rpf	0x155e010	struct	8080	3	0	5			
+core_restofworld.rpf	0x15b6010	struct	4320	2	0	5			
+core_restofworld.rpf	0x1645010	struct	29104	3	0	5			
+core_restofworld.rpf	0x16e1010	struct	6432	3	0	5			
+core_restofworld.rpf	0x17d2010	struct	3456	3	0	5			
+core_restofworld.rpf	0x183a010	struct	3408	3	0	5			
+core_restofworld.rpf	0x1b59010	struct	4400	2	0	5			
+core_restofworld.rpf	0x1d7e010	struct	6480	3	0	5			
+core_restofworld.rpf	0x1dfa010	struct	3360	3	0	5			
+core_restofworld.rpf	0x1e055b0	struct	5088	0	2	8			
+core_restofworld.rpf	0x1e11010	struct	3456	3	0	5			
+core_restofworld.rpf	0x1e31010	struct	3408	3	0	5			
+core_restofworld.rpf	0x1e51010	struct	3408	3	0	5			
+core_restofworld.rpf	0x2073010	struct	7632	2	1	8			
+core_restofworld.rpf	0x2358010	struct	7248	2	1	8			
+core_restofworld.rpf	0x25836a0	struct	1024	0	3	10			
+core_restofworld.rpf	0x264f010	struct	9792	2	0	5			
+core_restofworld.rpf	0x2879010	struct	2688	2	0	5			
+core_restofworld.rpf	0x2a15010	struct	14000	4	0	5			
+core_restofworld.rpf	0x3041010	struct	12224	5	0	5			
+core_restofworld001.rpf	0x2010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x8010	struct	65536	2	0	5			
+core_restofworld001.rpf	0xd010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x15010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x1d010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x24010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x2c010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x34010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x3c010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x44010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x4c010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x55010	struct	65536	2	0	5			
+core_restofworld001.rpf	0x5e010	struct	65536	1	0	5			
+core_restofworld001.rpf	0x6b010	struct	65536	0	0	5			
+core_restofworld001.rpf	0x74010	struct	65536	1	0	5			
+core_restofworld001.rpf	0x7bdb0	struct	624	0	1	6			
+core_restofworld001.rpf	0x7c010	struct	65536	0	0	5			
+core_restofworld001.rpf	0x87010	struct	65536	0	0	5			
+core_restofworld001.rpf	0x91010	struct	131072	2	0	5			
+core_restofworld001.rpf	0xa1010	struct	65536	0	0	5			
+core_restofworld001.rpf	0xa9710	struct	1840	0	0	5			
+core_restofworld001.rpf	0xaa010	struct	65536	0	0	5			
+core_restofworld001.rpf	0xb3010	struct	65536	2	0	5			
+core_restofworld001.rpf	0xbb010	struct	65536	2	0	5			
+core_restofworld001.rpf	0xc0b30	struct	777	0	2	7			
+core_restofworld001.rpf	0xc1000	struct	961	0	2	7			
+core_restofworld001.rpf	0xc11c0	struct	638	0	2	7			
+core_restofworld001.rpf	0xc12f0	struct	859	0	2	7			
+data.rpf	0x12330	struct	1288	0	2	7			
+data.rpf	0x810000	struct	9260	0	2	7			
+data.rpf	0xb0a010	struct	327680	4	0	5			
+data.rpf	0xf85010	struct	65536	0	0	5			
+data.rpf	0x138a010	struct	24672	2	0	5			
+data.rpf	0x16e0010	struct	22960	0	4	7			
+data.rpf	0x196d010	struct	3888	2	0	5			
+data.rpf	0x1b56190	struct	1664	2	0	5			
+data.rpf	0x1e0b010	struct	23488	2	0	5			
+data.rpf	0x2183010	struct	25008	2	0	5			
+data.rpf	0x240b750	struct	1808	2	0	5			
+data.rpf	0x2608320	struct	1232	2	0	5			
+data.rpf	0x28f8010	struct	30960	2	0	5			
+data.rpf	0x2c74010	struct	25840	2	0	5			
+data.rpf	0x2eea690	struct	1840	2	0	5			
+data.rpf	0x30e1010	struct	2640	2	0	5			
+data.rpf	0x340b010	struct	25536	2	0	5			
+data.rpf	0x3785010	struct	40720	2	0	5			
+data.rpf	0x39da010	struct	1648	2	0	5			
+data.rpf	0x3bcd310	struct	1296	2	0	5			
+data.rpf	0x3f04010	struct	41104	2	0	5			
+data.rpf	0x4263010	struct	26544	1	4	7			
+data.rpf	0x4481170	struct	1088	2	0	5			
+data.rpf	0x4680260	struct	1104	2	0	5			
+data.rpf	0x49fd010	struct	40816	2	0	5			
+data.rpf	0x4d60010	struct	30400	2	0	5			
+data.rpf	0x4f67010	struct	6064	2	0	5			
+data.rpf	0x5162010	struct	2512	2	0	5			
+data.rpf	0x54d7010	struct	37808	2	0	5			
+data.rpf	0x581f010	struct	32080	2	0	5			
+data.rpf	0x59f6350	struct	1472	2	0	5			
+data.rpf	0x5be5010	struct	2816	2	0	5			
+data.rpf	0x5f48010	struct	32960	2	0	5			
+data.rpf	0x6278010	struct	49792	2	0	5			
+data.rpf	0x642d010	struct	3312	2	0	5			
+data.rpf	0x6634010	struct	3056	2	0	5			
+data.rpf	0x6a12010	struct	32768	2	0	5			
+data.rpf	0x6d90010	struct	34416	2	0	5			
+data.rpf	0x6f41400	struct	1136	2	0	5			
+data.rpf	0x7142160	struct	1200	2	0	5			
+data.rpf	0x7536010	struct	27120	2	0	5			
+data.rpf	0x789c010	struct	46784	2	0	5			
+data.rpf	0x7a14380	struct	1968	2	0	5			
+data.rpf	0x7c97010	struct	1088	2	0	5			
+data.rpf	0x8011010	struct	28064	2	0	5			
+data.rpf	0x8379010	struct	10784	2	0	5			
+data.rpf	0x84de4a0	struct	1536	2	0	5			
+data.rpf	0x877a010	struct	1072	2	0	5			
+data.rpf	0x8b2e010	struct	36720	2	0	5			
+data.rpf	0x8ec0010	struct	12032	2	0	5			
+data.rpf	0x9034220	struct	1088	2	0	5			
+data.rpf	0x9313620	struct	1120	2	0	5			
+data.rpf	0x96cf010	struct	32112	2	0	5			
+data.rpf	0x9a2e010	struct	24080	2	0	5			
+data.rpf	0x9b74550	struct	1072	2	0	5			
+data.rpf	0x9e2c000	struct	38864	0	2	7			
+data.rpf	0x9fb2000	struct	15200	0	2	7			
+data.rpf	0xa0e1000	struct	4224	0	2	7			
+data.rpf	0xa315000	struct	3552	0	3	10			
+data.rpf	0x11df41d0	struct	1118	0	2	7			
+data.rpf	0x11fb3000	struct	4977	0	3	8			
+data.rpf	0x126936d0	struct	49008	0	2	6			
+data.rpf	0x134d0010	struct	4000	3	0	5			
+data.rpf	0x13753010	struct	4880	3	0	5			
+data.rpf	0x13a57010	struct	4848	3	0	5			
+data.rpf	0x13f31010	struct	5088	3	1	8			
+data.rpf	0x14252610	struct	65536	0	2	8			
+data.rpf	0x1446b670	struct	131072	0	16	8			
+data.rpf	0x14dab010	struct	10464	5	0	5			
+data.rpf	0x16243010	struct	5168	5	0	5			
+data.rpf	0x17929010	struct	9408	5	0	5			
+data.rpf	0x18090010	struct	8272	5	0	5			
+data.rpf	0x19505010	struct	12096	5	0	5			
+data.rpf	0x19cda010	struct	12656	5	0	5			
+data.rpf	0x1a2c9010	struct	31728	2	0	5			
+data.rpf	0x1a3ca460	struct	2368	2	0	5			
+data.rpf	0x1a4e1010	struct	7328	2	0	5			
+data.rpf	0x1a5c6010	struct	3648	2	0	5			
+data.rpf	0x1a6e7010	struct	7728	2	0	5			
 levels.rpf	0x1d000	struct	6928	0	2	7			
-levels.rpf	0x71fc4010	struct	4259840	2	0	5			
-levels.rpf	0xd6021010	struct	4194304	2	0	5			
-levels.rpf	0x115da9010	struct	27600	2	0	5			
-levels.rpf	0x1277ce010	struct	18848	2	0	5			
-levels.rpf	0x131769010	struct	65536	2	0	5			
-levels.rpf	0x13725d010	struct	7344	2	0	5			
-levels.rpf	0x143de96b0	struct	60816	0	2	9			
-levels.rpf	0x157876010	struct	26512	2	0	5			
-levels.rpf	0x1636ce010	struct	5168	2	0	5			
-levels.rpf	0x17b83c010	struct	41328	2	0	5			
-levels.rpf	0x182941010	struct	65536	0	0	5			
-levels.rpf	0x188dbb010	struct	2704	2	0	5			
-levels.rpf	0x19787b010	struct	42240	2	0	5			
-levels.rpf	0x19e01c010	struct	2688	2	1	8			
-levels.rpf	0x1a5ef1010	struct	9024	2	0	5			
-levels.rpf	0x1ad377010	struct	11552	2	0	5			
-levels.rpf	0x1b4fa6900	struct	8704	0	2	8			
-levels.rpf	0x1bf285010	struct	655360	2	0	5			
-levels.rpf	0x1e11e2010	struct	8544	3	0	5			
-levels.rpf	0x1e42d2010	struct	5568	2	0	5			
-levels.rpf	0x1f28b8010	struct	15040	2	0	5			
-levels.rpf	0x240478010	struct	589824	2	0	5			
-levels.rpf	0x24adf5010	struct	393216	1	0	5			
-levels.rpf	0x27e43f010	struct	65536	0	0	5			
-levels.rpf	0x27f44a010	struct	48160	4	0	5			
-levels.rpf	0x29d9be6b0	struct	21616	0	3	9			
-levels.rpf	0x2c8ada8e0	struct	64	0	2	8			
-levels.rpf	0x2def2a010	struct	19088	2	0	5			
-levels.rpf	0x2fcba0010	struct	11440	3	0	5			
-levels.rpf	0x349f9f010	struct	40688	2	0	5			
-levels.rpf	0x369726010	struct	11936	2	0	5			
-levels.rpf	0x37bfe9010	struct	65536	0	0	5			
-levels.rpf	0x395e69010	struct	29088	2	0	5			
-levels.rpf	0x396f45010	struct	5680	4	0	5			
-levels.rpf	0x3b54ce010	struct	7152	3	0	5			
-levels.rpf	0x3b7285010	struct	2704	2	0	5			
-levels.rpf	0x3dc53b010	struct	5680	4	0	5			
-levels.rpf	0x3dd551010	struct	7056	3	0	5			
-levels.rpf	0x3f753a010	struct	196608	0	0	5			
-levels.rpf	0x408b3d010	struct	3264	2	0	5			
-levels.rpf	0x419955010	struct	5808	4	0	5			
-levels.rpf	0x44cdb1010	struct	65536	1	0	5			
-levels.rpf	0x468945010	struct	4160	2	0	5			
-levels.rpf	0x47a99c010	struct	196608	2	0	5			
-levels.rpf	0x49a2c8010	struct	4144	2	0	5			
-levels.rpf	0x4aa577010	struct	5840	4	0	5			
-levels.rpf	0x4b4339010	struct	7584	3	0	5			
-levels.rpf	0x4ca61b9d0	struct	35840	0	0	5			
-levels.rpf	0x50987b260	struct	458752	0	2	8			
-levels.rpf	0x5103ec010	struct	30352	2	0	5			
-levels.rpf	0x54c15e010	struct	5824	4	0	5			
-levels.rpf	0x55c2f7010	struct	7072	2	0	5			
-levels.rpf	0x57caef010	struct	6096	4	0	5			
-levels.rpf	0x58990a010	struct	48512	2	0	5			
-levels.rpf	0x59ac24010	struct	65536	0	0	5			
-levels.rpf	0x5a8457010	struct	9360	3	0	5			
-levels.rpf	0x5c1ac6010	struct	20400	4	0	5			
-levels.rpf	0x5c714e010	struct	2000	2	0	5			
-levels.rpf	0x5dbb17010	struct	7728	2	0	5			
-levels.rpf	0x5ee06ca90	struct	256	0	2	9			
-levels.rpf	0x5f69e9010	struct	4496	2	0	5			
-levels.rpf	0x5fadff010	struct	5696	4	0	5			
-levels.rpf	0x618920010	struct	65536	0	0	5			
-levels.rpf	0x62b273010	struct	20656	2	0	5			
-levels.rpf	0x631f8d010	struct	5712	4	0	5			
-levels.rpf	0x644018010	struct	5712	4	0	5			
-levels.rpf	0x659332010	struct	7584	3	0	5			
-levels.rpf	0x665db0010	struct	65536	1	0	5			
-levels.rpf	0x6825d4010	struct	9168	2	0	5			
-levels.rpf	0x68c49d010	struct	4176	2	0	5			
-levels.rpf	0x69cee7010	struct	30624	4	0	5			
-levels.rpf	0x6ae493010	struct	59664	2	1	8			
-levels.rpf	0x6cf669010	struct	25296	2	0	5			
-levels.rpf	0x6e9880340	struct	64784	0	2	8			
-levels.rpf	0x6ecdd3010	struct	4176	2	0	5			
-levels.rpf	0x7164af010	struct	5184	2	0	5			
-levels.rpf	0x723e4b010	struct	5680	4	0	5			
-levels.rpf	0x730a1c010	struct	60256	2	0	5			
-levels.rpf	0x7419af010	struct	3024	2	0	5			
-levels.rpf	0x7524d2010	struct	1552	4	0	5			
-levels.rpf	0x75cb95010	struct	3056	3	0	5			
-levels.rpf	0x75df0f2d0	struct	5232	0	5	10			
-levels.rpf	0x7665f98a0	struct	65280	0	2	8			
-levels.rpf	0x799fd3010	struct	65536	1	0	5			
-levels.rpf	0x79e84f010	struct	5872	4	0	5			
-levels.rpf	0x7a3e36010	struct	5680	4	0	5			
-levels.rpf	0x7c1cb3010	struct	393216	2	0	5			
-levels.rpf	0x7cddc2010	struct	5824	4	0	5			
-levels.rpf	0x7ec895c80	struct	655360	0	0	5			
-levels.rpf	0x80a973010	struct	7040	2	0	5			
-levels.rpf	0x82d058fe0	struct	1048576	0	8	10			
-levels.rpf	0x83c9ce7a0	struct	1245184	0	8	9			
-levels.rpf	0x8411f8010	struct	7872	3	0	5			
-levels.rpf	0x84aab3010	struct	57968	2	0	5			
-levels.rpf	0x85c0e1150	struct	983040	0	8	8			
-levels.rpf	0x86b56d010	struct	6480	4	0	5			
-levels.rpf	0x8848e8640	struct	30848	0	1	7			
-levels.rpf	0x889324010	struct	5856	4	0	5			
-levels.rpf	0x8fed35ec0	struct	917504	0	8	8			
-levels.rpf	0x90adcf010	struct	6672	4	0	5			
-levels.rpf	0x94d245010	struct	65536	0	0	5			
-levels.rpf	0x958a5e010	struct	8352	3	0	5			
-levels.rpf	0x9682abd00	struct	196608	0	6	7			
-levels.rpf	0x9b8044010	struct	8000	3	0	5			
-levels.rpf	0x9c674c900	struct	29104	0	2	6			
-levels.rpf	0x9d5e7e010	struct	10112	3	0	5			
-levels.rpf	0x9dd572010	struct	38352	2	0	5			
-levels.rpf	0x9fee10010	struct	8352	3	0	5			
-levels.rpf	0xa0887b010	struct	23664	4	0	5			
-levels.rpf	0xa33df2010	struct	58464	2	0	5			
-levels.rpf	0xa4317e010	struct	5840	4	0	5			
-levels.rpf	0xa4de74440	struct	983040	0	8	7			
-levels.rpf	0xa856f6010	struct	131072	2	0	5			
-levels.rpf	0xaf7114010	struct	11120	3	0	5			
-levels.rpf	0xb118d9050	struct	17392	0	2	9			
-levels.rpf	0xb23738010	struct	8064	3	0	5			
-levels.rpf	0xb2fc7c010	struct	53888	2	0	5			
-levels.rpf	0xb3b9528e0	struct	7904	0	2	8			
-levels.rpf	0xb6f02c010	struct	65536	0	0	5			
-levels.rpf	0xb854d3330	struct	24880	0	2	10			
-levels.rpf	0xbbe2cd010	struct	262144	2	0	5			
-levels.rpf	0xbef8fe010	struct	131072	0	0	5			
-levels.rpf	0xc22f63010	struct	8096	3	0	5			
-levels.rpf	0xc448ed010	struct	65536	0	0	5			
-levels.rpf	0xc88e07010	struct	50592	2	0	5			
-levels.rpf	0xc9f37fbd0	struct	20272	0	3	10			
-levels.rpf	0xcb1d68010	struct	65536	0	0	5			
-levels.rpf	0xce59c3620	struct	34800	0	3	10			
-levels.rpf	0xce9b93010	struct	17696	4	0	5			
-levels.rpf	0xd05e64590	struct	52480	0	5	8			
-levels.rpf	0xd531f4010	struct	7792	3	0	5			
-levels.rpf	0xd60e4f250	struct	524288	0	8	7			
-levels.rpf	0xd78511da0	struct	1703936	0	8	7			
-levels.rpf	0xd9c5093f0	struct	458752	0	9	7			
-levels.rpf	0xdb90ab5e0	struct	41696	0	11	10			
-levels.rpf	0xdc70485f0	struct	48272	0	4	10			
-levels.rpf	0xde6eac2d0	struct	131072	0	1	6			
-levels.rpf	0xe058d7010	struct	57776	2	0	5			
-levels.rpf	0xe0cbde010	struct	8144	4	0	5			
-levels.rpf	0xe2bd918c0	struct	1048576	0	8	8			
-levels.rpf	0xe3b728010	struct	5824	4	0	5			
-levels.rpf	0xe40030c30	struct	16768	0	3	9			
-levels.rpf	0xe5eeb8200	struct	44704	0	5	8			
-levels.rpf	0xeaacf5730	struct	62880	0	9	10			
-levels.rpf	0xec2195010	struct	48288	2	0	5			
-levels.rpf	0xecf8f9010	struct	65536	1	0	5			
-levels.rpf	0xefbc64160	struct	46224	0	8	7			
-levels.rpf	0xf0fdf4010	struct	5888	4	0	5			
-levels.rpf	0xf15d7b820	struct	16480	0	1	6			
-levels.rpf	0xf2cb75370	struct	44736	0	1	6			
-levels.rpf	0xf4ab79010	struct	7552	3	0	5			
-levels.rpf	0xf604a0c70	struct	14544	0	1	6			
-levels.rpf	0xf82a0f240	struct	131072	0	2	7			
-levels.rpf	0xfbb56d010	struct	3072	2	0	5			
-levels.rpf	0xfbc7ac010	struct	5104	2	0	5			
-levels.rpf	0xfc7e6a010	struct	39648	5	0	5			
-levels.rpf	0xfd8bd7010	struct	2832	2	0	5			
-levels.rpf	0xfde86a6b0	struct	393216	0	2	7			
-levels.rpf	0xfe30d8010	struct	3392	2	0	5			
-levels.rpf	0x102a3cb010	struct	19904	5	0	5			
-levels.rpf	0x10450fb010	struct	39472	4	0	5			
-levels.rpf	0x105a69e010	struct	19808	4	0	5			
-levels.rpf	0x106401b010	struct	2832	2	0	5			
-levels.rpf	0x106a206010	struct	65536	1	0	5			
-levels.rpf	0x10702f3010	struct	23152	4	0	5			
-levels.rpf	0x1071264640	struct	13312	0	2	7			
-levels.rpf	0x1071cff010	struct	5088	2	0	5			
-levels.rpf	0x1098cf0010	struct	41936	2	0	5			
-levels.rpf	0x109dd6f010	struct	19072	4	0	5			
-levels.rpf	0x10a313e010	struct	2432	2	0	5			
-levels.rpf	0x10ac0ed010	struct	31904	4	0	5			
-levels.rpf	0x10b3417010	struct	1552	3	0	5			
-levels.rpf	0x10b3ace010	struct	3744	3	0	5			
-levels.rpf	0x10d1647480	struct	196608	0	3	10			
-levels.rpf	0x10d802a010	struct	16624	4	0	5			
-levels.rpf	0x10decde060	struct	16144	0	2	7			
-levels.rpf	0x10e6dcf010	struct	14672	4	0	5			
-levels.rpf	0x10f4309010	struct	18400	4	0	5			
-levels.rpf	0x10ffaa6010	struct	16752	4	0	5			
-levels.rpf	0x11056fdf60	struct	49936	0	4	8			
-levels.rpf	0x110a3f2010	struct	20160	4	0	5			
-levels.rpf	0x11140ec010	struct	21184	2	0	5			
-levels.rpf	0x111da21010	struct	13248	2	0	5			
-levels.rpf	0x112a9d4010	struct	38320	4	0	5			
-levels.rpf	0x1138468010	struct	19968	4	0	5			
-levels.rpf	0x1172d80010	struct	33872	5	0	5			
-levels.rpf	0x1175a78010	struct	13392	4	0	5			
-levels.rpf	0x1184e46010	struct	6224	2	0	5			
-levels.rpf	0x1192ea6010	struct	13248	2	0	5			
-levels.rpf	0x119df86010	struct	12640	4	0	5			
-levels.rpf	0x11a8bdc010	struct	9920	3	0	5			
-levels.rpf	0x11b1776010	struct	10832	3	0	5			
+levels.rpf	0x174019010	struct	34496	2	0	5			
+levels.rpf	0x1ad3ba010	struct	18608	2	0	5			
+levels.rpf	0x20d7bed00	struct	28880	0	2	8			
+levels.rpf	0x23e75a010	struct	7296	3	0	5			
+levels.rpf	0x2692940b0	struct	196608	0	3	6			
+levels.rpf	0x2833f96d0	struct	53648	0	0	5			
+levels.rpf	0x30f1b30f0	struct	458752	0	2	8			
+levels.rpf	0x369db6010	struct	10464	3	1	8			
+levels.rpf	0x396f69010	struct	6288	3	0	5			
+levels.rpf	0x3de446010	struct	13872	3	0	5			
+levels.rpf	0x42009a010	struct	36544	2	0	5			
+levels.rpf	0x4f0dba010	struct	10768	3	0	5			
+levels.rpf	0x5108c3010	struct	11120	3	0	5			
+levels.rpf	0x589cda010	struct	2688	2	0	5			
+levels.rpf	0x5fae56010	struct	10672	3	0	5			
+levels.rpf	0x631ff9010	struct	9616	3	0	5			
+levels.rpf	0x65935b010	struct	5840	4	0	5			
+levels.rpf	0x6817dd010	struct	8016	3	0	5			
+levels.rpf	0x69cf2b010	struct	5840	4	0	5			
+levels.rpf	0x6d02e2010	struct	3280	2	0	5			
+levels.rpf	0x6f88e8010	struct	3952	2	0	5			
+levels.rpf	0x752765010	struct	7744	2	0	5			
+levels.rpf	0x75dfe5010	struct	3136	3	0	5			
+levels.rpf	0x783e12160	struct	589824	0	0	5			
+levels.rpf	0x7a415f010	struct	6848	3	0	5			
+levels.rpf	0x8065b3010	struct	6832	4	0	5			
+levels.rpf	0x86b707010	struct	5744	4	0	5			
+levels.rpf	0x8cae59010	struct	12720	3	0	5			
+levels.rpf	0x90aed6010	struct	29600	2	0	5			
+levels.rpf	0xa43526010	struct	28080	4	0	5			
+levels.rpf	0xaf24d6570	struct	29264	0	1	6			
+levels.rpf	0xb238ce010	struct	8048	3	0	5			
+levels.rpf	0xb4f6aa010	struct	5712	4	0	5			
+levels.rpf	0xc13e2cad0	struct	61664	0	1	6			
+levels.rpf	0xc65095010	struct	131072	0	0	5			
+levels.rpf	0xcccbfa010	struct	65536	1	0	5			
+levels.rpf	0xcf0b00010	struct	131072	1	0	5			
+levels.rpf	0xd2887f010	struct	5840	4	0	5			
+levels.rpf	0xd53504010	struct	6752	4	0	5			
+levels.rpf	0xd87ff3010	struct	5840	4	0	5			
+levels.rpf	0xe10e82010	struct	7648	3	0	5			
+levels.rpf	0xe402ea010	struct	34304	2	0	5			
+levels.rpf	0xe77cb1010	struct	7136	3	0	5			
+levels.rpf	0xea0cbe010	struct	7200	3	0	5			
+levels.rpf	0xed04c4ac0	struct	59616	0	5	8			
+levels.rpf	0xf1ff71010	struct	131072	2	0	5			
+levels.rpf	0xfe34b6010	struct	5152	2	0	5			
+levels.rpf	0x1011998010	struct	65536	5	0	5			
+levels.rpf	0x10303ac010	struct	5632	4	0	5			
+levels.rpf	0x10457de010	struct	28272	4	0	5			
+levels.rpf	0x1064d4b010	struct	10784	2	0	5			
+levels.rpf	0x1071dd4010	struct	9152	2	0	5			
+levels.rpf	0x1098ed1010	struct	15888	2	0	5			
+levels.rpf	0x10ad0f3010	struct	131072	3	0	5			
+levels.rpf	0x10e70e2010	struct	13776	4	0	5			
+levels.rpf	0x112b001010	struct	524288	5	0	5			
+navmeshes.rpf	0x37010	struct	19088	2	0	5			
+navmeshes.rpf	0x298f010	struct	393216	2	0	5			
+navmeshes.rpf	0x532e010	struct	53312	2	0	5			
+navmeshes.rpf	0x7fd8010	struct	262144	2	0	5			
+navmeshes.rpf	0xe79a010	struct	983040	4	0	5			
+navmeshes.rpf	0x11f9b010	struct	327680	2	0	5			
+navmeshes.rpf	0x1571a010	struct	48880	2	0	5			
+navmeshes.rpf	0x1e24c010	struct	60240	2	0	5			
+navmeshes.rpf	0x2854e010	struct	65536	2	0	5			
+navmeshes.rpf	0x2e3e8010	struct	21808	2	0	5			
+navmeshes.rpf	0x2ea88010	struct	29008	2	0	5			
+navmeshes.rpf	0x2feb44d0	struct	1840	0	0	5			
+navmeshes.rpf	0x313de450	struct	1840	0	0	5			
+navmeshes.rpf	0x3294b4e0	struct	1840	0	0	5			
+navmeshes.rpf	0x33e884d0	struct	1840	0	0	5			
+navmeshes.rpf	0x3753a4d0	struct	1840	0	0	5			
+navmeshes.rpf	0x38db5460	struct	1840	0	0	5			
+navmeshes.rpf	0x3ad100f0	struct	22272	0	6	9			
+navmeshes.rpf	0x406ee4d0	struct	1840	0	0	5			
+navmeshes.rpf	0x5b99c480	struct	2000	0	0	5			
+navmeshes.rpf	0x6f6b1440	struct	1840	0	0	5			
+navmeshes.rpf	0x7a1153d0	struct	1840	0	0	5			
+navmeshes.rpf	0x862e74c0	struct	1840	0	0	5			
+navmeshes.rpf	0x9fd184d0	struct	1840	0	0	5			
+navmeshes.rpf	0xc7ed04b0	struct	1840	0	0	5			
+navmeshes.rpf	0xd26cd4c0	struct	1840	0	0	5			
+navmeshes.rpf	0xffc304b0	struct	1840	0	0	5			
+navmeshes.rpf	0x1058474b0	struct	1840	0	0	5			
+navmeshes.rpf	0x10aeaa4b0	struct	1840	0	0	5			
+navmeshes.rpf	0x10e62b4a0	struct	3088	0	0	5			
+navmeshes.rpf	0x111d704d0	struct	1840	0	0	5			
+navmeshes.rpf	0x1174274d0	struct	1840	0	0	5			
+navmeshes.rpf	0x11f39f4b0	struct	1840	0	0	5			
+navmeshes.rpf	0x120ab74d0	struct	1840	0	0	5			
+navmeshes.rpf	0x12205f4e0	struct	1840	0	0	5			
+navmeshes.rpf	0x1235964a0	struct	1840	0	0	5			
+navmeshes.rpf	0x124acd4d0	struct	1840	0	0	5			
+navmeshes.rpf	0x16074a4e0	struct	1840	0	0	5			
+navmeshes.rpf	0x1614444d0	struct	1840	0	0	5			
+navmeshes.rpf	0x174d6b010	struct	2656	3	0	5			
+navmeshes.rpf	0x1750f2010	struct	2656	3	0	5			
+navmeshes.rpf	0x175479010	struct	2656	3	0	5			
+navmeshes.rpf	0x1758a6010	struct	2656	3	0	5			
+navmeshes.rpf	0x176090010	struct	2656	3	0	5			
+navmeshes.rpf	0x176d1d010	struct	19376	3	0	5			
+navmeshes.rpf	0x177ac5010	struct	196608	3	0	5			
+navmeshes.rpf	0x178acf010	struct	131072	3	0	5			
+navmeshes.rpf	0x179a6e010	struct	131072	3	0	5			
+navmeshes.rpf	0x17ac0c010	struct	131072	3	0	5			
+navmeshes.rpf	0x17c029010	struct	196608	3	0	5			
+navmeshes.rpf	0x17d589010	struct	131072	3	0	5			
+navmeshes.rpf	0x17eaeb010	struct	131072	3	0	5			
+navmeshes.rpf	0x1800d7010	struct	131072	3	0	5			
+navmeshes.rpf	0x1816b4010	struct	196608	3	0	5			
+navmeshes.rpf	0x182bee010	struct	131072	3	0	5			
+navmeshes.rpf	0x18406e010	struct	131072	3	0	5			
+navmeshes.rpf	0x185591010	struct	196608	3	0	5			
+navmeshes.rpf	0x186a14010	struct	196608	3	0	5			
+navmeshes.rpf	0x187bb4010	struct	196608	3	0	5			
+navmeshes.rpf	0x188a46010	struct	196608	3	0	5			
+navmeshes.rpf	0x189822010	struct	196608	3	0	5			
+navmeshes.rpf	0x18a3e5010	struct	327680	3	0	5			
+navmeshes.rpf	0x18ad53010	struct	5024	3	0	5			
+navmeshes.rpf	0x18b4bd010	struct	2656	3	0	5			
+navmeshes.rpf	0x18b8c0010	struct	2656	3	0	5			
+navmeshes.rpf	0x18bc47010	struct	2656	3	0	5			
+navmeshes.rpf	0x18c765010	struct	196608	3	0	5			
+navmeshes.rpf	0x18e120010	struct	196608	3	0	5			
+navmeshes.rpf	0x18ebcd010	struct	2656	3	0	5			
+packs.rpf	0x8010	struct	208	2	0	5			
+packs.rpf	0x31bd010	struct	65536	4	0	5			
+packs.rpf	0x932e010	struct	44048	2	0	5			
+packs.rpf	0xb9e3010	struct	3200	3	0	5			
+packs.rpf	0x10e72010	struct	176	2	0	5			
+packs.rpf	0x43f34010	struct	9600	4	0	5			
+packs.rpf	0x4444b010	struct	9600	4	0	5			
+packs.rpf	0x44f12010	struct	23104	4	0	5			
+packs.rpf	0x4a1ee010	struct	34496	2	0	5			
+packs.rpf	0x51322010	struct	3296	3	0	5			
+packs.rpf	0x53320010	struct	5552	3	0	5			
+packs.rpf	0x552a1010	struct	48144	2	0	5			
+packs.rpf	0x57662010	struct	3680	2	0	5			
+packs.rpf	0x5f7b6010	struct	240	2	0	5			
+packs.rpf	0x74f8c010	struct	3072	3	0	5			
+packs.rpf	0x79234010	struct	4112	3	0	5			
+packs.rpf	0x803fb010	struct	240	2	0	5			
+packs.rpf	0x84eeb010	struct	2320	3	0	5			
+packs.rpf	0x890d7010	struct	15744	3	0	5			
+packs.rpf	0x8d496010	struct	2320	3	0	5			
+packs.rpf	0x91634010	struct	14816	2	0	5			
+packs.rpf	0x956be010	struct	3440	2	0	5			
+packs.rpf	0x979c9010	struct	240	2	0	5			
+packs.rpf	0xa497e010	struct	14816	2	0	5			
+packs.rpf	0xa8b3f010	struct	14816	2	0	5			
+packs.rpf	0xacedf010	struct	14816	2	0	5			
+packs.rpf	0xb4309010	struct	240	2	0	5			
+packs.rpf	0xb747c010	struct	64224	3	0	5			
+packs.rpf	0xbc455010	struct	2480	3	0	5			
+packs.rpf	0xccabb010	struct	28544	3	0	5			
+packs.rpf	0xdcbb0010	struct	21792	3	0	5			
+packs.rpf	0xf3485010	struct	19376	3	0	5			
+packs.rpf	0x1125529f0	struct	800	2	0	5			
+packs.rpf	0x11436a010	struct	11008	3	0	5			
+packs.rpf	0x11501e010	struct	13040	3	0	5			
+packs.rpf	0x115d20010	struct	57744	3	1	7			
+packs.rpf	0x11703a010	struct	31104	3	0	5			
+packs.rpf	0x117f53010	struct	31536	3	0	5			
+packs.rpf	0x118e81010	struct	55632	4	0	5			
+packs.rpf	0x119ce1010	struct	29296	3	0	5			
+packs.rpf	0x11ad38010	struct	27728	3	0	5			
+packs.rpf	0x11c82f8e0	struct	944	2	0	5			
+packs.rpf	0x11c8d7470	struct	656	2	0	5			
+packs.rpf	0x11c96c2a0	struct	944	2	0	5			
+packs.rpf	0x11ca01550	struct	800	2	0	5			
+script.rpf	0x1bb000	struct	14208	0	4	10			
+shaders.rpf	0x108e5d20	struct	65536	0	2	8			
+shaders.rpf	0x10b99970	struct	65536	0	3	7			
+shaders.rpf	0x111818a0	struct	65536	0	0	5			
+shaders.rpf	0x118a3ea0	struct	65536	0	2	7			
+shaders.rpf	0x12e44af0	struct	65536	0	3	8			
+shaders.rpf	0x13783440	struct	65536	0	6	7			
+shaders.rpf	0x13f7fbd0	struct	65536	0	2	7			
+shaders.rpf	0x144a3480	struct	65536	0	4	8			
+shaders.rpf	0x14d2fa50	struct	65536	0	2	8			
+shaders.rpf	0x1503fc10	struct	65536	0	2	7			
+shaders.rpf	0x15b3b490	struct	65536	0	5	9			
+shaders.rpf	0x16145de0	struct	65536	0	4	9			
+shaders.rpf	0x16af7ee0	struct	65536	0	4	9			
+shaders.rpf	0x171a45d0	struct	65536	0	2	8			
+shaders.rpf	0x179f4e60	struct	65536	0	2	7			
+shaders.rpf	0x17ddc8f0	struct	65536	0	1	7			
+shaders.rpf	0x17f67b70	struct	65536	0	2	7			
+shaders.rpf	0x182b7d20	struct	65536	0	2	8			
+shaders.rpf	0x184488b0	struct	65536	0	3	9			
+shaders.rpf	0x18600150	struct	65536	0	3	8			
+shared_minigame000.rpf	0x15883010	struct	55600	2	0	5			
+shared_minigame000.rpf	0x1590a010	struct	27200	2	0	5			
+shared_minigame000.rpf	0x16bfe010	struct	16224	2	0	5			
+shared_minigame000.rpf	0x1a7c9010	struct	6000	3	0	5			
+shared_minigame000.rpf	0x1aca4580	struct	65536	0	16	9			
+shared_minigame000.rpf	0x1eb95010	struct	5776	4	0	5			
+shared_minigame000.rpf	0x1ec4b010	struct	5072	2	0	5			
+shared_minigame000.rpf	0x1fa28010	struct	3040	2	0	5			
+shared_minigame000.rpf	0x213aa710	struct	458752	0	2	9			
+shared_minigame000.rpf	0x21d2a010	struct	29264	2	0	5			
+shared_minigame000.rpf	0x23ac5010	struct	131072	2	0	5			
+shared_minigame000.rpf	0x241ca010	struct	2688	2	0	5			
+shared_minigame000.rpf	0x245ad010	struct	50096	2	0	5			
+shared_minigame000.rpf	0x24bd1010	struct	12480	2	0	5			
+shared_minigame000.rpf	0x25fec010	struct	65536	2	0	5			
+shared_minigame000.rpf	0x274ad010	struct	10272	3	0	5			
+shared_minigame000.rpf	0x274e4010	struct	5776	4	0	5			
+shared_minigame000.rpf	0x275c8010	struct	6240	2	0	5			
+shared_minigame000.rpf	0x27648010	struct	6160	4	0	5			
+shared_minigame000.rpf	0x276d2010	struct	4960	2	0	5			
+shared_minigame000.rpf	0x27716010	struct	4448	2	0	5			
+shared_minigame000.rpf	0x27e90010	struct	31760	2	0	5			
+shared_minigame000.rpf	0x2802e010	struct	5792	4	0	5			
+shared_minigame000.rpf	0x2808e980	struct	5088	0	2	10			
+shared_minigame000.rpf	0x281b4010	struct	10880	3	0	5			
+shared_minigame000.rpf	0x28235010	struct	5968	4	0	5			
+shared_minigame000.rpf	0x28329010	struct	8528	3	0	5			
+shared_minigame000.rpf	0x2841d010	struct	7920	3	0	5			
+shared_minigame000.rpf	0x284c2010	struct	5888	4	0	5			
+shared_minigame000.rpf	0x2868e400	struct	65536	0	2	10			
+shared_minigame000.rpf	0x287aa010	struct	65536	2	0	5			
+shared_minigame000.rpf	0x29269010	struct	54352	2	0	5			
+shared_minigame000.rpf	0x29ac8420	struct	1572864	0	8	9			
+shared_minigame000.rpf	0x29f57100	struct	131072	0	5	6			
+shared_minigame000.rpf	0x2a0db010	struct	7616	3	0	5			
+shared_minigame000.rpf	0x2adc1920	struct	6768	0	3	8			
+shared_minigame000.rpf	0x2ae7c010	struct	2544	2	0	5			
+shared_minigame000.rpf	0x2bbd4010	struct	12464	2	0	5			
+shared_minigame000.rpf	0x2c438010	struct	5104	3	0	5			
+shared_minigame000.rpf	0x2c672010	struct	2544	2	0	5			
+shared_minigame000.rpf	0x2e5b4310	struct	28368	0	4	10			
+shared_minigame000.rpf	0x2eef4010	struct	65536	1	0	5			
+shared_minigame000.rpf	0x2f019010	struct	2688	2	0	5			
+shared_minigame000.rpf	0x2f999010	struct	33280	2	0	5			
+shared_minigame000.rpf	0x2fcdb010	struct	12320	3	0	5			
+shared_minigame000.rpf	0x2fd19010	struct	4064	3	0	5			
+shared_minigame000.rpf	0x302cd010	struct	4400	3	0	5			
+shared_minigame000.rpf	0x3038f010	struct	12016	3	0	5			
+shared_minigame000_bvh4.rpf	0x4010	bvh4	208	5	1	6	636672	512	0
+shared_minigame000_bvh4.rpf	0x7e010	bvh4	208	5	1	6	1175296	7744	11776
+shared_minigame000_bvh4.rpf	0x6cd010	bvh4	208	5	1	6	12229632	1792	4096
+shared_minigame000_bvh4.rpf	0xb81010	bvh4	208	5	1	6	303616	1600	512
+shared_minigame000_bvh4.rpf	0xec4010	bvh4	208	5	1	6	1260288	576	4608
+shared_minigame000_bvh4.rpf	0x1008010	bvh4	208	5	1	6	311040	1024	2816
+shared_minigame000_bvh4.rpf	0x10eb290	bvh4	208	5	1	6	768	512	512
+shared_minigame000_bvh4.rpf	0x13ff010	bvh4	208	5	1	6	522752	1280	512
+shared_minigame000_bvh4.rpf	0x150c010	bvh4	208	5	1	6	28928	384	1536
+shared_minigame000_bvh4.rpf	0x16cf010	bvh4	208	5	1	6	1135872	1664	768
+shared_minigame000_bvh4.rpf	0x1a39010	bvh4	208	5	1	6	412928	256	6400
+shared_minigame000_bvh4.rpf	0x1d7f010	bvh4	208	5	1	6	2784000	1088	3584
+shared_minigame000_bvh4.rpf	0x1e9b010	bvh4	208	5	1	6	67584	256	1280
+shared_minigame000_bvh4.rpf	0x1ed3210	bvh4	208	5	1	6	2048	256	768
+shared_minigame000_bvh4.rpf	0x20ef010	bvh4	208	5	1	6	164864	256	2560
+shared_minigame000_bvh4.rpf	0x212e010	bvh4	208	5	1	6	6656	256	1280
+shared_minigame000_bvh4.rpf	0x21d9010	bvh4	208	5	1	6	599040	4928	2304
+shared_minigame000_bvh4.rpf	0x2236010	bvh4	208	5	1	6	23040	384	1024
+shared_minigame000_bvh4.rpf	0x234b010	bvh4	208	5	1	6	23040	320	768
+shared_minigame000_bvh4.rpf	0x246d010	bvh4	208	5	1	6	2560	1408	1024
+shared_minigame000_bvh4.rpf	0x25d5010	bvh4	208	5	1	6	8704	1152	2048
+shared_minigame000_bvh4.rpf	0x261f010	bvh4	208	5	1	6	18688	1536	1536
+shared_minigame000_bvh4.rpf	0x269a010	bvh4	208	5	1	6	168960	1344	2560
+shared_minigame000_bvh4.rpf	0x2830010	bvh4	208	5	1	6	6625536	6144	4352
+shared_minigame000_bvh4.rpf	0x2aab710	bvh4	208	5	1	6	1280	384	1024
+shared_minigame000_bvh4.rpf	0x2c8d010	bvh4	208	5	1	6	16896	256	2048
+shared_minigame000_bvh4.rpf	0x2cb7010	bvh4	208	5	1	6	227328	256	3328
+shared_minigame000_bvh4.rpf	0x2cf2010	bvh4	208	5	1	6	40960	256	2304
+shared_minigame000_bvh4.rpf	0x2d24010	bvh4	208	5	1	6	55808	256	1792
+shared_minigame000_bvh4.rpf	0x2f17010	bvh4	208	5	1	6	2834688	27136	4096
+shared_minigame000_bvh4.rpf	0x3114010	bvh4	208	5	1	6	338176	13568	1792
+shared_minigame000_bvh4.rpf	0x3136010	bvh4	208	5	1	6	12032	256	1536
+shared_minigame000_bvh4.rpf	0x315c010	bvh4	208	5	1	6	39936	256	2304
+shared_minigame000_bvh4.rpf	0x318c010	bvh4	208	5	1	6	461824	12544	2304
+shared_minigame000_bvh4.rpf	0x32e8010	bvh4	208	5	1	6	143872	8192	1792
+shared_minigame000_bvh4.rpf	0x32fe010	bvh4	208	5	1	6	50944	256	3072
+shared_minigame000_bvh4.rpf	0x3322010	bvh4	208	5	1	6	20736	2048	8448
+shared_minigame000_bvh4.rpf	0x3440010	bvh4	208	5	1	6	630016	11776	3072
+shared_minigame000_bvh4.rpf	0x348a010	bvh4	208	5	1	6	372480	256	3072
+shared_minigame000_bvh4.rpf	0x34d7010	bvh4	208	5	1	6	41216	256	1024
+shared_minigame000_bvh4.rpf	0x35f8010	bvh4	208	5	1	6	1979648	12288	2560
+shared_minigame000_bvh4.rpf	0x39676a0	struct	272	3	0	5			
+shared_minigame000_bvh4.rpf	0x3984010	bvh4	208	5	1	6	32000	1024	3840
+shared_minigame000_bvh4.rpf	0x399a430	bvh4	208	5	1	6	768	256	512
+shared_minigame000_bvh4.rpf	0x3a03010	bvh4	208	5	1	6	7680	256	4672
+shared_minigame000_bvh4.rpf	0x3a46010	struct	256	5	1	6			
+shared_minigame000_bvh4.rpf	0x3a5e010	bvh4	208	5	1	6	2816	320	1536
+shared_minigame000_bvh4.rpf	0x3aa3010	bvh4	208	5	1	6	6400	512	576
+shared_minigame000_bvh4.rpf	0x3ab65e0	bvh4	208	5	1	6	768	512	1024
+shared_minigame000_bvh4.rpf	0x3ac8010	bvh4	208	5	1	6	3690240	4352	5440
+story000.rpf	0x12010	struct	65536	4	0	5			
+story000.rpf	0xd97010	struct	65536	1	0	5			
+story000.rpf	0x22fc010	struct	65536	2	0	5			
+story000.rpf	0x2dac010	struct	131072	1	0	5			
+story000.rpf	0x4305010	struct	65536	2	0	5			
+story000.rpf	0x4dc6010	struct	131072	1	0	5			
+story000.rpf	0x5866010	struct	65536	0	0	5			
+story000.rpf	0x6dd0010	struct	65536	0	0	5			
+story000.rpf	0x787b010	struct	65536	0	0	5			
+story000.rpf	0x8dca010	struct	65536	1	0	5			
+story000.rpf	0xaddf010	struct	65536	0	0	5			
+story000.rpf	0xb884010	struct	65536	0	0	5			
+story000.rpf	0xc33a010	struct	131072	0	0	5			
+story000.rpf	0xd8b4010	struct	65536	0	0	5			
+story000.rpf	0xe364010	struct	65536	1	0	5			
+story000.rpf	0x104d4010	struct	64208	2	0	5			
+story000.rpf	0x125af010	struct	23920	2	0	5			
+story000.rpf	0x13826010	struct	131072	3	0	5			
+story000.rpf	0x1573a010	struct	65536	2	0	5			
+story000.rpf	0x1899c010	struct	41952	2	0	5			
+story000.rpf	0x1c355010	struct	65536	0	0	5			
+story000.rpf	0x1f8dc010	struct	7840	0	5	8			
+story000.rpf	0x243984a0	struct	848	2	0	5			
+story000.rpf	0x281062c0	struct	1888	2	0	5			
+story000.rpf	0x2d2da010	struct	24880	2	0	5			
+story000.rpf	0x31096010	struct	7216	2	0	5			
+story000.rpf	0x351fc010	struct	6336	2	0	5			
+story000.rpf	0x39962010	struct	131072	2	0	5			
+story000.rpf	0x3ecaa010	struct	25424	2	0	5			
+story000.rpf	0x45462010	struct	57008	2	0	5			
+story000.rpf	0x4a585010	struct	65536	0	0	5			
+story000.rpf	0x4e556180	struct	816	2	0	5			
+story000.rpf	0x53329010	struct	131072	2	0	5			
+story000.rpf	0x5a2a4010	struct	524288	2	0	5			
+story000.rpf	0x5fd272b0	struct	720	2	0	5			
+story000.rpf	0x637cc010	struct	3488	2	0	5			
+story000.rpf	0x67bf2920	struct	720	2	0	5			
+story000.rpf	0x6b15fa30	struct	704	2	0	5			
+story000.rpf	0x6ebd00f0	struct	1040	2	0	5			
+story000.rpf	0x798c4640	struct	736	2	0	5			
+story000.rpf	0x7f9af280	struct	288	1	0	5			
+story000.rpf	0x845b4010	struct	65536	3	0	5			
+story000.rpf	0x86efa010	struct	131072	4	0	5			
+story000.rpf	0x8902d010	struct	6784	2	0	5			
+story000.rpf	0x93347010	struct	65536	0	0	5			
+story000.rpf	0x9d083010	struct	3280	2	0	5			
+story000.rpf	0xa2be6010	struct	524288	2	0	5			
+story000.rpf	0xc177a5b0	struct	32176	0	2	9			
+story000.rpf	0xf000b010	struct	131072	0	7	10			
+story000.rpf	0x11a35c010	struct	131072	0	3	10			
+story000.rpf	0x357ea4010	struct	65536	3	0	5			
+story000.rpf	0x35895f010	struct	1664	2	0	5			
+story000.rpf	0x359367010	struct	3792	2	0	5			
+story000.rpf	0x359d70310	struct	1168	2	0	5			
+story000.rpf	0x35a7a8010	struct	11552	2	0	5			
+story000.rpf	0x35b19e010	struct	13360	0	7	6			
+story000.rpf	0x35bb87010	struct	6416	2	0	5			
+story000.rpf	0x35c55a010	struct	26544	2	0	5			
+story000.rpf	0x35cf8c010	struct	49584	2	0	5			
+story000.rpf	0x35da60010	struct	10560	2	0	5			
+story000.rpf	0x35e4ad010	struct	11184	0	4	8			
+story000.rpf	0x35eeb1010	struct	5216	2	0	5			
+story000.rpf	0x3646b3010	struct	5728	4	0	5			
+story000.rpf	0x370206010	struct	35136	2	0	5			
+story000.rpf	0x379905d40	struct	36256	0	1	10			
+story000.rpf	0x3932b7010	struct	5680	4	0	5			
+story000.rpf	0x395b0a010	struct	7136	3	0	5			
+story000.rpf	0x3a6fc9010	struct	65536	2	0	5			
+story000.rpf	0x3b1815010	struct	57168	2	0	5			
+story000.rpf	0x3b55f85e0	struct	20064	0	4	10			
+story000.rpf	0x3bed398b0	struct	15632	0	2	9			
+story000.rpf	0x3df59e010	struct	851968	2	0	5			
+story000.rpf	0x3e28e05b0	struct	1568	2	0	5			
+story000_bvh4.rpf	0x340	struct	800	0	2	7			
+story000_bvh4.rpf	0x1000	struct	14426	0	2	7			
+story000_bvh4.rpf	0x12a0	struct	622	0	2	7			
+story000_bvh4.rpf	0x13c0	struct	829	0	2	7			
+story000_restofworld.rpf	0x2010	struct	65536	4	0	5			
+story000_restofworld.rpf	0x4afb0	struct	47520	0	8	8			
+story000_restofworld.rpf	0x111010	struct	65536	0	0	5			
+story000_restofworld.rpf	0x1d0010	struct	655360	0	0	5			
+story000_restofworld.rpf	0x257840	struct	912	2	0	5			
+story000_restofworld.rpf	0x25f620	struct	1872	2	0	5			
+story000_restofworld.rpf	0x271930	struct	928	2	0	5			
+story000_restofworld.rpf	0x298010	struct	1328	0	14	10			
+story000_restofworld.rpf	0x2c5060	struct	2176	2	0	5			
+story000_restofworld.rpf	0x330010	struct	262144	2	0	5			
+story000_restofworld.rpf	0x393010	struct	21616	2	0	5			
+story000_restofworld.rpf	0x409010	struct	196608	2	0	5			
+story000_restofworld.rpf	0x466010	struct	12496	2	0	5			
+story000_restofworld.rpf	0x47c090	struct	1168	2	0	5			
+story000_restofworld.rpf	0x536010	struct	4256	2	0	5			
+story000_restofworld.rpf	0x53c010	struct	3504	2	0	5			
+story000_restofworld.rpf	0x55e010	struct	34640	2	0	5			
+story000_restofworld.rpf	0x581010	struct	1376256	0	0	5			
+story000_restofworld.rpf	0x74d4d0	struct	1088	2	0	5			
+story000_restofworld.rpf	0x757010	struct	720896	2	0	5			
+story000_restofworld.rpf	0x85e010	struct	54544	2	0	5			
+story000_restofworld.rpf	0x8ba8e0	struct	1088	2	0	5			
+story000_restofworld.rpf	0x8bf010	struct	49008	2	0	5			
+story000_restofworld.rpf	0x8eb010	struct	2784	2	0	5			
+story000_restofworld.rpf	0x927010	struct	992	2	0	5			
+story000_restofworld.rpf	0x976430	struct	2080	2	0	5			
+story000_restofworld.rpf	0x990010	struct	3648	2	0	5			
+story000_restofworld.rpf	0x9ab010	struct	262144	2	0	5			
+story000_restofworld.rpf	0xa36010	struct	196608	2	0	5			
+story000_restofworld.rpf	0xad4df0	struct	37936	0	0	5			
+story000_restofworld.rpf	0xaf0010	struct	25056	2	0	5			
+story000_restofworld.rpf	0xb3a010	struct	60144	2	0	5			
+story000_restofworld.rpf	0xb75010	struct	51280	2	0	5			
+story000_restofworld.rpf	0xb91010	struct	10160	2	0	5			
+story000_restofworld.rpf	0xbef3e0	struct	992	2	0	5			
+story000_restofworld.rpf	0xc23010	struct	59568	0	3	8			
+story000_restofworld.rpf	0xc5e010	struct	7968	2	0	5			
+story000_restofworld.rpf	0xc9d010	struct	21600	2	0	5			
+story000_restofworld.rpf	0xcdb010	struct	43920	2	0	5			
+story000_restofworld.rpf	0xcf5010	struct	9840	2	0	5			
+story000_restofworld.rpf	0xd49010	struct	63216	2	0	5			
+story000_restofworld.rpf	0xd83010	struct	262144	2	0	5			
+story000_restofworld.rpf	0xdf2010	struct	5968	2	0	5			
+story000_restofworld.rpf	0xe15010	struct	31728	2	0	5			
+story000_restofworld.rpf	0xe96010	struct	31120	2	0	5			
+story000_restofworld.rpf	0xeb0010	struct	2880	2	0	5			
+story000_restofworld.rpf	0xebd010	struct	10544	2	0	5			
+story000_restofworld.rpf	0xf04010	struct	196608	2	0	5			
+story000_restofworld.rpf	0xf5b010	struct	28752	2	0	5			
+story000_restofworld.rpf	0xf81010	struct	1040	2	0	5			
+story000_restofworld.rpf	0xfed010	struct	196608	2	0	5			
+story000_restofworld.rpf	0x1058010	struct	5072	2	0	5			
+story000_restofworld.rpf	0x108f010	struct	131072	2	0	5			
+story000_restofworld.rpf	0x10c2010	struct	32400	2	0	5			
+story000_restofworld.rpf	0x10de010	struct	196608	2	0	5			
+story000_restofworld.rpf	0x1111010	struct	65536	3	0	5			
+story000_restofworld.rpf	0x1126010	struct	131072	3	0	5			
+story000_restofworld.rpf	0x113f010	struct	65536	3	0	5			
+story000_restofworld.rpf	0x1157010	struct	65536	1	0	5			
+story000_restofworld.rpf	0x1169010	struct	65536	3	0	5			
+story000_restofworld.rpf	0x117f010	struct	65536	4	0	5			
+story000_restofworld.rpf	0x11b0010	struct	65536	3	0	5			
+story000_restofworld.rpf	0x11f6010	struct	54352	2	0	5			
+story000_restofworld.rpf	0x1209010	struct	65536	3	0	5			
+story000_restofworld.rpf	0x121b010	struct	1966080	1	0	5			
+story000_restofworld.rpf	0x141e010	struct	1572864	0	0	5			
+story000_restofworld.rpf	0x183bcb0	struct	44336	0	0	5			
+story000_restofworld.rpf	0x1c912a0	struct	60368	0	2	8			
+story000_restofworld.rpf	0x1d18010	struct	262144	2	0	5			
+story000_restofworld.rpf	0x1f1e010	struct	3538944	0	0	5			
+story000_restofworld.rpf	0x2efe010	struct	5111808	0	0	5			
+story000_restofworld.rpf	0x468c010	struct	524288	3	0	5			
+story000_restofworld.rpf	0x47e3010	struct	524288	3	0	5			
+story000_script.rpf	0x325e000	struct	23896	0	3	8			
+story000_script.rpf	0x32d0000	struct	19856	0	5	8			
+story000_script.rpf	0x32f7000	struct	19856	0	5	8			
+story000_script.rpf	0x3657000	struct	26240	0	5	8			
+story000_script.rpf	0x3682000	struct	23192	0	2	7			
+story000_script.rpf	0x3725000	struct	12584	0	2	7			
+story000_script.rpf	0x39d6000	struct	40680	0	4	8			
+story000_script.rpf	0x3c0c000	struct	14064	0	3	8			
+story000_script.rpf	0x3c8e000	struct	12400	0	3	8			
+story000_script.rpf	0x3df7000	struct	23304	0	5	8			
+story000_script.rpf	0x42a8000	struct	20104	0	5	8			
+story000_script.rpf	0x42db000	struct	16960	0	3	8			
+story000_script.rpf	0x430b000	struct	19200	0	5	8			
+story000_script.rpf	0x433f000	struct	19696	0	5	8			
+story000_script.rpf	0x4373000	struct	18784	0	5	8			
+story000_script.rpf	0x43e8000	struct	5256	0	2	7			
+story000_script.rpf	0x44f9000	struct	46136	0	2	7			
+story000_script.rpf	0x4549000	struct	24160	0	6	8			
+story000_script.rpf	0x46c8000	struct	45008	0	2	7			
+story000_script.rpf	0x4717000	struct	17976	0	2	7			
+story000_script.rpf	0x474d000	struct	9104	0	3	8			
+story000_script.rpf	0x4973000	struct	22688	0	2	7			
+story000_script.rpf	0x49a1000	struct	9720	0	3	8			
+textures.rpf	0x2010	struct	1184	3	0	5			
+textures.rpf	0xa224010	struct	400	3	0	5			
+textures.rpf	0xa275090	struct	32768	0	1	8			
+textures.rpf	0xa28c010	struct	400	3	0	5			
+textures.rpf	0xa2fc010	struct	400	3	0	5			
+textures.rpf	0xa363010	struct	400	3	0	5			
+textures.rpf	0xa3ad010	struct	400	3	0	5			
+textures.rpf	0xa401010	struct	400	3	0	5			
+textures.rpf	0xa458010	struct	400	3	0	5			
+textures.rpf	0xa4ad010	struct	400	3	0	5			
+textures.rpf	0xa527010	struct	400	3	0	5			
+textures.rpf	0xa5bf010	struct	400	3	0	5			
+textures.rpf	0xa63e010	struct	400	3	0	5			
+textures.rpf	0xa667090	struct	32768	0	1	8			
+textures.rpf	0xa6b8010	struct	400	3	0	5			
+textures.rpf	0xa737010	struct	400	3	0	5			
+textures.rpf	0xa7b0010	struct	400	3	0	5			
+textures.rpf	0xa83a010	struct	400	3	0	5			
+textures.rpf	0xa8e6010	struct	400	3	0	5			
+textures.rpf	0xa977010	struct	400	3	0	5			
+textures.rpf	0xaa02010	struct	400	3	0	5			
+textures.rpf	0xaa90010	struct	400	3	0	5			
+textures.rpf	0xab23010	struct	400	3	0	5			
+textures.rpf	0xabc1010	struct	400	3	0	5			
+textures.rpf	0xac68010	struct	400	3	0	5			
+textures.rpf	0xad01010	struct	400	3	0	5			
+textures.rpf	0xad7b010	struct	400	3	0	5			
+textures.rpf	0xadff010	struct	400	3	0	5			
+textures.rpf	0xae78010	struct	400	3	0	5			
+textures.rpf	0xaef3010	struct	400	3	0	5			
+textures.rpf	0xaf6b010	struct	400	3	0	5			
+textures.rpf	0xafdf010	struct	400	3	0	5			
+textures.rpf	0xb04d010	struct	400	3	0	5			
+textures.rpf	0xb09d010	struct	400	3	0	5			
+textures.rpf	0xb0f3010	struct	400	3	0	5			
+textures.rpf	0xb155010	struct	400	3	0	5			
+textures.rpf	0xb1b3090	struct	32768	0	1	7			
+textures.rpf	0xb1ca010	struct	400	3	0	5			
+textures.rpf	0xb247010	struct	400	3	0	5			
+textures.rpf	0xb2bc010	struct	400	3	0	5			
+textures.rpf	0xb32a010	struct	400	3	0	5			
+textures.rpf	0xb368010	struct	400	3	0	5			
+textures.rpf	0xb39b010	struct	400	3	0	5			
+textures.rpf	0xb3cc010	struct	400	3	0	5			
+textures.rpf	0xb3f1010	struct	400	3	0	5			
+textures.rpf	0xb40c010	struct	400	3	0	5			
+textures.rpf	0xb435010	struct	400	3	0	5			
+textures.rpf	0xb468010	struct	400	3	0	5			
+textures.rpf	0xb48f010	struct	400	3	0	5			
+textures.rpf	0xb4bb010	struct	400	3	0	5			
+textures.rpf	0xb4f0010	struct	400	3	0	5			
+textures.rpf	0xb53a010	struct	400	3	0	5			

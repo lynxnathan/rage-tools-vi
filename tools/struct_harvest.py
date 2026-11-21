@@ -92,6 +92,7 @@ def main():
     parser.add_argument("--census", type=Path, default=Path("handoff/header-census-full.tsv"))
     parser.add_argument("--sample", type=int, default=300)
     parser.add_argument("--tsv", type=Path, default=Path("handoff/struct-harvest.tsv"))
+    parser.add_argument("--summary", type=Path, default=Path("handoff/struct-summary.tsv"))
     args = parser.parse_args()
 
     def resolve(name):
@@ -104,6 +105,7 @@ def main():
         return matches[0]
 
     rows = []
+    summary = []
     for spec in args.archives:
         name, index = spec.split(":", 1)
         index = Path(index)
@@ -193,6 +195,22 @@ def main():
             mm.close()
 
         total = sum(shapes.values())
+        summary.append({
+            "archive": name,
+            "packs": len(windows),
+            "streams": len(streams),
+            "entries": entries,
+            "streams_per_entry": round(len(streams) / max(1, entries), 3),
+            "sampled": total,
+            "struct_share": round(shapes["struct"] / max(1, total), 4),
+            "bvh4_descriptors": bvh4,
+            "max_tag_top": max(nibbles, key=nibbles.get) if nibbles else "",
+            "tag5_share": round(nibbles.get(5, 0) / max(1, shapes["struct"]), 4),
+            "mean_external": round(
+                sum(k * v for k, v in external_counts.items()) / max(1, sum(external_counts.values())), 3)
+            if external_counts else "",
+            "implied_attachments": round(len(streams) / max(1, entries) - 1, 3),
+        })
         print(f"  sampled {total}: structs {shapes['struct']} "
               f"({shapes['struct'] / max(1, total):.1%}), bvh4 descriptors {bvh4}")
         print(f"  struct header offset: {dict(sorted(bases.items()))}")
@@ -206,6 +224,16 @@ def main():
                   f"mean past-body self pointers: {attached:.2f}, "
                   f"sum: {mean + attached:.2f} "
                   f"(index ratio implies {len(streams)/max(1, entries) - 1:.2f} attachments/entry)")
+
+    args.summary.parent.mkdir(parents=True, exist_ok=True)
+    summary_fields = ["archive", "packs", "streams", "entries", "streams_per_entry",
+                      "sampled", "struct_share", "bvh4_descriptors", "max_tag_top",
+                      "tag5_share", "mean_external", "implied_attachments"]
+    with args.summary.open("w") as out:
+        out.write("\t".join(summary_fields) + "\n")
+        for row in summary:
+            out.write("\t".join(str(row[field]) for field in summary_fields) + "\n")
+    print(f"wrote {args.summary} ({len(summary)} archives)")
 
     fields = ["archive", "stream", "kind", "decoded", "self_pointers", "external",
               "max_tag", "allocated", "pair_lo", "pair_hi"]
