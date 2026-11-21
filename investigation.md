@@ -3854,3 +3854,32 @@ pointers into a container whose arrays sit at content-dependent offsets, the
 `+0x10` slot counts sub-arrays, and the record size follows the array
 cardinality. It also explains why `+0xa4` behaves like an offset pair: the
 container's fields are offsets by construction.
+
+### Size classes and their counts
+
+Across the top 14 size classes the header is constant within each class, and the
+count/capacity pair at `+0x28`/`+0x38` grows with the record:
+
+| Size | Records | `+0x08` pointer | count/cap |
+| ---: | ---: | ---: | ---: |
+| 160 | 3,888 | `0x60` | 1/1 |
+| 192 | 1,953 | `0x80` | 2/2 |
+| 240 | 644 | `0xa0` | 3/3 |
+| 272 | 11,953 | `0xe0` | 4/4 |
+| 336 | 299 | `0x110` | 5/5 |
+| 368 | 292 | `0x130` | 6/6 |
+| 416 | 179 | `0x180` | 7/7 |
+| 448 | 353 | `0x1a0` | 8/8 |
+| 544 | 366 | `0x200` | 10/10 |
+| 800 | 846 | `0x300` | 16/16 |
+
+The size is not a clean linear function of the count (steps alternate 32 and 48
+bytes between consecutive counts, then 96 for two counts, then 256 for six), so
+at least one more field varies across classes. What is stable: the `+0x08`
+pointer always lands inside the record, the count equals the capacity in these
+classes, and the size itself is a class constant — 382 distinct sizes exist but
+the top ten cover 21,173 of the 27,004 unpaired records.
+
+This is enough to stop treating the descriptor as a bespoke record and to start
+treating both it and the header-only entries as size-class variants of one
+container struct.
