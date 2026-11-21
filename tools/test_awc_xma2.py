@@ -36,10 +36,11 @@ def wav_xma2(data,num,rate,channels=1,block=2048,encver=0):
     blockcount=(len(data)+block-1)//block
     avg=len(data)*rate//max(num,1)
     # WAVEFORMATEX
-    wfx=struct.pack('<HHIIHH',0x0161,channels,rate,avg,block,16)
+    wfx=struct.pack('<HHIIHH',0x0166,channels,rate,avg,block,16)
     # XMA2WAVEFORMATEX tail: cbSize, NumStreams, ChannelMask, SamplesEncoded, BytesPerBlock,
     # PlayBegin, PlayLength, LoopBegin, LoopLength, LoopCount, EncoderVersion, BlockCount
-    tail=struct.pack('<H H I I I I I I I B B H',34,channels,0,num,block,0,num,0,0,0,encver,blockcount%65536)
+    channel_mask = 0x3 if channels == 2 else 0x4
+    tail=struct.pack('<H H I I I I I I I B B H',34,channels,channel_mask,num,block,0,num,0,0,0,encver,blockcount%65536)
     fmt=wfx+tail
     fact=struct.pack('<I',num)
     chunks=b'fmt '+struct.pack('<I',len(fmt))+fmt

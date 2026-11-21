@@ -2,7 +2,7 @@
 
 Source: Xbox build `GTA6.Xbox.v1.0.2.1-CYBERLEEK`.
 Scope: codec/framing experiments on the extracted `audio-awc` containers.
-Status: **container parsed; codec/bitstream not decoded**.
+Status: **container parsed; codec `0x05` decoded as XMA2; `0x0B`/`0x02` pending**.
 
 ## New container layout
 
@@ -70,15 +70,23 @@ header pattern, or a block header around an encrypted payload.
 `vgmstream` rejects the GTA VI `ADAT` header because it expects the GTA V AWC
 layout. This is a container mismatch, not yet a codec verdict.
 
-### 2. Reconstructed XMA2 WAV
+### 2. XMA2 WAV — solved for codec `0x05`
 
-`tools/test_awc_xma2.py` builds `XMA2WAVEFORMATEX` (`wFormatTag=0x0161`,
-`BytesPerBlock=2048`, `BlockCount` from `0x55` size), tries mono/stereo and
-encoder versions, and decodes with ffmpeg.
+The first wrapper used `wFormatTag=0x0161`, which is **WMAudio2**, so ffmpeg
+called the WMA decoder and produced silence/noise. The correct XMA2 tag is
+`0x0166`. `tools/test_awc_xma2.py` now writes `XMA2WAVEFORMATEX` with
+`wFormatTag=0x0166`, `BytesPerBlock=2048`, and `BlockCount` from the `0x55`
+size; `tools/extract_awc_xma2.py` selects streams from the framing TSV and
+decodes them to PCM WAV.
 
-Result: xma2 frames are reached, but output is silence or low-level artifacts;
-no tonal speech. The previous error `channel len > samples_per_frame` is not
-resolved by channel/version/block-count variants.
+Result on the corpus: **166 codec-`0x05` rows selected; 151 unique streams
+decoded to WAV (86 MB); all 151 are non-silent and 148 have flatness < 0.1**.
+The 15 missing rows are fragmented/misparsed AWC entries, not decoder failures.
+The first sample `000000069dbc6000` decodes to 5.5 s at 32 kHz with
+RMS 0.234, flatness 0.038, harmonic 0.398; its spectrogram is continuous with
+low-frequency harmonic structure, not a decoder transient.
+
+This is the first non-zlib codec family decoded from `audio.rpf`.
 
 ### 3. Synthetic UEBA/Bink Audio wrapper
 
@@ -99,15 +107,19 @@ the AWC payload is not yet a correctly framed Bink packet.
 
 1. The container and `0x76` metadata are understood well enough to index every
    stream and compare codecs.
-2. `0x0B` is a new codec ID relative to GTA V (`0x05` XMA2, `0x08` Vorbis,
+2. **Codec `0x05` is XMA2 in this build.** Direct XMA2 decoding produces
+   continuous tonal audio, so this is no longer a hypothesis.
+3. `0x0B` is a new codec ID relative to GTA V (`0x05` XMA2, `0x08` Vorbis,
    `0x0D` Opus). `Bink2Scarlett.dll` and the UEBA path make **Bink Audio 2** the
-   strongest hypothesis, but it is not proven while the payload decodes to
-   transients only.
-3. The `a0 00 f8` / `162`-byte marker is the next concrete framing lead.
-4. If marker splitting still yields silence, test whether the `0x55` payload is
-   **AWC/XXTEA-encrypted**. GTA V AWC has an encrypted-data flag and a
-   `.awckey`; GTA VI may use the same pattern. No key is present in the build
-   tree sampled so far.
+   strongest remaining hypothesis, but it is not proven while payloads decode
+   to transients only. `0x02` is also unresolved (PCM/MS-ADPCM/XMA1 wrappers
+   produce artifacts).
+4. The `a0 00 f8` / `162`-byte marker is still a framing lead. It may be an
+   XMA2 frame header pattern: the same marker appears in `0x05` and `0x0B`
+   payloads, so it is not sufficient by itself.
+5. If `0x0B` remains silent after marker splitting, test whether its `0x55`
+   payload is **AWC/XXTEA-encrypted**. GTA V AWC has an encrypted-data flag and
+   a `.awckey`; no GTA VI key was found in the sampled build tree.
 
 ## Reproduction
 
@@ -120,12 +132,18 @@ python3 tools/awc_framing.py --limit 0
 
 # XMA2 wrapper sweep (needs numpy + ffmpeg)
 /tmp/audio-venv/bin/python tools/test_awc_xma2.py --limit 5
+
+# decode every codec-0x05 stream to PCM WAV
+/tmp/audio-venv/bin/python tools/extract_awc_xma2.py --limit 0
 ```
 
 ## Artifacts
 
 - `handoff/audio-awc-framing.tsv` — per-stream codec/rate/size/marker table.
+- `handoff/audio-xma2-decode.tsv` — 166 codec-`0x05` rows with decode status/SHA.
 - `tools/awc_framing.py` — parser used to generate it.
 - `tools/bruteforce_ueba.py` — synthetic UEBA packet sweep.
 - `tools/test_awc_xma2.py` — XMA2 WAV wrapper sweep.
+- `tools/extract_awc_xma2.py` — codec-`0x05` XMA2 decode/extract with manifest.
+- `output/extracted/audio-xma2/` — 151 decoded WAVs + manifest (local-only).
 - `output/audio-tests/` — local-only WAV/spectrogram experiments (ignored).

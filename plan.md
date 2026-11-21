@@ -260,11 +260,12 @@ entry identification, coverage, or decoding across the archive set.
   codec `0x0b` 2,081 / `0x05` 166 / `0x02` 73; rates 48k, 32k, 12k, 28k.
 - Data chunks are multiples of 2,048. Many begin `a0 00 f8` and repeat it at
   offset **162** (1,451 rows): a real internal framing signal.
-- Decode blocked: vgmstream rejects the variant; reconstructed XMA2 WAV
-  decodes silence/artifacts; synthetic UEBA/Bink Audio decodes transients only
-  (`channel len > samples_per_frame` remains for XMA2).
-- Next: split packets at the `a0 00 f8`/162 marker and rebuild the `0x76`
-  codec header; if silence persists, test AWC/XXTEA encryption and key source.
+- **Codec `0x05` = XMA2: solved.** The first wrapper used `wFormatTag=0x0161`
+  (WMAudio2); the correct tag is `0x0166`. `tools/extract_awc_xma2.py` decoded
+  151/166 streams to 86 MB of WAV; all 151 non-silent, 148 tonal. First
+  non-zlib codec family decoded from `audio.rpf`.
+- `0x0B` remains Bink Audio 2 hypothesis; `0x02` unresolved. Next: split `0x0B`
+  at the `a0 00 f8`/162 marker; if silent, test AWC/XXTEA encryption/key source.
 
 ## Large archive pilot
 
@@ -469,6 +470,7 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/awc_framing.py` | Inventory AWC `0x76` descriptors, data sizes, and frame markers |
 | `tools/bruteforce_ueba.py` | Sweep AWC payloads through a synthetic UEBA/Bink Audio wrapper |
 | `tools/test_awc_xma2.py` | Build XMA2 WAVE wrappers from AWC data chunks and decode |
+| `tools/extract_awc_xma2.py` | Decode codec-`0x05` AWC streams to PCM WAV with manifest |
 | `tools/quadtree.py` | Build resource-local quadtrees and an HTML view |
 | `tools/verify_quadtree.py` | Verify quadtree completeness and structural invariants |
 | `tools/mmap_extract.py` | Bounded-memory selective zlib extraction |
@@ -514,8 +516,8 @@ entry identification, coverage, or decoding across the archive set.
 - Where is the compiled shader bytecode, if it is present in this corpus?
 - What are the actual codec, top-mip offset, mip order, pitch, and tile order for
   format 0x4D and 0x62 textures?
-- What do AWC codec IDs `0x0b`, `0x05`, and `0x02` map to, and is the
-  `a0 00 f8`/162 marker a packet boundary or frame header?
+- What do AWC codec IDs `0x0b` and `0x02` map to, and is the `a0 00 f8`/162
+  marker a packet boundary or frame header? (`0x05` is XMA2.)
 - Is the AWC `0x55` payload encrypted (AWC/XXTEA), and where is the GTA VI key?
 - What hash produces the 612 class-0 bone-table names, and what are their names?
 - What do the `0x1ebb416b` index/high-byte IDs and `0x8f18aff0` hashes name?

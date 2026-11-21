@@ -1912,3 +1912,35 @@ build tree.
 Artifacts: `handoff/audio-awc.md`, `handoff/audio-awc-decode.md`,
 `handoff/audio-awc-framing.tsv`, `tools/awc_framing.py`,
 `tools/bruteforce_ueba.py`, `tools/test_awc_xma2.py`.
+
+## Journal: AWC codec 0x05 decoded as XMA2 (2026-11-21)
+
+The first XMA2 wrapper used `wFormatTag=0x0161`, which is **WMAudio2**. ffmpeg
+therefore called the WMA decoder and produced silence/noise; the XMA2 path was
+never actually exercised. The correct XMA2 format tag is `0x0166`. With that
+tag, the 32-bit 32 kHz streams under AWC codec `0x05` decode to continuous
+audio.
+
+`tools/extract_awc_xma2.py` now selects codec-`0x05` rows from
+`handoff/audio-awc-framing.tsv`, builds a real `XMA2WAVEFORMATEX` RIFF around
+each `0x55` data chunk, and decodes with ffmpeg:
+
+- 166 codec-`0x05` rows selected; **151 unique streams decoded to PCM WAV**,
+  86 MB total.
+- 15 rows are fragmented/misparsed AWC entries with no recoverable stream; the
+  manifest records them explicitly. These are not decoder failures.
+- All 151 outputs are non-silent; **148 have spectral flatness < 0.1**.
+- Example `000000069dbc6000` stream 0: 5.5 s at 32 kHz, RMS 0.234, flatness
+  0.038, harmonic 0.398. The spectrogram is continuous with low-frequency
+  harmonic structure, not a single decoder transient.
+- Local manifest: `output/extracted/audio-xma2/manifest.tsv`.
+
+This is the **first non-zlib codec family decoded from `audio.rpf`**. The
+earlier conclusion that all AWC payloads were undecodable was caused by the
+wrong format tag, not by encryption.
+
+Remaining audio work: `0x0B` is still the Bink Audio 2/UEBA hypothesis and
+`0x02` is unresolved. The `a0 00 f8` / 162-byte marker remains the framing lead
+for `0x0B`; AWC/XXTEA encryption is only a fallback if marker splitting fails.
+Artifacts: `handoff/audio-awc.md`, `handoff/audio-awc-decode.md`,
+`tools/extract_awc_xma2.py`, `tools/test_awc_xma2.py`.
