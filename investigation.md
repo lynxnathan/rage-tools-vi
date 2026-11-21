@@ -3726,3 +3726,51 @@ The remaining discriminator is unchanged and now the only one worth running:
 decode one small pack completely (8–20 entries), where every descriptor,
 payload, and declared entry can be matched, and read `+0xa4` against that pack's
 own totals.
+
+## Journal: small-pack pass and the `+0xa4` offsets (2026-11-21)
+
+### Per-pack entry counts confirm the descriptor model
+
+Counting 208-byte descriptors inside each core_bvh4 header window and comparing
+with the declared count N: **1,070 of 1,282 packs match exactly**. The 212
+mismatches are all short (fewer descriptors than N), which is the single-stream
+entry population, not a counting failure. So "one descriptor per entry" now
+holds per pack, not just per stream pair.
+
+### A fully decoded 768-byte entry
+
+`core_bvh4` pack at `0x042f7000` (N = 6, window 368,640 bytes) contains six
+entries, two of which are the **same shared entry** (`id0 = 0xf84f3644`,
+`id1 = 0x002effba`, `a0 = 768`, `lo/64 = 4`, `hi/256 = 2`), and a third copy
+appears in the next pack. That entry's payload decodes to a complete 768-byte
+record with used = 640: a 256-byte header, a 64-byte node record at `+0x100`
+beginning `06 00 02 81 05 00 00 00`, floats `0xbd4c0000` (±0.0498) at `+0x110`,
+counts `36 / 128 / 64` at `+0x130`, a `0x0101` pair at `+0x188`, `0xFFFFFFFF`
+and `0x0909` at `+0x190`, and a small table at `+0x200` (`0x02000000`, `16`,
+`24`).
+
+### `+0xa4` reads as offsets, not spans
+
+For the 768-byte entry, `lo/64 = 4` is exactly `0x100` (the body start) and
+`hi/256 = 2` is exactly `0x200`, and the payload really does hold structures at
+both addresses. Across 160 payloads with descriptors:
+
+- `lo <= allocated` in 158/158 non-zero cases, `hi <= allocated` in 158/160;
+- `(lo - 0x100) % 64 == 0` in 158/158;
+- byte at `lo` is `0x06` (a node record header) for the 64 payloads with
+  `lo = 0x100`, and zero elsewhere;
+- byte at `hi` is zero in 128/160, `0x81` in 4, `0x06` in 2.
+
+So the pair is **bounded like offsets** and lands on section-like addresses, but
+it is not the start of the last dense region (that sits at blocks 15–1128 while
+`lo`/`hi` are 4–48) and `(used - hi) % 3` is uniform, so it is not "the tail
+index table" either. Its role stays open; the offset reading is the best fit so
+far.
+
+### Macro layout
+
+Block-density maps (`tools/bvh4_node_probe.py` style) show a repeating shape in
+the larger payloads: header block, a long zero run, a dense multi-block region,
+a 17-block (1,088-byte) table, then a sparse tail. That 17-block table recurs
+across entries and is the best current candidate for the per-entry auxiliary
+table.

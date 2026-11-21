@@ -20,7 +20,7 @@ from the payload alone: 269,106 descriptor entries (538,212 streams) against
 | `+0x88` | `0x00000101` | constant |
 | `+0x90..+0x9F` | zero | constant |
 | `+0xa0` | allocated payload size, multiple of 256 | zero-padded tail verified on 260 samples |
-| `+0xa4` | two `u16`: low multiple of 64, high multiple of 256 | 1,331 distinct; semantics open |
+| `+0xa4` | two `u16`: low multiple of 64, high multiple of 256 | both bounded by the allocated size; `(lo - 0x100) % 64 == 0`; reads as offsets, role open |
 | `+0xa8..+0xCF` | zero | constant |
 
 ```mermaid
@@ -68,9 +68,11 @@ classDiagram
 - The two ids are not JOAAT/CRC32 of the 3,524-name bone corpus or 1,087 local
   path tokens, not CRC32/JOAAT of the payload or stored bytes, and do not appear
   inside the payload.
-- `+0xa4` is not an ordered offset pair (`hi < lo` in 3 of 16, `hi > used` in
-  one) and not a node count (`lo/64` = 144 against 16,273 non-zero 64-byte
-  records in one sample).
+- `+0xa4` is not a *span* pair (`hi < lo` in 3 of 16, and `(used - hi) % 3` is
+  uniform so it is not the tail index table) and not a node count (`lo/64` = 144
+  against 16,273 non-zero 64-byte records in one sample). It is bounded like an
+  offset pair: `lo` and `hi` are both ≤ the allocated size, and in the decoded
+  768-byte entry `lo` is exactly `0x100` (body start) and `hi` exactly `0x200`.
 
 ## Reproduce
 
