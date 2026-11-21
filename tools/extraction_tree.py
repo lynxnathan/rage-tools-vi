@@ -138,8 +138,8 @@ function render() {
   back.disabled = stack.length === 1;
   document.getElementById('path').textContent = stack.map(node => node.name).join(' › ');
   const unresolved = document.getElementById('unresolved');
-  unresolved.hidden = !current.unresolved_packs;
-  unresolved.textContent = current.unresolved_packs + ' cabeçalhos de packs sem limites confirmados';
+  unresolved.hidden = !current.note && !current.unresolved_packs;
+  unresolved.textContent = current.note ?? (current.unresolved_packs + ' cabeçalhos de packs sem limites confirmados');
   tiles.replaceChildren();
   const children = current.children;
   tiles.hidden = !children?.length;
@@ -154,6 +154,8 @@ function render() {
     if (current.file) lines.push('Arquivo extraído: ' + current.file);
     if (current.source) lines.push('Arquivo de origem: ' + current.source);
     if (current.manifest) lines.push('Manifesto da extração: ' + current.manifest);
+    if (current.sha256) lines.push('SHA-256: ' + current.sha256);
+    if (current.availability) lines.push(current.availability);
     if (current.kind === 'zero_run') lines.push('Preenchimento com zeros, registrado no manifesto.');
     details.textContent = lines.join(String.fromCharCode(10));
     if (current.stream_index) {

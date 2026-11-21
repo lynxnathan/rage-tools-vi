@@ -2111,3 +2111,19 @@ No reindex, bulk extraction, or payload copy was performed.
 
 Command: `python3 tools/extraction_pilot.py --port 8766` (open
 `http://127.0.0.1:8766/`). Report: `handoff/extraction-pilot.md`.
+
+## Journal: static extraction pilot adopted (2026-11-21)
+
+Data produced the static, read-only pilot `tools/extraction_index_pilot.py`;
+it supersedes the temporary local HTTP server. The generator joins the audio
+index to the verified manifest, checks the decoded file's size and SHA-256,
+and emits bounded first/middle/last sample pages for the 2,199,213-range
+`levels.rpf` index. The static artifact is
+`output/extraction-index-pilot/index.html` (602 KB).
+
+Validation output: audio `0x5000..0x6316` matched SHA-256
+`725398e5f5267e1da78a82b8582a68950d72c3dc8adb0d97b54eda40274c19f2`;
+levels `0x1d000..0x1d701` matched the index with no bulk extraction manifest.
+No reindex or payload extraction was performed. The Playwright drill-down
+verifier is present but its dependency is not installed in the base image.
+Report: `handoff/extraction-pilot.md`.

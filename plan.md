@@ -291,16 +291,15 @@ entry identification, coverage, or decoding across the archive set.
 
 ## Extraction pilot (audio + levels)
 
-- `tools/extraction_pilot.py` serves a read-only local browser over
+- `tools/extraction_index_pilot.py` builds a static read-only browser over
   `output/index/{audio,levels}.tsv`, `output/extracted/audio/manifest.tsv`, and
-  `output/verification.tsv`.
-- Root shows `audio.rpf` as verified and `levels.rpf` as indexed-only. Range
-  pages are bounded at 100 rows; `levels` stays index-only with no payload
-  extraction. Uncertain pack membership remains at archive level.
-- Validation: audio `0x5000..0x6316` shows manifest SHA `725398e5…c19f2`;
-  levels `0x1d000..0x1d701` matches the index and says no extracted file;
-  levels page 1000 returns HTTP 200. Command and details:
-  `handoff/extraction-pilot.md`.
+  `output/verification.tsv`; artifact `output/extraction-index-pilot/index.html`.
+- Root shows `audio.rpf` as verified and `levels.rpf` as indexed-only. Audio
+  ranges join the manifest with SHA-256; levels uses bounded first/middle/last
+  32-row sample pages. Uncertain pack membership remains at archive level.
+- Validation: audio `0x5000..0x6316` matches the decoded file and manifest SHA
+  `725398e5…c19f2`; levels `0x1d000..0x1d701` matches the index and says no
+  extracted file. Command and details: `handoff/extraction-pilot.md`.
 
 ## Large archive pilot
 
@@ -517,6 +516,7 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/pair_arrays.py` | Export 0x8f18aff0 normalized-weight pairs |
 | `tools/extraction_inventory.py` | Normalize extraction manifests into one inventory |
 | `tools/extract_entry.py` | General archive/range extraction entry point |
+| `tools/verify_extraction_index_pilot.cjs` | Validate range details and navigation in headless Chromium with Playwright |
 | `tools/extract_awc.py` | Scan/extract ADAT AWC containers from raw audio spans |
 | `tools/awc_framing.py` | Inventory AWC `0x76` descriptors, data sizes, and frame markers |
 | `tools/data_awc_opus_probe.py` | Decode bounded AWC `0x0B` Opus controls and validate `0xA3` seek offsets |
