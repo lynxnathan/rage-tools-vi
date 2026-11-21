@@ -9,7 +9,17 @@ import zlib
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("archive", type=Path, help="path to a known four-payload RPF9 control")
+parser.add_argument(
+    "--region", choices=("front-a", "front", "trailer"), action="append",
+    help="metadata region to test; repeat to select more than one (default: front and trailer)",
+)
+parser.add_argument(
+    "--stride", type=int, metavar="BYTES", action="append",
+    help="record stride to test; repeat to select more than one (default: all fitting strides)",
+)
 args = parser.parse_args()
+if args.stride and min(args.stride) < 4:
+    parser.error("--stride must be at least 4 bytes")
 archive = args.archive.read_bytes()
 if len(archive) < 0x40 or archive[:4] != b"9FPR":
     parser.error("expected an RPF9 control sample")
@@ -74,10 +84,16 @@ def signatures(values, mode):
     return tuple(sorted(tuple(sorted(n ^ anchor for n in values)) for anchor in values))
 
 tables = {
+    'front-a': archive[0x60:front_table],
     'front': archive[front_table:start],
     'trailer': archive[trailer:],
 }
-for name, table in tables.items():
+for name in dict.fromkeys(args.region or ('front', 'trailer')):
+    table = tables[name]
+    fitting_strides = range(4, len(table) // 3 + 1)
+    strides = sorted(set(args.stride or fitting_strides).intersection(fitting_strides))
+    if not strides:
+        parser.error(f"none of the requested strides fit four fields in {name}")
     candidates = [dict(), dict(), dict()]
     for width in range(6, 33):
         for mode_id, mode in enumerate(('plain', 'add', 'xor')):
@@ -91,7 +107,7 @@ for name, table in tables.items():
     for order in ('little', 'big'):
         raw = int.from_bytes(table, order)
         bits = len(table) * 8
-        for stride_bytes in range(4, len(table) // 3 + 1):
+        for stride_bytes in strides:
             stride = stride_bytes * 8
             for field in range(0, bits - 3 * stride - 5):
                 lanes = tuple(raw >> (field + i * stride) for i in range(4))
