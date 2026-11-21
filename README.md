@@ -46,6 +46,14 @@ python3 tools/extraction_coverage.py
 python3 tools/verify_extraction.py
 ```
 
+Reproducible full pipeline:
+
+```bash
+python3 tools/pipeline.py --source SOURCE_ROOT --output output all --resume
+# subcommands: index, extract, audio, pilot, verify
+# safety: non-empty output needs --resume or --force; --dry-run prints commands
+```
+
 Index-driven bulk extraction:
 
 ```bash

@@ -8,6 +8,7 @@ SOURCE="${1:?usage: rebuild_audio.sh SOURCE_AUDIO_RPF [OUTPUT_EXTRACTED]}"
 OUT="${2:-$ROOT/output/extracted}"
 PYTHON="${PYTHON:-python3}"
 START="${START:-0x129b000}"
+FRAMING="${FRAMING:-$OUT/audio-awc-framing.tsv}"
 
 [[ -f "$SOURCE" ]] || { echo "missing source: $SOURCE" >&2; exit 1; }
 END="$(stat -c %s "$SOURCE")"
@@ -21,11 +22,11 @@ python3 tools/extract_awc.py "$SOURCE" \
   --out-dir "$OUT/audio-awc" \
   --manifest "$OUT/audio-awc/manifest.tsv"
 
-python3 tools/awc_framing.py --limit 0
+python3 tools/awc_framing.py --manifest "$OUT/audio-awc/manifest.tsv" --out "$FRAMING" --limit 0
 
-"$PYTHON" tools/extract_awc_xma2.py --limit 0 --out "$OUT/audio-xma2"
-"$PYTHON" tools/extract_awc_opus.py --limit 0 --out "$OUT/audio-opus"
-"$PYTHON" tools/extract_awc_ace1.py --limit 0 --out "$OUT/audio-ace1"
+"$PYTHON" tools/extract_awc_xma2.py --framing "$FRAMING" --limit 0 --out "$OUT/audio-xma2"
+"$PYTHON" tools/extract_awc_opus.py --framing "$FRAMING" --limit 0 --out "$OUT/audio-opus"
+"$PYTHON" tools/extract_awc_ace1.py --framing "$FRAMING" --limit 0 --out "$OUT/audio-ace1"
 
 python3 - "$OUT" <<'PY'
 import csv

@@ -90,6 +90,7 @@ nav:
       - Containment view: extraction/containment.md
       - Downloads corpus: extraction/downloads-corpus.md
       - Large archives: extraction/large-archives.md
+      - Full pipeline: extraction/pipeline.md
       - Audio (AWC/XMA2): extraction/audio.md
       - Packs signatures: extraction/packs-signatures.md
       - Quadtree view: extraction/quadtree.md
