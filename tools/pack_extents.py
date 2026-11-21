@@ -57,6 +57,11 @@ def main():
     parser.add_argument("--index", type=Path, required=True)
     parser.add_argument("--census", type=Path, default=Path("handoff/header-census-full.tsv"))
     parser.add_argument("--tsv", type=Path, default=None)
+    parser.add_argument("--dp", action="store_true",
+                        help="choose each pack end by minimising |items - N| over "
+                             "the padding candidates, with children excluded")
+    parser.add_argument("--leaves-only", action="store_true",
+                        help="report only packs whose own window resolves exactly")
     parser.add_argument("--unit", choices=("chains", "structs"), default="chains",
                         help="entry unit: 64 KiB chains (index only) or decoded "
                              "struct roots (needs the payload)")
@@ -184,6 +189,123 @@ def main():
         for pack in reversed(stack):
             close(pack, size)
         mm.close()
+
+    if args.dp:
+        import mmap as _mmap
+        handle = args.archive.open("rb")
+        mm = _mmap.mmap(handle.fileno(), 0, access=_mmap.ACCESS_READ)
+        size = len(mm)
+        # Candidate boundaries: the physical boundary before every header, plus
+        # the file end.  Ends are chosen in reverse offset order so a pack's
+        # children are already resolved and their payloads can be excluded.
+        bounds = [0] * len(packs)
+        for index in range(1, len(packs)):
+            bounds[index] = packs[index][0] - padding_before(mm, packs[index][0])
+        bounds[0] = 0
+        ends = [size] * len(packs)
+        scores = [None] * len(packs)
+        fronts = [row[0] + row[2] for row in packs]
+
+        def units_between(low, high):
+            lo = bisect.bisect_left(starts, low)
+            hi = bisect.bisect_left(starts, high)
+            return len({chain_of[k] for k in range(lo, hi) if chain_of[k] >= 0})
+
+        for i in range(len(packs) - 1, -1, -1):
+            offset, count, front_end, trailer = packs[i]
+            start = fronts[i]
+            best = None
+            for j in range(i + 1, len(packs) + 1):
+                end = bounds[j] if j < len(packs) else size
+                if end <= start + trailer:
+                    continue
+                stop = end - trailer
+                children = 0
+                cursor = i + 1
+                ok = True
+                while cursor < len(packs) and packs[cursor][0] < end:
+                    if ends[cursor] > stop:
+                        ok = False
+                        break
+                    children += 1
+                    cursor += 1
+                if not ok:
+                    continue
+                units = units_between(start, stop)
+                for k in range(i + 1, cursor):
+                    units -= units_between(fronts[k], max(fronts[k], ends[k] - packs[k][3]))
+                score = abs(units + children - count)
+                candidate = (score, end, units, children)
+                if best is None or candidate < best:
+                    best = candidate
+            if best is None:
+                best = (abs(count), size, 0, 0)
+            scores[i] = best[0]
+            ends[i] = best[1]
+        mm.close()
+        handle.close()
+
+        aligned = sum(1 for end in ends if end % 16 == 0)
+        exact = sum(1 for score in scores if score == 0)
+        print(f"  DP ends: {len(ends)} packs, exact score {exact} "
+              f"({exact / len(ends):.1%}), 16-aligned {aligned}/{len(ends)}")
+        print(f"  score distribution: {Counter(scores).most_common(8)}")
+        print(f"  bytes covered by exact packs: "
+              f"{sum(ends[i] - packs[i][0] for i in range(len(packs)) if scores[i] == 0):,}")
+        print(f"\n{'pack':>12} {'N':>5} {'end':>12} {'score':>6}")
+        for i in range(min(16, len(packs))):
+            print(f"0x{packs[i][0]:010x} {packs[i][1]:>5} 0x{ends[i]:010x} {scores[i]:>6}")
+        if args.tsv:
+            args.tsv.parent.mkdir(parents=True, exist_ok=True)
+            with args.tsv.open("w") as out:
+                out.write("archive\toffset\tcount\tend\tscore\n")
+                for i in range(len(packs)):
+                    out.write(f"{args.archive.name}\t0x{packs[i][0]:x}\t{packs[i][1]}\t"
+                              f"0x{ends[i]:x}\t{scores[i]}\n")
+            print(f"wrote {args.tsv}")
+        return
+
+    if args.leaves_only:
+        import mmap as _mmap
+        handle = args.archive.open("rb")
+        mm = _mmap.mmap(handle.fileno(), 0, access=_mmap.ACCESS_READ)
+        size = len(mm)
+        # Exact leaf resolution: a pack is a leaf when the units in its own
+        # window (front_end .. next_header - padding - trailer) equal N.  Its
+        # end is then the physical boundary, which is independent of the tree.
+        leaf_rows = []
+        covered = 0
+        for index, (offset, count, front_end, trailer) in enumerate(packs):
+            limit = (packs[index + 1][0] - padding_before(mm, packs[index + 1][0])
+                     if index + 1 < len(packs) else size)
+            start = offset + front_end
+            stop = max(start, limit - trailer)
+            low = bisect.bisect_left(starts, start)
+            high = bisect.bisect_left(starts, stop)
+            units = len({chain_of[k] for k in range(low, high) if chain_of[k] >= 0})
+            ok = units == count
+            if ok:
+                covered += limit - offset
+            leaf_rows.append((offset, count, units, limit, ok))
+        exact = sum(1 for row in leaf_rows if row[4])
+        print(f"  exact leaves: {exact}/{len(leaf_rows)} "
+              f"({exact / len(leaf_rows):.1%}), bytes covered {covered:,} "
+              f"of {size:,} ({covered / size:.1%})")
+        print(f"\n{'pack':>12} {'N':>5} {'units':>6} {'end':>12} ok")
+        for row in leaf_rows:
+            print(f"0x{row[0]:010x} {row[1]:>5} {row[2]:>6} 0x{row[3]:010x} "
+                  f"{'yes' if row[4] else ''}")
+        if args.tsv:
+            args.tsv.parent.mkdir(parents=True, exist_ok=True)
+            with args.tsv.open("w") as out:
+                out.write("archive\toffset\tcount\tunits\tend\texact_leaf\n")
+                for row in leaf_rows:
+                    out.write(f"{args.archive.name}\t0x{row[0]:x}\t{row[1]}\t{row[2]}\t"
+                              f"0x{row[3]:x}\t{int(row[4])}\n")
+            print(f"wrote {args.tsv}")
+        mm.close()
+        handle.close()
+        return
 
     rows = []
     for offset in sorted(resolved):

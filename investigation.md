@@ -4291,3 +4291,35 @@ choose each pack's end from the padding-candidate list by scoring
 entry that lacks a struct still contributes to the count through the data stream.
 
 Local copy kept at `cache/navmeshes.rpf` under the NVMe exploration policy.
+
+## Journal: scored end selection converges; exact leaf extents published (2026-11-21)
+
+Added `--dp` to `pack_extents.py`: each pack's end is chosen from the padding
+candidates by minimising `|units + children - N|`, with children excluded from
+the unit count (they are already resolved in reverse offset order). Result:
+it converges to the same boundaries as the saturation walk — `data` 14/42,
+`navmeshes` 13/29, `textures` 12/21 (struct unit 12 vs 17 for the walk, because
+the DP enforces the strict `end - trailer` window). So no gain, and the greedy
+score is dominated by the packs whose N includes non-payload rows.
+
+### What is provable is published
+
+`--leaves-only` emits extents only where the pack's own physical window
+(`front_end .. next_header - padding - trailer`) holds exactly N units, so no
+inference is involved. Combining both units and deduplicating:
+
+| Archive | Exact leaves | Bytes | Coverage |
+| --- | ---: | ---: | ---: |
+| `data` | 21 of 42 | 55.4 MB | 11.5 % |
+| `navmeshes` | 13 of 29 | 465.0 MB | 6.9 % |
+| `textures` | 12 of 21 | 117.3 MB | 60.9 % |
+| `script` | 1 of 3 | 1.9 MB | 44.4 % |
+| `story000_bvh4` | 1 of 1 | 5,632 B | 100 % |
+
+Artifact: `handoff/pack-extents-leaves.tsv`. Note `data.rpf` gains from the
+union: chains resolve 14 packs, structs resolve 11, and 21 distinct packs are
+exact across both units — the two shapes are complementary inside one archive.
+
+The remaining packs are the ones whose declared N counts rows without payload
+(the `data.rpf` root, `0x964000`, the mixed `navmeshes` packs), which is the
+directory-row problem, not a boundary problem.

@@ -25,6 +25,9 @@ Last updated: 2026-11-21.
   has 699 table rows (Front B = `align16(10 × 699)`) but 41 children and 0 own
   streams, so ≥658 rows carry no payload; `common.rpf` shows the same shape
   (418 vs 394). Solve the row model, then retry the extents resolver.
+- [ ] ~~Replace saturation gating with a scored end-choosing DP~~ — implemented
+  (`--dp`) and it converges with the saturation walk; the blocker is directory
+  rows, not the selection rule.
 - [ ] **Replace saturation gating with a scored end-choosing DP.** Pick each
   pack's end from the padding-candidate list by minimising `|items(end) - N|`
   under a containment constraint. `navmeshes` proved the need: homogeneous pair
