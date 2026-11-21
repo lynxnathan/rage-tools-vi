@@ -4253,3 +4253,41 @@ measurements:
 The zero-padding boundary is universal (every run 16-aligned); only the entry
 unit changes. For `navmeshes` (struct/entry 0.96) the struct unit is the right
 one to try first.
+
+## Journal: navmeshes extents — homogeneous packs resolve, mixed packs defeat the oracle (2026-11-21)
+
+Ran on a local copy (`cache/navmeshes.rpf`, 6,707,512,496 bytes, `cmp` identical
+to the source), so no contention with the running extraction.
+
+**Padding holds:** 29/29 ends 16-aligned.
+**Count satisfaction:** 13/29 packs, struct unit (chains: 12/29).
+
+### navmeshes packs are mixed
+
+`0x2ed5b000` (N = 2,449) is a perfect pair pack: 4,898 streams = 2 × 2,449,
+of which 2,448 decode to 131,072 bytes (data) and 2,447 decode to 1,840 bytes
+(the struct). That is the same `[struct][data]` grammar as `core_bvh4`, with a
+1,840-byte struct.
+
+`0x1000` (N = 3,224) holds 4,036 streams and only 3,109 structs: 115 entries have
+no struct root (data-only). Its data sizes are spread (131,072 × 685,
+196,608 × 507, 262,144 × 385, …) rather than the fixed paired shape.
+
+The size-class shortcut (decoded size 1,840 or 2,656) counts the pair packs
+almost exactly (2,447 and 2,448 against 2,449) but misses 377–1,606 entries in
+the mixed packs, because their struct sizes differ.
+
+### Why the tree still collapses
+
+In `0x1000`, direct items reach 3,110 against N = 3,224, so the pack never
+saturates; the next header becomes its child and the file nests into a chain.
+The root compounds it: N = 29 with 28 child packs, so the root needs exactly one
+local item and then 28 children.
+
+The fix is not another unit. It is to **stop using saturation as a hard gate**:
+choose each pack's end from the padding-candidate list by scoring
+`|items(end) - N|`, with nesting as a containment constraint (a DP over the
+~29–42 candidate boundaries per archive). That handles mixed packs because an
+entry that lacks a struct still contributes to the count through the data stream.
+
+Local copy kept at `cache/navmeshes.rpf` under the NVMe exploration policy.

@@ -25,9 +25,11 @@ Last updated: 2026-11-21.
   has 699 table rows (Front B = `align16(10 × 699)`) but 41 children and 0 own
   streams, so ≥658 rows carry no payload; `common.rpf` shows the same shape
   (418 vs 394). Solve the row model, then retry the extents resolver.
-- [ ] **Run the extents resolver on `navmeshes.rpf`** with `--unit structs`
-  (struct/entry 0.96, the cleanest 1:1 archive) after `levels` finishes, before
-  returning to `data.rpf`.
+- [ ] **Replace saturation gating with a scored end-choosing DP.** Pick each
+  pack's end from the padding-candidate list by minimising `|items(end) - N|`
+  under a containment constraint. `navmeshes` proved the need: homogeneous pair
+  packs resolve (2,449 = 2,447 structs) but mixed packs (N = 3,224 with 3,109
+  structs) never saturate and nest into a chain.
 - [ ] **Define N per archive before the count oracle can generalise.**
   `tools/pack_extents.py` gives 16-aligned ends everywhere it has run
   (`textures` 21/21, `data` 42/42) but exact counts only where N counts direct
