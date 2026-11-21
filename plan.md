@@ -517,6 +517,7 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/extract_awc_ace1.py` | Decode codec-`0x02` AWC streams to float32 impulse-response WAV |
 | `tools/rebuild_audio.sh` | Rebuild audio.rpf AWC/XMA2 output from the source archive |
 | `tools/export_all.sh` | Rebuild all large-archive indexes/extractions and verify them |
+| `tools/bus_loop.sh` | Poll the bus forever with a 1 s wait, silent until delivery |
 | `tools/quadtree.py` | Build resource-local quadtrees and an HTML view |
 | `tools/verify_quadtree.py` | Verify quadtree completeness and structural invariants |
 | `tools/mmap_extract.py` | Bounded-memory selective zlib extraction |

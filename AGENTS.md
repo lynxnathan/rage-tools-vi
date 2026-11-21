@@ -119,9 +119,10 @@ Each workstream also keeps `handoff/<stream>-status.md` with four sections:
   `operator` at any time.
 - Batch one request or answer per cycle. Answers should point at artifact paths
   and include a three-line summary.
-- For standby use `bus.py wait --as <name> --since <id>` as a background
-  tool process. It exits 0 on delivery. Use `--timeout` only for an active
-  deadline. At that deadline it exits 2.
+- For standby use `bus.py wait --as <name> --since <id>` or
+  `tools/bus_loop.sh <name> <id>`; the latter polls forever with a maximum
+  1 s wait and prints only delivered messages. A bare `wait` exits 0 on
+  delivery and 2 on its 1 s default deadline.
 - The subscriber reads once after registration, then on a messages.jsonl
   event or IN_Q_OVERFLOW. Cursor writes do not trigger a read. Inotify
   failure is reported explicitly.
