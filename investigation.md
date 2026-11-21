@@ -2138,3 +2138,18 @@ from the repository root with `node tools/verify_extraction_index_pilot.cjs`.
 
 `data` independently ran the same Chromium check and accepted the pilot in
 bus #0142. Both runs used the cached Playwright package without installation.
+
+## Journal: static extraction pilot headless validation (2026-11-21)
+
+Data independently ran the static browser test with the existing cached
+Playwright modules:
+
+```sh
+NODE_PATH=/home/lynxnathan/.npm/_npx/e41f203b7505f1fb/node_modules \
+  node tools/verify_extraction_index_pilot.cjs
+```
+
+Chromium passed audio drill-down with the manifest SHA, unresolved audio,
+all three levels statuses, source extents, and back navigation to both roots.
+No package install was needed. The indexing pilot is accepted; validation is
+recorded in `handoff/extraction-pilot.md`.

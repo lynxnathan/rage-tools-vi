@@ -299,7 +299,8 @@ entry identification, coverage, or decoding across the archive set.
   32-row sample pages. Uncertain pack membership remains at archive level.
 - Validation: audio `0x5000..0x6316` matches the decoded file and manifest SHA
   `725398e5…c19f2`; levels `0x1d000..0x1d701` matches the index and says no
-  extracted file. Command and details: `handoff/extraction-pilot.md`.
+  extracted file. The Playwright drill-down/back test also passes with the
+  cached `NODE_PATH` modules. Command and details: `handoff/extraction-pilot.md`.
 
 ## Large archive pilot
 

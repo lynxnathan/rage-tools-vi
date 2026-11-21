@@ -34,9 +34,16 @@ decoded file's size and SHA-256, and emits bounded sample pages for levels.
   725398e5f5267e1da78a82b8582a68950d72c3dc8adb0d97b54eda40274c19f2`
 - `levels 0x1d000–0x1d701 matched the index; no bulk extraction manifest`
 
-The emitted `output/extraction-index-pilot/index.html` is 602 KB. A Playwright
-headless check is available as `tools/verify_extraction_index_pilot.cjs`, but
-Playwright is not installed in the base environment.
+The emitted `output/extraction-index-pilot/index.html` is 602 KB. The
+headless browser test passes with the cached Playwright modules:
+
+```sh
+NODE_PATH=/home/lynxnathan/.npm/_npx/e41f203b7505f1fb/node_modules \
+  node tools/verify_extraction_index_pilot.cjs
+```
+
+It checks audio drill-down and SHA, unresolved audio, all three levels statuses,
+source extents, and back navigation to the two roots. No install was needed.
 
 Artifact: `output/extraction-index-pilot/index.html`; generator:
 `tools/extraction_index_pilot.py`.
