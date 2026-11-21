@@ -3889,3 +3889,29 @@ Element ids are not a shared vocabulary: sampling 1,200 of the 11,953
 four-hash combinations — every element id is unique. They are per-instance or
 per-content identifiers, so name matching would need the generating hash, not a
 dictionary.
+
+## Journal: entry-level manifest for `core_bvh4` (2026-11-21)
+
+`tools/bvh4_entry_manifest.py` turns the payload model into a manifest:
+`handoff/core-bvh4-entries.tsv`, 296,490 entries over 1,282 packs.
+
+| Shape | Entries | Meaning |
+| --- | ---: | --- |
+| `pair` | 269,106 | 208-byte descriptor + its data stream |
+| `header_only` | 25,507 | single struct stream ≤ 64 KiB |
+| `unpaired_large` | 1,877 | streams > 64 KiB not consumed by a pair |
+
+**1,141 of 1,282 packs have an entry count exactly equal to their declared N**
+(the earlier 1,070 counted only descriptors; header-only entries close 71 more).
+Against ΣN = 295,244 the manifest is 1,246 entries high (0.42 %), and those 1,246
+are within `unpaired_large`, which is where a pair's second data stream would
+land. So the residual is concentrated and explainable, not diffuse.
+
+Coverage: the manifest accounts for 129.9 GB of decoded stream output. That
+figure includes the chunk padding to 64 KiB, so the true payload total is
+smaller — the descriptor's `+0xa0` is the exact figure once descriptors are
+decoded.
+
+This is the first archive with a payload-derived entry enumeration: every entry
+boundary comes from the descriptor/data pairing, not from a decoded index table,
+and the declared count is an independent cross-check.

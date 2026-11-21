@@ -6,8 +6,18 @@ stream after a descriptor is that entry's data and the stream after the data is
 the next descriptor in **3,967 / 4,000** cases.
 
 This makes `core_bvh4` the first archive where entry boundaries are recoverable
-from the payload alone: 269,106 descriptor entries (538,212 streams) against
-293,963 direct declared entries, leaving about 24,857 single-stream entries.
+from the payload alone. The generated manifest `handoff/core-bvh4-entries.tsv`
+lists **296,490 entries** over 1,282 packs:
+
+| Shape | Entries |
+| --- | ---: |
+| `pair` (descriptor + data) | 269,106 |
+| `header_only` (single struct ≤ 64 KiB) | 25,507 |
+| `unpaired_large` (> 64 KiB, not paired) | 1,877 |
+
+**1,141 of 1,282 packs** have an entry count exactly equal to their declared N,
+and the manifest is +1,246 entries against ΣN = 295,244 (0.42 %), with the
+residual inside `unpaired_large`.
 
 ## Descriptor (208 bytes, 13 × 16)
 
@@ -96,4 +106,6 @@ pointers at `0xc0`, each element a 32-byte record with an 8-byte hash at `+0x10`
 python3 tools/bvh4_descriptor_probe.py --checks --verify-padding 60
 python3 tools/bvh4_payload_probe.py --count 40
 python3 tools/bvh4_node_probe.py --count 160
+python3 tools/bvh4_struct_probe.py --samples 4
+python3 tools/bvh4_entry_manifest.py
 ```
