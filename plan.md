@@ -432,7 +432,7 @@ entry identification, coverage, or decoding across the archive set.
 - `mkdocs.yml` builds a Material site from `docs/`.
 - Mermaid UML is rendered through `pymdownx.superfences` + Mermaid v11.
 - Root documents (`plan.md`, `investigation.md`, `format.md`, `AGENTS.md`,
-  `AGENTS.md`, script journal/status) are included at
+  script journal/status) are included at
   build time, so the site is a projection rather than a second copy.
 - `tools/docs.sh serve` runs the live site; `tools/docs.sh build` writes `site/`.
 - `.github/workflows/docs.yml` builds the site on push/PR.
