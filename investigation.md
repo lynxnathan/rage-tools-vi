@@ -2310,3 +2310,123 @@ formats `0x4D` and `0x62` produced **zero hits**.
 Packed mip tails remain blocked for lack of any descriptor with mip count >=2;
 the verified single-mip BC3/BC7 formulas are unchanged. Evidence updated in
 `handoff/texture-mip-tail-blocker.md`. No output tree was modified.
+
+## 2026-11-21 — Explorer prototype
+
+The existing Rust CLI reads its complete source with `fs::read`; that approach
+does not bound memory for large archives. The separate `explorer/` prototype
+uses 64-bit offsets and reads at most 4 KiB for its raw byte page. This is an
+initial implementation, not evidence of petabyte-scale end-to-end performance;
+manifest browsing and streaming extraction remain to be implemented and tested.
+
+### Explorer control follow-up
+
+Annoyed Tools now pages an existing stream-index TSV and exports individual zlib
+ranges through fixed 64 KiB buffers, rejecting incomplete streams and existing
+destination files. `tools/explorer_e2e.sh` runs under Xvfb with X11 forced,
+opens `story000_bvh4.rpf`, loads its generated index, previews the first XML
+stream and verifies the exported 800 bytes against SHA-256
+`e20f1cc642fbd0cc83ef6dd1f5251d947c9793956e663ffa3cf48c1a332be57f`.
+This validates one control, not archive-entry decoding or petabyte performance.
+
+### In-app indexing follow-up
+
+The Rust indexer scans aligned zlib candidates using fixed buffers and writes
+unclassified gaps without claiming pack membership. The control test identifies
+all four known story stream ranges and checks that cancellation removes its
+partial index. The Xvfb workflow creates the index in the UI, previews and
+exports a stream, verifies the known hash, and filters to another XML stream.
+This does not establish throughput or indexing completeness on the large corpus.
+
+The ignored Rust test `local_data_corpus` scanned local `data.rpf` in 31.79 s
+in a debug build and reported 28,509 zlib streams, matching the previously
+recorded corpus count. This compares counts, not all individual ranges; no
+result for larger inputs or other platforms is implied.
+
+A follow-up run of the same test compared all 28,509 zlib start/end offsets,
+stored sizes and decoded sizes against `tools/stream_index.py`; every row
+matched. That debug scan took 31.94 s; the Python baseline reported 3.87 s.
+The release-mode follow-up found the same matching ranges in 3.20 s; the
+Python comparison reported 3.88 s. These are single local runs on one corpus,
+not a cross-platform benchmark or a 10 PB performance claim.
+Running the release test executable directly with `ANNOYED_SKIP_BASELINE=1`
+under `/usr/bin/time -v` recorded 3,908 KiB peak RSS and 3.18 s for the
+indexer process on the same corpus. This excludes the GUI and its memory.
+
+New explorer indexes include a searchable text prefix of at most 512 decoded
+bytes per stream; the virtual-desktop test locates `story000_terrain_bvh`
+through that prefix and verifies raw and decoded exports of control ranges.
+Prefix search cannot find names appearing later in a stream.
+
+## Journal: corpus-wide RPF9 header census (2026-11-21)
+
+Enumerated every RPF9 header in the 22-archive source tree on Mammoth
+(150.2 GB) by scanning for the `9FPR` magic at 16-byte alignment. The scan
+found **4,373 headers**: `levels.rpf` 2,051, `core_bvh4.rpf` 1,282,
+`story000.rpf` 442, `anim.rpf` 236, `audio.rpf` 104, `packs.rpf` 60,
+`data.rpf` 42, `navmeshes.rpf` 29, `textures.rpf` 21, plus 50 and 19 in
+`shared_minigame000` and `story000_restofworld`, 13 in `core_restofworld`, and
+1–3 in each root archive.
+A full pass took 33 min at about 85 MB/s with 2 MB RSS. Artifacts:
+`handoff/header-census-full.tsv` (parsed fields) and `handoff/header-words.tsv`
+(all 24 header words per row).
+
+### Front B is a fixed-stride table
+
+Front B (`+0x08..+0x04`) follows `align16(stride * N)` exactly for every
+header in mode family `0x0001`, where the stride comes from the `+0x2c` tag:
+
+| `+0x2c` | headers | stride | fit |
+| --- | ---: | ---: | --- |
+| `0x00090f01` | 2,414 | 9 | 2,414/2,414 |
+| `0x00090f02` | 494 | 10 | 494/494 |
+
+This refutes the earlier note that "large tables do not fit one record width":
+they do, at 9 or 10 bytes per entry. Mode families `0x0002`–`0x0008` add a
+16-byte-aligned extra table `S = B - align16(stride*N)`, which is 0 for the
+smallest packs (`S` min 0 in family 2) and grows to 10,032 bytes in family 2
+and 36,064 in family 6. The localization cohort is the special case
+`S = 2N + 12`, which is why it also fits `12N + 12` and cannot distinguish the
+two readings.
+
+### `+0x2c` is a count-driven format tag, not a build version
+
+The two tag values separate perfectly on N across all 4,373 headers:
+`0x00090f01` has N = 1..254 and `0x00090f02` has N = 257..27,172. There is no
+overlap and no header with N = 255 or 256. The tag therefore selects the entry
+record width by count, and the earlier "version" reading is withdrawn.
+
+### Every Front B is masked
+
+For each header I compared the plug-in byte entropy of Front B with the
+expected entropy of a uniform random sample of the same length (Monte Carlo
+below 1,000 bytes). The deficit distribution is median 0.000, p75 0.009, max
+0.357; only 64 of 4,373 regions exceed 0.15, and all of those are 16–80-byte
+samples where the statistic is coarse. All 4,373 first 16-byte blocks and all
+4,373 last 16-byte blocks are distinct. **No pack in the corpus has a
+plaintext Front B table.** The region is masked or keyed everywhere, so the
+remaining route is key material or a known-plaintext crib, not more scanning.
+
+### Header word map (16-byte-exact observations)
+
+- `+0x0c` equals the trailer byte length in all 4,373 headers; `+0x34`,
+  `+0x38`, and `+0x3c` are always zero.
+- `+0x40..+0x4c` is one constant 16-byte block across all headers;
+  `+0x50..+0x5c` takes exactly 4 values (2,906 / 1,398 / 67 / 2 headers), and
+  the 67-header group is exactly the `k = 6` group below.
+- `+0x10`/`+0x14` are unique per header (candidate per-pack id or salt). The
+  thirteen `data.rpf` localization packs share identical 29,856-byte trailers
+  although their `+0x10`/`+0x14` differ, so those words do not feed the trailer
+  chain.
+- `+0x18 = (k << 16) | 0x7a00` with `k` in {4,5,6,7,8} (2,659 / 1,583 / 67 /
+  2 / 62 headers). `k` tracks the mode family: 6 covers families 6–8, 8 covers
+  `0x00020007`/`0x00020008`.
+- `+0x1c` is a small aligned size (336 for all thirteen top-level archives) and
+  `+0x30 = +0x1c - 0x140` in 4,306 of 4,373 headers; the 67 exceptions are the
+  `k = 6` group. The roles of `+0x1c`/`+0x30` remain unidentified.
+- `+0x28` takes 10 hash-like values, each concentrated in a few modes. JOAAT
+  and CRC32 of common mount names and extensions do not reproduce them.
+
+Next: decode the family-2..8 extra table `S` (candidate directory or resource
+descriptor table), and test whether the four `+0x50` profiles are cipher keys
+by seeking any known-plaintext crib.

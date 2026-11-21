@@ -37,12 +37,52 @@ entry identification, coverage, or decoding across the archive set.
 
 ## Current state
 
+### Explorer
+
+- Work in progress in `explorer/`: Annoyed Tools opens an RPF9 header, reads
+  4 KiB pages, browses an existing stream-index TSV in 40-row pages, previews
+  capped zlib text, and exports one zlib range using bounded buffers. It uses
+  64-bit archive-relative offsets. Index provenance is not yet checked.
+- Next: build a bounded, disk-backed manifest index and paged hierarchy, then
+  connect streaming extraction and verify behavior on large/sparse files.
+  Do not represent carved ranges as confirmed archive entries.
+- Modder workflow target: familiar archive navigation, indexed scoped search,
+  selective export and previews for supported assets. Run slow I/O in background
+  jobs with progress/cancellation, and keep raw hex as a diagnostic view.
+- The prototype builds a cancellable index with progress, and offers a bounded
+  incremental filter over index rows and new indexes' first 512 decoded text
+  bytes. It does not yet provide a hierarchy, provenance verification, export
+  cancellation or full asset previews.
+- Against local `data.rpf`, the indexer matched all 28,509 zlib ranges and
+  sizes against the Python baseline; a release run took 3.20 s. Measurement
+  on substantially larger files remain open. A direct release test process
+  used 3,908 KiB peak RSS; this excludes the GUI.
+- The virtual X11 test `tools/explorer_e2e.sh` opens the story control, previews
+  its first XML stream, and compares the exported payload to its known SHA-256.
+
 ### Archive metadata
 
 - RPF9 header is `0x60` bytes; Front A is `0x60..+0x08`, Front B is
   `+0x08..+0x04`, and the trailer is `end-+0x0c..end`.
 - All three regions are 16-byte multiples. Front B is 32 bytes for N = 2 and
-  48 bytes for N = 4, but large tables do not fit one record width.
+  48 bytes for N = 4, and for every mode-family-1 header it is
+  `align16(stride * N)` with stride 9 (`+0x2c = 0x00090f01`) or 10
+  (`0x00090f02`).
+- Corpus census: **4,373 RPF9 headers** across the 22 source archives
+  (`handoff/header-census-full.tsv`, `handoff/header-words.tsv`). `+0x0c`
+  equals the trailer byte length in all of them; `+0x34..+0x3c` is always zero;
+  `+0x40..+0x4c` is one constant block and `+0x50..+0x5c` takes 4 values
+  (2,906 / 1,398 / 67 / 2).
+- `+0x2c` is a count-driven format tag, not a build version: `0x00090f01`
+  covers N = 1..254 and `0x00090f02` covers N = 257..27,172 with no overlap in
+  4,373 headers.
+- Mode families `0x0002`–`0x0008` add a 16-byte-aligned extra table
+  `S = Front B - align16(stride*N)`, from 0 to 36,064 bytes; the localization
+  cohort is the special case `S = 2N + 12`.
+- Front B is masked in every pack: its entropy deficit against a same-size
+  uniform sample is median 0.000 (max 0.357, only 64 tiny regions above 0.15),
+  and all 4,373 first and last 16-byte blocks are distinct. No plaintext entry
+  table exists in the corpus.
 - Trailer prefixes form two groups: four N = 2 scopes share 16 bytes, the two
   64-byte N = 2 trailers share 32, and the N = 4 pair shares a different 32.
 - The trailer suffix is CBC-like: shared prefixes end on block boundaries and
@@ -441,9 +481,17 @@ entry identification, coverage, or decoding across the archive set.
 
 ### Now
 
-- [ ] **Relocate output to Mammoth.** Read-only inputs stay on the NVMe; the
-  output symlink is created after the background `rsync` completes. Re-run
-  `tools/pipeline.py verify` afterward.
+- [x] **Relocate output to Mammoth.** `output` is now a symlink to
+  `/run/media/lynxnathan/Mammoth/rage-tools-vi-output` (199 GB extracted), and
+  `output/verification.tsv` already carries the Mammoth source paths with 6/6
+  PASS. Only `levels` extraction remains, deferred by disk budget.
+- [ ] **Identify the extra Front B table `S` in mode families 2–8.** Family 2
+  already has `S = 0` packs, so the stride stays 9/10 and `S` is an additional
+  aligned table (candidate directory or resource-descriptor table). Test it
+  against nested packs whose entry counts are known from extraction.
+- [ ] **Test the four `+0x50` profiles as cipher parameters.** All header
+  metadata is masked, so a known-plaintext crib is now the cheapest route; the
+  fallback is independent key material.
 - [ ] **Front A milestone on `story000_bvh4.rpf`.** The N = 4 pack has four
   exact XML ranges. The bounded entry probe found no offset/size pair in the
   tested layouts. Resume with independent table framing and decoding
@@ -548,6 +596,10 @@ entry identification, coverage, or decoding across the archive set.
 - [x] Expand native texture extraction to 73 dictionaries and 788 verified textures.
 - [x] Scan for compiled shader markers; none found in the decoded corpus.
 - [x] Test top-mip linear/tiled layouts on one small texture and two holdouts; no two-sample conversion verified.
+- [x] Census all 4,373 RPF9 headers in the 22-archive corpus and fit the Front B
+  size law (9N / 10N, exact for 2,908 family-1 headers).
+- [x] Prove Front B is masked everywhere in the corpus (uniform entropy, unique
+  first and last blocks).
 
 ## Tools
 
@@ -562,6 +614,11 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/audit_opaque_streams.py` | Check weak DOS labels, verify zlib candidates, and reconstruct mixed PSIN objects |
 | `tools/identify_opaque_context.py` | Identify neighboring object headers, PSIN layouts, and RBF0 root types |
 | `tools/metadata_regions.py` | Region sizes, header words, trailer prefixes, Front A split, directory inventory |
+| `tools/header_census.py` | Scan every archive for RPF9 headers and fit Front B size laws |
+| `tools/front_b_law_fit.py` | Fit Front A/Front B/trailer sizes against N per mode group |
+| `tools/header_words.py` | Dump and summarize all 24 header words across the census |
+| `tools/front_b_blocks.py` | Compare Front B first/last ciphertext blocks and key profiles |
+| `tools/metadata_entropy.py` | Entropy-deficit test for masked versus plaintext metadata regions |
 | `tools/section_blocks.py` | 16-byte block repetition across PSIN sections |
 | `tools/script_pair.py` | Object/blob sizes, index searches, periodicity, blob name scan |
 | `tools/root_names.py` | Match root IDs to JOAAT names |
