@@ -13,7 +13,7 @@ from the payload alone: 269,106 descriptor entries (538,212 streams) against
 
 | Offsets | Content | Evidence |
 | --- | --- | --- |
-| `+0x00..+0x3F` | constant template, eight `u32` values with zero neighbours | one value per word in 4,000 samples |
+| `+0x00..+0x3F` | constant template: eight `u32` slots, six of them `0x5`/`0x6`-tagged self-relative pointers | offsets land inside the record; the 256-byte header-only variant uses `0xb0`…`0xf0` |
 | `+0x40`, `+0x44` | two per-entry 32-bit ids | 3,811 distinct of 4,000 |
 | `+0x50..+0x7F` | right-handed orthonormal 3×3 basis, rows at `+0x50`, `+0x60`, `+0x70`, each padded to 16 bytes | orthonormal 4,000/4,000, det > 0, worst error 4.2e-05 |
 | `+0x80`, `+0x84` | zero | constant |
@@ -43,6 +43,16 @@ classDiagram
     }
     Descriptor "1" --> "1" Payload : next stream
 ```
+
+## The template is a struct, not a record type
+
+The same template appears in descriptor-less entries, which are the small
+header-only streams found where a pack's descriptor count falls short of its
+declared N (27,373 streams, median 272 bytes). Their `+0x00..+0x3F` slots hold
+the same eight values, but the tagged pointers move to `0xb0`, `0xd0`, `0xe0`,
+`0xf0` and the `+0x10` count becomes 2. So the 208-byte descriptor and those
+256-byte records are the **same serialized struct at different sizes**, with
+self-relative `0x5`-tagged pointers and one `0x6`-tagged field.
 
 ## Payload
 

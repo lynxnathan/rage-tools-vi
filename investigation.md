@@ -3774,3 +3774,39 @@ the larger payloads: header block, a long zero run, a dense multi-block region,
 a 17-block (1,088-byte) table, then a sparse tail. That 17-block table recurs
 across entries and is the best current candidate for the per-entry auxiliary
 table.
+
+## Journal: the descriptor template is a self-pointer struct (2026-11-21)
+
+The 212 packs whose descriptor count falls short of N contain 27,373 unpaired
+streams, and those decode to small records: median 272 bytes, p25 256, p75 336
+(exact sizes 272 × 11,953, 160 × 3,888, 256 × 1,972, 192 × 1,953, 240 × 644,
+800 × 846). They are header-only entries, not geometry.
+
+Decoding the 256-byte ones explains the descriptor's constant template. Compare
+the eight `u32` values in the first 0x40 bytes:
+
+| Slot | Descriptor (208 B) | Header-only entry (256 B) |
+| --- | --- | --- |
+| `+0x00` | `0` | `0` |
+| `+0x08` | `0x50000080` | `0x500000b0` |
+| `+0x10` | `1` | `2` |
+| `+0x18` | `0x500000a0` | `0x500000d0` |
+| `+0x20` | `0x60000000` | `0x60000000` |
+| `+0x28` | `0x500000b0` | `0x500000e0` |
+| `+0x30` | `0x500000c0` | `0x500000f0` |
+| `+0x38` | `0x50000050` | `0x50000050` |
+
+The `0x500000xx` values are **tagged self-relative pointers**: strip the
+`0x5` tag and each offset lands inside its own record (`0x50`…`0xc0` for the
+208-byte descriptor, `0x50`…`0xf0` for the 256-byte one). `0x60000000` is the
+same pattern with a different tag. The `u32` at `+0x10` counts sub-arrays
+(1 for the descriptor, 2 for the header-only entry).
+
+So the descriptor is not a bespoke record: it is the **same serialized struct**
+as the header-only entries, at a different size. That also makes `+0xa4` more
+coherent — if the struct stores sub-array pointers, its two `u16` fields are the
+low halves of two more offsets, which is why they are bounded by the allocated
+size and land on section boundaries (`0x100`, `0x200` in the decoded entry).
+
+Open: the tag semantics (`0x5` vs `0x6`), and whether `+0xa4` is a pointer pair
+into the *payload* (child data) rather than into the struct itself.
