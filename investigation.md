@@ -4323,3 +4323,50 @@ exact across both units — the two shapes are complementary inside one archive.
 The remaining packs are the ones whose declared N counts rows without payload
 (the `data.rpf` root, `0x964000`, the mixed `navmeshes` packs), which is the
 directory-row problem, not a boundary problem.
+
+## Journal: bone-table hashes are JOAAT of `skel_` bone names (2026-11-21)
+
+Reconstructed the name corpus that earlier hash probes had been missing.
+
+**Corpora.** `tools/harvest_names.py` decodes every zlib stream in an archive and
+mines quoted strings and path-like tokens from textual streams:
+
+| Source | Textual streams | Raw tokens |
+| --- | ---: | ---: |
+| `common.rpf` (local, 6.6 MB) | 848 of 954 | 172,844 |
+| `data.rpf` (local, 481 MB) | 1,666 of 28,509 | 332,387 |
+| merged, control-filtered, ASCII-only | — | **314,308** |
+
+**Test.** `tools/hash_corpus_test.py` tries JOAAT, CRC32 and FNV-1a over each name
+in case, extension, separator and mount-prefix variants (4.9 M variants) against
+four target sets: the two bvh4 descriptor ids (7,622 values), the 612 class-0
+bone hashes, the 252 weight hashes, and the `+0x28` values.
+
+**Result: 8 of the 612 bone-table hashes resolve**, all under
+`JOAAT(lowercase name)` with the convention `skel_<side>_<part>`:
+
+| Hash | Name | Bone index |
+| --- | --- | ---: |
+| `0xaf6f89c0` | `skel_l_calf` | 0 |
+| `0x3ec3bb37` | `skel_l_foot` | 14 |
+| `0x052ea8fa` | `skel_l_forearm` | 15 |
+| `0xa49bbd43` | `skel_l_hand` | 16 |
+| `0xd1bd2d01` | `skel_r_calf` | 17 |
+| `0xafce3373` | `skel_r_foot` | 31 |
+| `0xb409b89d` | `skel_r_forearm` | 32 |
+| `0xb35aba83` | `skel_r_hand` | 33 |
+
+All eight belong to **one root, `0x48dcbb01`**, at those indices — a coherent
+skeleton, left and right forelimb bones on both sides of the table. Artifact:
+`handoff/bone-hash-names.tsv`.
+
+**Why earlier probes missed it.** `tools/bone_names.txt` contains **zero**
+`skel_` tokens; its 3,212 names come from PSIN payloads that carry part names
+without the engine's bone prefix. The convention was the missing piece, not the
+hash function.
+
+**Negatives, measured at scale.** The bvh4 descriptor ids produced 29 hits in
+4.9 M variants against 7,622 values (~9 expected by chance) and every hit is a
+junk string (sentences, decimals, `platform:/tw7_interiors.rpf`), so that set is
+still unexplained. The weight hashes produced one chance hit under FNV-1a
+(`EMICRANIA`), and the `+0x28` values produced none.

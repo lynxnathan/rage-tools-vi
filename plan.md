@@ -67,9 +67,10 @@ Last updated: 2026-11-21.
 - [ ] **Multi-mip texture tail.** No descriptor with `+0x3e >= 2` exists in the
   corpus, so tail placement, mip order, and multi-mip pitch stay open. Reopen
   with a multi-mip dictionary. See `handoff/texture-mip-tail-blocker.md`.
-- [ ] **Name the skeleton families.** Validate the bone hash namespace and
-  order with an independently decoded model skeleton; resolve one fuzzy
-  F05/F06 pair. See `handoff/script-bone-namespace-probe.md`.
+- [ ] **Expand the bone vocabulary to name the remaining 604 hashes.** The hash
+  is now known: `JOAAT(lowercase("skel_<side>_<part>"))`, 8 confirmed in root
+  `0x48dcbb01` (`handoff/bone-hash-names.tsv`). Harvest more `skel_` names, then
+  name the rest and validate the families with the ordered skeleton.
 - [ ] **Name the `0x8f18aff0` weight hashes**: the 57 shared bone hashes and the
   195 other hashes, then join weights to vertices/parts.
 
@@ -81,9 +82,9 @@ Last updated: 2026-11-21.
 - [ ] **Map the type/class IDs and transforms.** Group property/key IDs by
   parent/child shape, use the bone corpus to name part records, and decode the
   value entries and packed transform representation.
-- [ ] **Resolve the 612 class-0 bone-table hashes** (names or algorithm), name
-  the `0x8f18aff0` pair namespace, and decide whether the high-1/high-2 pairs
-  are endpoints, layers, or sides.
+- [ ] **Name the `0x8f18aff0` pair namespace** and decide whether the
+  high-1/high-2 pairs are endpoints, layers, or sides. (The 612 bone hashes are
+  JOAAT of `skel_` names — see the Now item.)
 - [ ] **Resolve the 177 unnamed object roots** (79 vehicle-like, 86 class-0,
   12 other classes) from a model↔bone-list or `vehiclelayouts` mapping.
 - [ ] **Finish the `data.rpf` boundary work**: final child end, opaque streams
