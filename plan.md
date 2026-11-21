@@ -429,7 +429,11 @@ entry identification, coverage, or decoding across the archive set.
   clustered the roots into 16 skeleton families.
 - [ ] **Name the skeleton families.** Validate the bone hash namespace and order
   with an independently decoded model skeleton. Use geometry to prioritize
-  vehicle, ped, weapon, and prop candidates.
+  vehicle, ped, weapon, and prop candidates. The TSV-only vehicle comparison
+  yielded zero direct model or mover matches. Two F05/F06 root pairs fit
+  consecutive JOAAT suffixes under ambiguous seeds. Resolve one pair through
+  an independent root/model reference or an ordered named skeleton. See
+  `handoff/script-bone-namespace-probe.md`.
 - [x] **Close the four-channel test.** Same-root join and grid/leaf
   discriminators are negative; names and units stay open. Reopen only with a
   decoded `0xb066759f` schema or a named mover with a verified path/angle.
@@ -566,6 +570,7 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/bone_geometry.py` | Compute per-bone centroids, extents, and shared hashes |
 | `tools/bone_templates.py` | Group roots by exact bone-hash sets |
 | `tools/bone_template_families.py` | Cluster roots into near-identical skeleton families |
+| `tools/script_bone_namespace_probe.py` | Compare existing skeleton family hashes with named vehicle models and mover keys |
 | `tools/vehicle_curves.py` | Decode vehicle mover curves and JOAAT channels |
 | `tools/vehicle_curve_quantization.py` | Native-precision grid test and leaf permutation baseline |
 | `tools/vehicle_roots.py` | Inventory named vehicle roots and curve coverage |

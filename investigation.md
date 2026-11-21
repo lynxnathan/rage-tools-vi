@@ -2231,3 +2231,22 @@ The browser reported no extracted file for the levels control
 NODE_PATH=/home/lynxnathan/.npm/_npx/e41f203b7505f1fb/node_modules \
   node tools/verify_extraction_index_pilot.cjs
 ```
+
+## Journal: skeleton-family vehicle namespace check (2026-11-21)
+
+The TSV-only probe reproduced all 16 families and cross-checked 3,043 ordered
+bone rows against the geometry table. F02 splits into eight ordered templates
+from six exact sets. All 233 named vehicle models and six named mover keys
+reproduce their recorded JOAAT values. Their hashes did not identify any of
+the 44 class-0 roots or 612 bone words. The direct comparisons also covered
+byte-swapped words, all 36 mover keys, and four window names with `_mover`
+removed.
+
+Inverting JOAAT yielded four shared initial states, all explained by pairs
+of same-stem names ending in consecutive digits. Both F05/F06 root pairs
+fit both the `gauntlet4/5` and `impaler5/6` spellings under different states.
+No state predicted a root under a second model stem. The result leaves model
+and part names open pending an independent root/model reference or ordered
+named skeleton. Results and commands are in
+`handoff/script-bone-namespace-probe.md` and
+`handoff/script-bone-namespace-probe.tsv`.
