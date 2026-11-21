@@ -2,7 +2,7 @@
 
 Source: Xbox build `GTA6.Xbox.v1.0.2.1-CYBERLEEK`.
 Scope: codec/framing experiments on the extracted `audio-awc` containers.
-Status: **container parsed; codec `0x05` decoded as XMA2; `0x0B`/`0x02` pending**.
+Status: **container parsed; `0x05`=XMA2, `0x0B`=Opus, `0x02`=ACE1 decoded**.
 
 ## New container layout
 
@@ -59,9 +59,8 @@ into `handoff/audio-awc-framing.tsv`.
   pattern `162,...,162,266,162,...` up to the 16-marker scan limit. 840 rows
   have no marker in the first 16 hits, 23 have one, and 6 hit the 16-marker cap.
 
-The marker is therefore a real internal framing signal, not just a fixed prefix.
-It is not yet known whether it is a Bink Audio packet marker, an XMA2 frame
-header pattern, or a block header around an encrypted payload.
+The marker is the Opus length prefix: `a0 00` = 160-byte packet, `f8` = first
+TOC byte, so the next packet starts at 162. It is not a Bink or XMA2 marker.
 
 ## Decode attempts
 
@@ -88,7 +87,7 @@ low-frequency harmonic structure, not a decoder transient.
 
 This is the first non-zlib codec family decoded from `audio.rpf`.
 
-### 3. Synthetic UEBA/Bink Audio wrapper
+### 3. Synthetic UEBA/Bink Audio wrapper (wrong decoder)
 
 `tools/bruteforce_ueba.py` writes an `ABEU` header (UEBA v1), wraps each AWC
 payload as `[0x9999][u16 packet_size][payload]`, and feeds vgmstream. vgmstream
@@ -100,8 +99,22 @@ accepts the synthetic container and reports `RAD Game tools Bink Audio`.
   candidates, all short bursts; best flatness 0.189 / harmonic 0.619 was a
   single transient, not continuous speech or music.
 
-This establishes that the **Bink Audio container/decoder path is plausible**, but
-the AWC payload is not yet a correctly framed Bink packet.
+This was a wrong-decoder path: the synthetic wrapper passed Opus packets to a
+Bink decoder. It is not evidence for a Bink payload.
+
+### 4. Codec `0x0B` = Opus (solved)
+
+Each `0x800`-byte `0x55` block is a sequence of
+`[u16le packet size][size-byte Opus packet]`, zero-padded at the block end.
+libopus decodes the controls at 48 kHz; every `0xA3` block boundary matches
+cumulative decoded frames × channels. `tools/data_awc_opus_probe.py` verifies
+the controls; `tools/extract_awc_opus.py` performs the bulk export.
+
+Bulk result: **2,067/2,081 streams / 2.5 GB untrimmed WAV**. The 14 exceptions
+are 11 sample-rate entries (10×12 kHz, 1×28 kHz), 2 seek mismatches, and 1
+silent stream. Pre-skip/end-trim is only bounded by the
+controls; the export stays untrimmed and records declared units, channels, and
+decoded frames.
 
 ## Current interpretation
 
@@ -109,17 +122,22 @@ the AWC payload is not yet a correctly framed Bink packet.
    stream and compare codecs.
 2. **Codec `0x05` is XMA2 in this build.** Direct XMA2 decoding produces
    continuous tonal audio, so this is no longer a hypothesis.
-3. `0x0B` is a new codec ID relative to GTA V (`0x05` XMA2, `0x08` Vorbis,
-   `0x0D` Opus). `Bink2Scarlett.dll` and the UEBA path make **Bink Audio 2** the
-   strongest remaining hypothesis, but it is not proven while payloads decode
-   to transients only. `0x02` is also unresolved (PCM/MS-ADPCM/XMA1 wrappers
-   produce artifacts).
-4. The `a0 00 f8` / `162`-byte marker is still a framing lead. It may be an
-   XMA2 frame header pattern: the same marker appears in `0x05` and `0x0B`
-   payloads, so it is not sufficient by itself.
-5. If `0x0B` remains silent after marker splitting, test whether its `0x55`
-   payload is **AWC/XXTEA-encrypted**. GTA V AWC has an encrypted-data flag and
-   a `.awckey`; no GTA VI key was found in the sampled build tree.
+3. **`0x0B` is Opus**, not Bink. The synthetic UEBA path was feeding Opus to
+   the wrong decoder.
+4. **`0x02` is ACE1 float32 impulse responses.** Each `0x2000` tile is half of
+   a 2,048-point real FFT; inverse-transform, restore the omitted Nyquist
+   component, concatenate overlaps, and trim to `0x76 +0x0c`. The terminal
+   `0x2000` bytes are an `ACE1` trailer. See `handoff/data-awc-ace1-ir.md`.
+5. Remaining audio work: exact Opus pre-skip/end-trim, 14 exceptional Opus
+   streams, and unassigned first ACE1 trailer pairs; no encryption was found in
+   tested payloads.
+
+### 5. Codec `0x02` = ACE1 impulse responses
+
+`tools/data_awc_ace1_ir.py` reconstructs the float32 prefix with an inverse
+real FFT and writes float32 WAV. `tools/extract_awc_ace1.py` exported **73/73
+streams / 6 MB**; overlap/padding RMS is below `8e-9` on all controls. The
+first trailer pair values are not needed for reconstruction.
 
 ## Reproduction
 
@@ -135,6 +153,12 @@ python3 tools/awc_framing.py --limit 0
 
 # decode every codec-0x05 stream to PCM WAV
 /tmp/audio-venv/bin/python tools/extract_awc_xma2.py --limit 0
+
+# decode every codec-0x0B stream to untrimmed PCM WAV
+python3 tools/extract_awc_opus.py --limit 0
+
+# decode every codec-0x02 ACE1 impulse response
+python3 tools/extract_awc_ace1.py --limit 0
 ```
 
 ## Artifacts
@@ -145,5 +169,9 @@ python3 tools/awc_framing.py --limit 0
 - `tools/bruteforce_ueba.py` — synthetic UEBA packet sweep.
 - `tools/test_awc_xma2.py` — XMA2 WAV wrapper sweep.
 - `tools/extract_awc_xma2.py` — codec-`0x05` XMA2 decode/extract with manifest.
+- `tools/extract_awc_opus.py` — codec-`0x0B` Opus bulk export with manifest.
+- `tools/extract_awc_ace1.py` — codec-`0x02` ACE1 impulse-response export.
 - `output/extracted/audio-xma2/` — 151 decoded WAVs + manifest (local-only).
+- `output/extracted/audio-opus/` — 2,067 decoded WAVs + manifest (local-only).
+- `output/extracted/audio-ace1/` — 73 float WAVs + manifest (local-only).
 - `output/audio-tests/` — local-only WAV/spectrogram experiments (ignored).

@@ -13,8 +13,8 @@ START="${START:-0x129b000}"
 END="$(stat -c %s "$SOURCE")"
 cd "$ROOT"
 
-rm -rf "$OUT/audio-awc" "$OUT/audio-xma2"
-mkdir -p "$OUT/audio-awc" "$OUT/audio-xma2"
+rm -rf "$OUT/audio-awc" "$OUT/audio-xma2" "$OUT/audio-opus" "$OUT/audio-ace1"
+mkdir -p "$OUT/audio-awc" "$OUT/audio-xma2" "$OUT/audio-opus" "$OUT/audio-ace1"
 
 python3 tools/extract_awc.py "$SOURCE" \
   --start "$START" --end "$END" \
@@ -24,6 +24,8 @@ python3 tools/extract_awc.py "$SOURCE" \
 python3 tools/awc_framing.py --limit 0
 
 "$PYTHON" tools/extract_awc_xma2.py --limit 0 --out "$OUT/audio-xma2"
+"$PYTHON" tools/extract_awc_opus.py --limit 0 --out "$OUT/audio-opus"
+"$PYTHON" tools/extract_awc_ace1.py --limit 0 --out "$OUT/audio-ace1"
 
 python3 - "$OUT" <<'PY'
 import csv
@@ -33,10 +35,20 @@ from pathlib import Path
 out = Path(sys.argv[1])
 awc = list(csv.DictReader((out / "audio-awc" / "manifest.tsv").open(), delimiter="\t"))
 xma2 = list(csv.DictReader((out / "audio-xma2" / "manifest.tsv").open(), delimiter="\t"))
-wavs = list((out / "audio-xma2").glob("*.wav"))
-print(f"awc={len(awc)} xma2_rows={len(xma2)} xma2_ok={sum(not r.get('error') for r in xma2)} wavs={len(wavs)}")
+opus = list(csv.DictReader((out / "audio-opus" / "manifest.tsv").open(), delimiter="\t"))
+ace1 = list(csv.DictReader((out / "audio-ace1" / "manifest.tsv").open(), delimiter="\t"))
+xma2_wavs = list((out / "audio-xma2").glob("*.wav"))
+opus_wavs = list((out / "audio-opus").rglob("*.wav"))
+ace1_wavs = list((out / "audio-ace1").rglob("*.wav"))
+print(f"awc={len(awc)} xma2_ok={sum(not r.get('error') for r in xma2)} xma2_wavs={len(xma2_wavs)} "
+      f"opus_ok={sum(not r.get('error') for r in opus)} opus_wavs={len(opus_wavs)} "
+      f"ace1_ok={sum(not r.get('error') for r in ace1)} ace1_wavs={len(ace1_wavs)}")
 if len(awc) != 6625:
     raise SystemExit(f"unexpected AWC count: {len(awc)}")
-if len(wavs) != 151:
-    raise SystemExit(f"unexpected XMA2 WAV count: {len(wavs)}")
+if len(xma2_wavs) != 151:
+    raise SystemExit(f"unexpected XMA2 WAV count: {len(xma2_wavs)}")
+if len(opus_wavs) != 2067:
+    raise SystemExit(f"unexpected Opus WAV count: {len(opus_wavs)}")
+if len(ace1_wavs) != 73:
+    raise SystemExit(f"unexpected ACE1 WAV count: {len(ace1_wavs)}")
 PY

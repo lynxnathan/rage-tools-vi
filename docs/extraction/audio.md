@@ -27,35 +27,62 @@ The corpus scan found 2,320 parsed streams:
 
 | Codec | Streams | Status |
 | --- | ---: | --- |
-| `0x0b` | 2,081 | Bink Audio 2 hypothesis; framing unresolved |
+| `0x0b` | 2,081 | **Opus; decoded** |
 | `0x05` | 166 | **XMA2; decoded** |
-| `0x02` | 73 | unresolved |
+| `0x02` | 73 | **ACE1 impulse responses; decoded** |
 
-`0x05` initially looked broken because the RIFF wrapper used
-`wFormatTag=0x0161` (WMAudio2). The correct XMA2 tag is **`0x0166`**. With it,
-**151 unique streams decode to 86 MB of PCM WAV**; all 151 are non-silent and
-148 have spectral flatness below 0.1. The engine rumble in the decoded set is a
-human-confirmed check.
+### `0x05` = XMA2
 
-The 15 missing `0x05` rows are fragmented AWC entries, not decoder failures.
+The first wrapper used `wFormatTag=0x0161` (WMAudio2), so ffmpeg called the
+wrong decoder. The correct XMA2 tag is **`0x0166`**. With it, **151 unique
+streams decode to 86 MB of PCM WAV**; all 151 are non-silent and 148 have
+spectral flatness below 0.1. The engine rumble in the decoded set is a
+human-confirmed check. The 15 missing `0x05` rows are fragmented AWC entries.
 
-## Pending: `0x0B`
+### `0x0B` = Opus
 
-`0x0B` is the bulk of the audio. `Bink2Scarlett.dll` is present and a synthetic
-UEBA/Bink Audio wrapper is accepted by vgmstream, but it only produces short
-transients. The next framing lead is the `a0 00 f8` marker that repeats at
-offset **162** in many 2,048-byte data chunks. If marker-based packet splitting
-fails, test AWC/XXTEA encryption; no key was found in the sampled build tree.
+Each `0x800`-byte `0x55` block is a sequence of
+
+```text
+[u16le packet size][size-byte Opus packet] ...
+zero padding to the block end
+```
+
+The `a0 00 f8` prefix is a 160-byte packet (`f8` is its TOC); the next packet
+starts at 162. libopus decodes the controls at 48 kHz, and every `0xA3` block
+boundary matches cumulative decoded frames × channels.
+
+Bulk export: **2,067/2,081 streams / 2.5 GB untrimmed WAV**. The 14 exceptions
+are 11 sample-rate entries (10×12 kHz, 1×28 kHz), 2 seek mismatches, and 1 silent stream. Pre-skip
+and end-trim are bounded by controls but not exactly determined, so the export
+records declared units, channels, and decoded frames without trimming.
+
+### `0x02` = ACE1 impulse responses
+
+Each `0x2000`-byte tile is 1,024 interleaved complex float32 bins of a
+2,048-point real FFT, stored with the Nyquist bin omitted. Inverse-transform
+the tiles, restore the missing alternating Nyquist component from the zero
+leading half and adjacent overlaps, concatenate the second halves, and trim to
+the tap count at `0x76 +0x0c`. The terminal `0x2000` bytes are an `ACE1`
+trailer: `0xfffface1` + 15 LE `u16` pairs + zero padding.
+
+`tools/extract_awc_ace1.py` exported **73/73 streams / 6 MB float32 WAV**; all
+controls have overlap/padding RMS below `8e-9`. The first trailer pair values
+are not needed for reconstruction and remain unassigned.
 
 ## Reproduce
 
 ```sh
-# full audio.rpf output: AWC + framing + XMA2
+# full audio.rpf output: AWC + framing + XMA2 + Opus
 tools/rebuild_audio.sh SOURCE/audio.rpf output/extracted
 
-# just the XMA2 subset from an existing AWC extraction
+# individual subsets from an existing AWC extraction
 python3 tools/extract_awc_xma2.py --limit 0
+python3 tools/extract_awc_opus.py --limit 0
+python3 tools/extract_awc_ace1.py --limit 0
 ```
 
 Artifacts: `handoff/audio-awc.md`, `handoff/audio-awc-decode.md`,
-`handoff/audio-awc-framing.tsv`, `handoff/audio-xma2-decode.tsv`.
+`handoff/data-awc-opus.md`, `handoff/data-awc-trim-ace1.md`,
+`handoff/audio-awc-framing.tsv`, `handoff/audio-xma2-decode.tsv`,
+`handoff/audio-opus-decode.tsv`, `handoff/audio-ace1-decode.tsv`.

@@ -17,8 +17,9 @@ gantt
     Class-0 bone table            :done, 2026-11-20, 1d
     Full output rebuild           :done, 2026-11-21, 1d
     XMA2 audio decode             :done, 2026-11-21, 1d
+    Opus 0x0B audio decode        :done, 2026-11-21, 1d
     section Active
-    Bink Audio 0x0B framing       :active, 2026-11-21, 3d
+    Opus trim / ACE1 semantics    :active, 2026-11-21, 3d
     Bone hash names / geometry    :2026-11-24, 4d
     Remaining typed arrays        :2026-11-24, 4d
     section Blocked
@@ -49,7 +50,7 @@ stateDiagram-v2
 
 | Priority | Task | Evidence | Blocker |
 | --- | --- | --- | --- |
-| 1 | Decode `0x0B` Bink Audio framing | 2,081 streams / 20+ GB | packet framing or key |
+| 1 | Opus trim and 0x02 semantics | 2,067 Opus WAVs / 73 ACE1 IRs | pre-skip and trailer pairs |
 | 2 | Name or align the 612 bone hashes | `handoff/script-bones.tsv` | hash namespace |
 | 3 | Geometry-classify bones | `handoff/script-bone-points.tsv` | no model orientation |
 | 4 | Decode remaining typed arrays | `0xb066759f`, `0xb1ee00d0` | field semantics |
@@ -68,6 +69,8 @@ stateDiagram-v2
 - [x] Flatten the 44 class-0 bone tables and 3,043 bones.
 - [x] Rebuild all six verified archive extractions after a clean output wipe.
 - [x] Decode 151 AWC codec-`0x05` streams as XMA2 WAV.
+- [x] Decode 2,067 AWC codec-`0x0B` streams as untrimmed Opus WAV.
+- [x] Decode 73 AWC codec-`0x02` streams as ACE1 impulse responses.
 
 ## Parked
 

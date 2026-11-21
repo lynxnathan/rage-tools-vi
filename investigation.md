@@ -1954,3 +1954,109 @@ single workstreams section. Only `main` remains active.
 `pi-payload-audit.md` was removed as an obsolete pre-collaboration attempt; the
 reproducible tool `tools/pi_archive_audit.py` remains. The earlier journal
 reference to the removed audit file is historical and is not rewritten.
+
+## Journal: AWC codec 0x0B decoded as Opus (2026-11-21)
+
+`data` reported the bounded result in bus #0126. A rerun on the three
+documented AWC files reproduced six mono and two stereo streams decoded with
+libopus at 48 kHz. Each `0x800`-byte block in chunk `0x55` starts with a
+little-endian 16-bit packet size at `+0x00` and an Opus TOC at `+0x02`. The
+next length field is `2 + packet_size` bytes after the current length field.
+Zero bytes pad the rest of the block. In the mono control, `a0 00 f8` is a
+160-byte packet containing one 20 ms mono fullband CELT frame. The observed
+162-byte stride follows from the length field; later packet sizes vary.
+
+In `000000000129b000.awc`, stream 0 occupies the AWC-relative range
+`[0x4a80, 0x6280)`. Its 66 packets produce 63,360 frames. The `0xA3` table
+reports `0, 23040, 48000, 62400`: the first three entries are storage-block
+starts and the last is the final packet start. All eight streams match this
+rule in units of decoded frames times channels. The tested payloads decode
+directly without decryption. The UEBA transient came from feeding Opus to the
+Bink decoder. The declared mono sample count is 60,741; exact pre-skip and
+end-trim are still open.
+
+The separate `0x02` control contains six streams. All but one word per stream
+are finite as little-endian float32. The exceptional word `0xfffface1` always
+occurs 2,048 words before the declared end. This supports a float-valued
+payload with internal structure; its format remains open.
+
+Reproduction commands and control files are listed in
+`handoff/data-awc-opus.md`. Tool: `tools/data_awc_opus_probe.py`.
+
+## Journal: Opus trim bounds and AWC 0x02 ACE1 trailer (2026-11-21)
+
+Bus #0129 reported controls for trim and trailer structure. Reproduced by
+generating mono and stereo control WAVs from `tools/data_awc_opus_probe.py`
+and running `tools/data_awc_trim_controls.py` on both sets. The declared
+count `N` at `0x76 +0x00` is consistent with `N / C` target frames, where
+`C` is channels. For `T` decoded frames the total trim is `T - N / C`.
+The first mono and stereo controls give 2,619 and 2,017 frames respectively.
+Exact-zero spans vary across the controls, and the seek table ends at the
+last packet start. The measured data leave the initial skip `P` in the
+inclusive range `0..T - N / C`, so the aligned range `[P, P + N / C)` is
+undetermined. Keep decoded PCM untrimmed and preserve the counts.
+
+Reproduced `--ace1` on both control files. All 12 streams have `4 × N`
+payload bytes. The last `0x2000` bytes start with the LE magic
+`0xfffface1` followed by fifteen LE `u16` pairs at `[+0x04, +0x40)` and
+zero padding. The last pair predicts the number of `0x2000`-byte blocks
+of finite LE float32 words in the prefix. For the first control stream,
+the prefix occupies AWC-relative `[0x800, 0x26800)` and the trailer
+occupies `[0x26800, 0x28800)`. The pair meanings and signal encoding remain
+open. Controls and commands are in `handoff/data-awc-trim-ace1.md`.
+
+## Journal: bulk AWC Opus export (2026-11-21)
+
+The lead reported the completed export in bus #0130. The local manifest
+`output/extracted/audio-opus/manifest.tsv` contains 2,081 stream rows and
+2,067 WAV hashes. The export directory occupies 2.5 GiB on disk. Counting
+the error rows directly gives 11 unsupported-rate entries (ten 12 kHz and
+one 28 kHz), two seek mismatches (one with an empty table), and one stream
+rejected as wholly silent. The preliminary bus breakdown gave ten rate
+entries and three seek mismatches. The total number of exceptions is 14.
+The manifest records the declared sample count. Channel count and decoded
+frame count are available in each untrimmed WAV header.
+
+Reproduce the export from the repository root with
+`python3 -B tools/extract_awc_opus.py`. The driver selects source containers
+from `handoff/audio-awc-framing.tsv`.
+
+## Journal: AWC 0x02 ACE1 impulse responses reconstructed (2026-11-21)
+
+Bus #0132 identified the `0x02` float data as overlapping half-spectra of
+2,048-point real FFT windows. Each `0x2000`-byte tile stores 1,024 complex
+little-endian float32 bins and omits Nyquist. The windows advance 1,024
+samples. A zero first half fixes the first Nyquist amplitude; the shared
+halves fix each subsequent amplitude. Concatenate the reconstructed second
+halves except the final window and keep the tap count at `0x76 +0x0c`.
+
+Rerunning `tools/data_awc_ace1_ir.py` on `0000000697c43000.awc` and
+`0000000697d6c000.awc` reproduced all 12 controls. Tap counts are 420,
+31,400, and 117,991. Overlap disagreement and end padding are each below
+`8e-9` RMS throughout. `ffprobe` confirmed the 117,991-tap WAV is mono
+48 kHz `pcm_f32le`. The first values of the trailer pairs still lack a
+verified interpretation. The exact inverse-transform formulas, commands,
+and local WAV paths are in `handoff/data-awc-ace1-ir.md`.
+
+## Journal: bulk audio export complete (2026-11-21)
+
+The lead exported all three AWC codec families from the rebuilt containers:
+
+- **`0x05` XMA2:** 151/166 streams, 86 MB PCM WAV.
+- **`0x0B` Opus:** 2,067/2,081 streams, 2.5 GB untrimmed PCM WAV. Block framing
+  is `[u16le size][Opus packet]` inside each `0x800`-byte data block; the
+  `a0 00 f8` / 162-marker is the 160-byte packet plus its two-byte length.
+- **`0x02` ACE1:** 73/73 streams, 6 MB float32 impulse-response WAV. Each
+  `0x2000` tile is half of a 2,048-point real FFT; the ACE1 trailer starts with
+  `0xfffface1`. All controls reconstruct with overlap/padding RMS < 8e-9.
+
+Opus exceptions are explicit: 11 sample-rate entries (10×12 kHz, 1×28 kHz),
+2 seek mismatches, and 1 silent stream. Exact Opus pre-skip/end-trim remains
+open; bulk WAVs are deliberately untrimmed. The first ACE1 trailer pair values
+are also unassigned.
+
+Artifacts: `handoff/audio-opus-decode.tsv`, `handoff/audio-ace1-decode.tsv`,
+`tools/extract_awc_opus.py`, `tools/extract_awc_ace1.py`,
+`handoff/data-awc-opus.md`, `handoff/data-awc-ace1-ir.md`. The reproducible
+runner is `tools/rebuild_audio.sh`; it now expects 151 XMA2, 2,067 Opus, and
+73 ACE1 WAVs.

@@ -255,14 +255,36 @@ entry identification, coverage, or decoding across the archive set.
 - `0x76` is a 32-byte descriptor: sample counts at `+0x00`/`+0x0c`, rate at
   `+0x08`, codec at `+0x1c`, sub-ID at `+0x1d`. Corpus scan: 2,320 parsed streams;
   codec `0x0b` 2,081 / `0x05` 166 / `0x02` 73; rates 48k, 32k, 12k, 28k.
-- Data chunks are multiples of 2,048. Many begin `a0 00 f8` and repeat it at
-  offset **162** (1,451 rows): a real internal framing signal.
+- Many data chunks begin `a0 00 f8` and repeat it at offset **162**
+  (1,451 rows). In the Opus controls this is a 160-byte packet with a
+  two-byte length prefix and TOC `0xf8`.
 - **Codec `0x05` = XMA2: solved.** The first wrapper used `wFormatTag=0x0161`
   (WMAudio2); the correct tag is `0x0166`. `tools/extract_awc_xma2.py` decoded
   151/166 streams to 86 MB of WAV; all 151 non-silent, 148 tonal. First
   non-zlib codec family decoded from `audio.rpf`.
-- `0x0B` remains Bink Audio 2 hypothesis; `0x02` unresolved. Next: split `0x0B`
-  at the `a0 00 f8`/162 marker; if silent, test AWC/XXTEA encryption/key source.
+- **Codec `0x0B` = Opus.** In each `0x800`-byte `0x55` block, walk
+  `[u16le packet size][Opus packet]` until zero padding. All eight streams
+  tested (six mono, two stereo) decode directly with libopus at 48 kHz, and
+  the `0xA3` block offsets agree with cumulative frames × channels. See
+  `handoff/data-awc-opus.md`. Export untrimmed PCM
+  with declared sample count, channels, and decoded frames. The controls
+  constrain total trim to decoded frames minus declared count / channels.
+  Establish pre-skip independently to split the trim between start and end.
+  `tools/extract_awc_opus.py` exported **2,067/2,081 streams / 2.5 GB**
+  untrimmed WAV; 14 exceptions are recorded (11 sample-rate, 2 seek mismatches,
+  1 silent). Artifact: `handoff/audio-opus-decode.tsv`.
+- Bulk Opus manifest records 11 rejected sample-rate entries (ten 12 kHz and
+  one 28 kHz), two seek mismatches, and one entirely silent stream.
+- **Codec `0x02` = ACE1 impulse responses** in all 12 streams tested. The
+  float32 LE prefix stores half-spectra of 2,048-point real FFT windows
+  at 1,024-sample hops. Restore the omitted Nyquist terms from the zero
+  leading half and neighboring overlaps, then trim to the tap count at
+  `0x76 +0x0c`. The `0x2000`-byte ACE1 trailer starts with `0xfffface1`
+  and 15 LE `u16` pairs. The second value of the final pair gives the
+  prefix block count. `tools/extract_awc_ace1.py` exported all **73/73
+  streams / 6 MB float32 WAV**; overlap/padding RMS < 8e-9. Remaining:
+  assign the first trailer pair values. See
+  `handoff/data-awc-ace1-ir.md`.
 
 ## Large archive pilot
 
@@ -481,9 +503,14 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/extract_entry.py` | General archive/range extraction entry point |
 | `tools/extract_awc.py` | Scan/extract ADAT AWC containers from raw audio spans |
 | `tools/awc_framing.py` | Inventory AWC `0x76` descriptors, data sizes, and frame markers |
+| `tools/data_awc_opus_probe.py` | Decode bounded AWC `0x0B` Opus controls and validate `0xA3` seek offsets |
+| `tools/data_awc_trim_controls.py` | Measure Opus trim bounds and inspect AWC `0x02` ACE1 trailers |
+| `tools/data_awc_ace1_ir.py` | Reconstruct AWC `0x02` impulse responses and write float WAV controls |
 | `tools/bruteforce_ueba.py` | Sweep AWC payloads through a synthetic UEBA/Bink Audio wrapper |
 | `tools/test_awc_xma2.py` | Build XMA2 WAVE wrappers from AWC data chunks and decode |
 | `tools/extract_awc_xma2.py` | Decode codec-`0x05` AWC streams to PCM WAV with manifest |
+| `tools/extract_awc_opus.py` | Decode codec-`0x0B` AWC streams to untrimmed PCM WAV with manifest |
+| `tools/extract_awc_ace1.py` | Decode codec-`0x02` AWC streams to float32 impulse-response WAV |
 | `tools/rebuild_audio.sh` | Rebuild audio.rpf AWC/XMA2 output from the source archive |
 | `tools/export_all.sh` | Rebuild all large-archive indexes/extractions and verify them |
 | `tools/quadtree.py` | Build resource-local quadtrees and an HTML view |
@@ -531,9 +558,8 @@ entry identification, coverage, or decoding across the archive set.
 - Where is the compiled shader bytecode, if it is present in this corpus?
 - What are the actual codec, top-mip offset, mip order, pitch, and tile order for
   format 0x4D and 0x62 textures?
-- What do AWC codec IDs `0x0b` and `0x02` map to, and is the `a0 00 f8`/162
-  marker a packet boundary or frame header? (`0x05` is XMA2.)
-- Is the AWC `0x55` payload encrypted (AWC/XXTEA), and where is the GTA VI key?
+- How are Opus pre-skip and end-trim derived in AWC codec `0x0B`?
+- What do the ACE1 trailer pairs describe beyond the final prefix block count?
 - What hash produces the 612 class-0 bone-table names, and what are their names?
 - What do the `0x1ebb416b` index/high-byte IDs and `0x8f18aff0` hashes name?
 - Do the high-1/high-2 pairs in the 48-byte entries encode endpoints, layers,
