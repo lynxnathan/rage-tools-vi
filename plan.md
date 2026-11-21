@@ -67,6 +67,9 @@ entry identification, coverage, or decoding across the archive set.
   and matched all 130,510 stream ranges and sizes to its existing index.
 - Direct offset lookup uses a bounded binary search on ordered range indexes;
   tests cover the existing `anim.rpf` index beyond 4 GiB.
+- A separate paged header-candidate view detects the control's embedded header
+  and all 42 previously recorded plausible `data.rpf` headers. Pack endpoints
+  and membership remain unresolved.
 
 ### Archive metadata
 
@@ -83,7 +86,15 @@ entry identification, coverage, or decoding across the archive set.
   (2,906 / 1,398 / 67 / 2).
 - `+0x2c` is a count-driven format tag, not a build version: `0x00090f01`
   covers N = 1..254 and `0x00090f02` covers N = 257..27,172 with no overlap in
-  4,373 headers.
+  4,373 headers. The stride law is `align16(10N)` exactly, so the extra byte is
+  inside every record rather than a per-pack header; a per-record index (max
+  N−1) predicts the flip at N = 257 and a per-record count (max N) at N = 256,
+  and neither N = 255 nor N = 256 occurs in this build.
+- Front B is masked per pack: across the thirteen same-N localization packs,
+  **0 of 13,392 offsets** are stable and byte agreement is at chance, while
+  their trailers are byte-identical. Cross-pack byte comparison cannot recover
+  the record layout; the trailer chain is pack-independent and the Front B chain
+  is not.
 - Mode families `0x0002`–`0x0008` add a 16-byte-aligned extra table
   `S = Front B - align16(stride*N)`, from 0 to 36,064 bytes; the localization
   cohort is the special case `S = 2N + 12`.
@@ -518,6 +529,10 @@ entry identification, coverage, or decoding across the archive set.
 - [ ] **Test the four `+0x50` profiles as cipher parameters.** All header
   metadata is masked, so a known-plaintext crib is now the cheapest route; the
   fallback is independent key material.
+- [ ] **Boundary probe for the stride flip.** A pack with N = 255 or 256 would
+  separate a per-record index (9 bytes, max N−1 = 255) from a per-record count
+  (10 bytes). This build contains neither count, so the probe needs another
+  build or a PC sample.
 - [ ] **Front A milestone on `story000_bvh4.rpf`.** The N = 4 pack has four
   exact XML ranges. The bounded entry probe found no offset/size pair in the
   tested layouts. Resume with independent table framing and decoding
@@ -645,6 +660,7 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/header_words.py` | Dump and summarize all 24 header words across the census |
 | `tools/front_b_blocks.py` | Compare Front B first/last ciphertext blocks and key profiles |
 | `tools/metadata_entropy.py` | Entropy-deficit test for masked versus plaintext metadata regions |
+| `tools/front_b_stability.py` | Compare same-N Front B bodies byte by byte and test mask determinism |
 | `tools/section_blocks.py` | 16-byte block repetition across PSIN sections |
 | `tools/script_pair.py` | Object/blob sizes, index searches, periodicity, blob name scan |
 | `tools/root_names.py` | Match root IDs to JOAAT names |

@@ -67,6 +67,12 @@ The tag is a **count-driven format tag**, not a build version: `0x00090f01`
 covers N = 1…254 and `0x00090f02` covers N = 257…27,172, with no overlap and no
 header at N = 255 or 256.
 
+Because the law is `align16(10N)` exactly, the extra byte is **inside every
+record**, not a per-pack header byte (that would give `align16(9N + c)`). A
+per-record index running 0…N−1 fits a `u8` up to N = 256 and forces the flip at
+N = 257; a per-record count running 1…N forces it at N = 256. Both readings
+survive because this build has no pack at either count.
+
 Mode families `0x0002`–`0x0008` add a 16-byte-aligned extra table
 `S = Front B − align16(stride * N)`. `S` is 0 for the smallest family-2 packs and
 grows to 36,064 bytes; family 4 is the tightest at 224 bytes per entry (±8),
@@ -95,6 +101,12 @@ distinct.
 
 No pack in the corpus has a plaintext Front B table. The remaining route is key
 material or a known-plaintext crib, not more scanning.
+
+Cross-pack comparison is unavailable: across the thirteen `data.rpf`
+localization packs, which share N = 1,115 and a byte-identical 29,856-byte
+trailer, **0 of 13,392 Front B offsets are stable** and byte agreement is at
+chance (`tools/front_b_stability.py`). The trailer chain is pack-independent;
+the Front B chain is not, or its plaintext is pack-specific in every record.
 
 ## Header word map
 
