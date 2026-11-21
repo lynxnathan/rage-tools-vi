@@ -2267,3 +2267,19 @@ Every address matches the low 4 KiB of the published 128-bpp standard swizzle.
 The resulting PNG is a coherent striped circle with transparent corners.
 Run the bounded probe in `handoff/texture-trophy-control.md` to reproduce.
 Multi-tile pitch, packed mip ordering, and `0x62` still need controls.
+
+## Journal: multi-page BC7 control (2026-11-21)
+
+The `switch_jason` descriptor in local `textures.rpf` specifies
+`172×172×1`, format `0x62`, mip-count byte 1 and `0x900` blocks at 16 bytes.
+The archive-relative zlib streams at `0x9158010..0x915808d`,
+`0x9158090..0x915c098` and `0x915c0a0..0x915fcd3` validate the dictionary.
+The texture uses graphics-relative `0..0x9000`.
+
+The buffer is a row-major grid of nine 4 KiB pages. Each `16×16` block page
+uses the same 128-bpp swizzle as trophy. All 1,849 active blocks have valid
+BC7 mode prefixes and all 455 omitted blocks are zero. Pillow decoded a
+coherent portrait. Mean premultiplied RGBA seam delta is 5.2591 for row-major
+pages against 7.4762 for compact Morton and 34.1674 for tight linear. The
+physical page-row stride is `0x3000`; cropped linear pitch is 688 bytes.
+See `handoff/texture-bc7-control.md` for the address equation and PNG command.

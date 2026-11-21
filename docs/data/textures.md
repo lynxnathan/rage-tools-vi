@@ -1,8 +1,8 @@
 # Textures
 
 Texture dictionaries are descriptor-backed. Their bounds, names, and
-dimensions validate. One single-mip `0x4d` texture also has a verified BC3
-decode and block layout.
+dimensions validate. The single-mip controls verify BC3 for `0x4d` and
+BC7 for `0x62`.
 
 ## Descriptor model
 
@@ -73,12 +73,18 @@ stateDiagram-v2
     Verified --> [*]
 ```
 
-## Verified control
+## Verified controls
 
 The `64×64` `trophy` texture in `textures.rpf` fills a single 4 KiB buffer
 with 256 BC3 blocks starting at offset zero. All block addresses match the
 low 4 KiB of the 2D 128-bpp standard swizzle. The decoded PNG and
 reproduction command are listed in `handoff/texture-trophy-control.md`.
+
+The `172×172` `switch_jason` control uses a row-major `3×3` grid of 4 KiB
+pages. Each page uses the same within-page pattern. All 1,849 active blocks
+have valid BC7 modes, and all 455 omitted blocks are zero padding. The
+page-row stride is `0x3000` bytes and cropped linear pitch is 688 bytes.
+See `handoff/texture-bc7-control.md` for the address formula and PNG.
 
 ## Earlier top-mip experiment
 
@@ -100,11 +106,10 @@ sequenceDiagram
 
 ## Open questions
 
-- What are the actual top-mip offset and mip order?
-- What is the row pitch for formats `0x4D` and `0x62`?
-- Is the tile order 4×4 blocks, 16×16 pixels, or another layout?
-- Which codec is used by `0x62`?
-- Can a second independent texture verify the spinner candidate?
+- How are top mips and tails ordered in multi-mip buffers?
+- Does the page stride formula hold for multi-page BC3 and other descriptor
+  modes?
+- Can an independent texture verify the spinner candidate?
 
-The spinner and HUD layouts remain open. The trophy control does not cover
-multi-tile surfaces, packed mip tails, or format `0x62`.
+The spinner and HUD layouts remain open. Both verified controls have one mip,
+so their results leave packed mip tails open.

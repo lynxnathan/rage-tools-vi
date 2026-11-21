@@ -2,6 +2,7 @@
 """Recover one descriptor-backed texture control from a bounded source window."""
 
 import argparse
+from collections import Counter
 from functools import cache
 from hashlib import sha256
 from itertools import permutations
@@ -121,7 +122,7 @@ def top_orders(data, width, height):
             yield f"{order}{tile}", reordered_blocks(data, indices)
 
 
-def seam_score(rgba, width, height):
+def seam_score(rgba, width, height, step=4):
     pixels = [(r * a // 255, g * a // 255, b * a // 255, a)
               for r, g, b, a in struct.iter_unpack("4B", rgba)]
     total = samples = 0
@@ -129,9 +130,9 @@ def seam_score(rgba, width, height):
         for x in range(width):
             index = y * width + x
             neighbors = []
-            if x and x % 4 == 0:
+            if x and x % step == 0:
                 neighbors.append(index - 1)
-            if y and y % 4 == 0:
+            if y and y % step == 0:
                 neighbors.append(index - width)
             for neighbor in neighbors:
                 total += sum(abs(a - b) for a, b in zip(pixels[index], pixels[neighbor]))
@@ -233,6 +234,67 @@ def decode_control(data, width, height, code, mips, output, address_bits):
     print(f"lowest seam delta {score:.4f}, {order}: {output}")
 
 
+def paged_indices(blocks_x, blocks_y, page_order):
+    pitch = (blocks_x + 15) // 16
+    inner = standard_128bpp_indices()
+    return tuple(
+        256 * page_order[(y // 16) * pitch + x // 16] + inner[(y % 16) * 16 + x % 16]
+        for y in range(blocks_y) for x in range(blocks_x)
+    )
+
+
+def decode_bc7_control(data, width, height, mips, output):
+    try:
+        from PIL import Image
+    except ImportError as error:
+        raise ValueError("the BC7 probe needs Pillow's BC7 decoder") from error
+    if mips != 1 or width % 4 or height % 4:
+        raise ValueError("BC7 probe expects one mip with dimensions divisible by four")
+    blocks_x, blocks_y = width // 4, height // 4
+    pages_x, pages_y = (blocks_x + 15) // 16, (blocks_y + 15) // 16
+    if len(data) != pages_x * pages_y * 0x1000:
+        raise ValueError("BC7 buffer size does not match the padded 4 KiB page grid")
+    print(f"BC7 grid: {blocks_x}×{blocks_y} active blocks, {pages_x}×{pages_y} 4 KiB pages")
+
+    pages = [(x, y) for y in range(pages_y) for x in range(pages_x)]
+    tile = 1 << (max(pages_x, pages_y) - 1).bit_length()
+    positions = {coord: index for index, coord in
+                 enumerate(sorted(pages, key=lambda point: morton(*point, tile)))}
+    orders = {
+        "linear tight": range(blocks_x * blocks_y),
+        "linear padded": tuple(y * pages_x * 16 + x for y in range(blocks_y) for x in range(blocks_x)),
+        "row-major pages": paged_indices(blocks_x, blocks_y, range(len(pages))),
+        "column-major pages": paged_indices(blocks_x, blocks_y, [x * pages_y + y for x, y in pages]),
+        "compact Morton pages": paged_indices(blocks_x, blocks_y, [positions[coord] for coord in pages]),
+    }
+    results = []
+    for name, indices in orders.items():
+        blocks = reordered_blocks(data, indices)
+        rgba = Image.frombytes("RGBA", (width, height), blocks, "bcn", (7, "BC7")).tobytes()
+        score = seam_score(rgba, width, height)
+        outer = ""
+        if max(width, height) > 64:
+            outer = f", page seam {seam_score(rgba, width, height, 64):.4f}"
+        print(f"BC7 {name}: seam delta {score:.4f}{outer}")
+        results.append((score, name, rgba, indices))
+    score, name, rgba, indices = min(results)
+
+    active = set(indices)
+    modes = Counter()
+    pad_zero = 0
+    for index, offset in enumerate(range(0, len(data), 16)):
+        block = data[offset:offset + 16]
+        if index in active:
+            mode = (block[0] & -block[0]).bit_length() - 1
+            modes[mode] += 1
+        else:
+            pad_zero += not any(block)
+    print(f"active BC7 modes {dict(sorted(modes.items()))} (-1 = reserved), "
+          f"zero padding blocks {pad_zero}/{len(data) // 16 - len(active)}")
+    write_png(output, width, height, rgba)
+    print(f"lowest seam delta {score:.4f}, {name}: {output}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("archive", type=Path, nargs="?", default=Path("textures.rpf"))
@@ -242,10 +304,12 @@ def main():
     parser.add_argument("--name")
     parser.add_argument("--png-out", type=Path)
     parser.add_argument("--address-bits", action="store_true",
-                        help="also compare all 8! address-bit permutations on a 64×64 control")
+                        help="also compare all 8! address-bit permutations on a 64×64 BC3 control")
     args = parser.parse_args()
     if args.start < 0 or args.start % 16 or not 0 < args.bytes <= MAX_WINDOW:
         parser.error("start must be nonnegative and 16-byte aligned; window must be 1 byte to 8 MiB")
+    if args.address_bits and (args.format != 0x4D or args.png_out is None):
+        parser.error("--address-bits requires --format 0x4d and --png-out")
     with args.archive.open("rb") as source:
         source.seek(args.start)
         window = memoryview(source.read(args.bytes))
@@ -267,8 +331,11 @@ def main():
         print(f"  +{pos:02x} {system[descriptor + pos:descriptor + pos + 16].hex(' ')}")
     if args.png_out:
         try:
-            decode_control(data, width, height, code, system[descriptor + 0x3E], args.png_out,
-                           args.address_bits)
+            mips = system[descriptor + 0x3E]
+            if code == 0x62:
+                decode_bc7_control(data, width, height, mips, args.png_out)
+            else:
+                decode_control(data, width, height, code, mips, args.png_out, args.address_bits)
         except ValueError as error:
             parser.exit(1, f"{error}\n")
 
