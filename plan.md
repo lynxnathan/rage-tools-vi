@@ -15,15 +15,19 @@ Last updated: 2026-11-21.
 - [ ] **Overnight unified pass** once `levels` is done: exact `+0xa0` harvest
   gated to the 208-byte bvh4 table, plus the struct-root/segment harvest across
   all archives. `cache/` on the NVMe is the scratch location.
-- [ ] **Explain the +2…+6 chain excess in `data.rpf`.** Chains equal N in
-  14/42 packs; the rest run 2–6 high (multi-chain entries or undetected
-  continuations). Index-only; resolve before trusting the chain model.
+- [ ] **Close the remaining `data.rpf` chain excess** (now known to be genuine
+  multi-chain entries: `0xb07000` has 361 chains over 147 rows, `0x15000`
+  exactly 1 chain per entry). Needs entry grouping inside multi-chain packs.
+- [ ] ~~Explain the +2…+6 chain excess~~ — resolved: the linker is clean and
+  the excess is genuine multi-chain entries, so this is folded into the item
+  above.
 - [ ] **Model directory/virtual rows in the entry count.** `data.rpf`'s root
   has 699 table rows (Front B = `align16(10 × 699)`) but 41 children and 0 own
   streams, so ≥658 rows carry no payload; `common.rpf` shows the same shape
   (418 vs 394). Solve the row model, then retry the extents resolver.
-- [ ] **Run the extents resolver on `navmeshes.rpf`** (struct/entry 0.96, the
-  cleanest 1:1 archive) after `levels` finishes, before returning to `data.rpf`.
+- [ ] **Run the extents resolver on `navmeshes.rpf`** with `--unit structs`
+  (struct/entry 0.96, the cleanest 1:1 archive) after `levels` finishes, before
+  returning to `data.rpf`.
 - [ ] **Define N per archive before the count oracle can generalise.**
   `tools/pack_extents.py` gives 16-aligned ends everywhere it has run
   (`textures` 21/21, `data` 42/42) but exact counts only where N counts direct

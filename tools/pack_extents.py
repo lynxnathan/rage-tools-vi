@@ -1,27 +1,28 @@
-"""Resolve RPF9 pack extents from zero padding, with the declared count as oracle.
+"""Resolve RPF9 pack extents from zero padding, in index-only mode.
 
-Every header observed so far is preceded by a zero-padding run, so a pack's end
-is `next_header - padding_before_next_header`.  That boundary is exact whenever
-the next header is a sibling.  When it is a child instead, the pack still owes
-entries, so the count decides: a pack closes only once its direct items
-(struct-root streams plus child packs) reach its declared N.
+Two signals, no payload decoding:
 
-Struct roots are found by decoding streams, so this tool is meant to run on a
-local archive copy, not the read-only volume during an extraction.
+* **Zero padding.** Every header after the root is preceded by a contiguous
+  zero run, so the pack immediately before a header ends at
+  `header - padding`.  That boundary is exact for the last sibling.
+* **Chains and the declared count.** A 64 KiB chain is the entry unit: a stream
+  continues its predecessor when the predecessor decoded exactly 65,536 bytes
+  and this stream starts on the align16 boundary of its end.  A header event
+  closes every saturated pack under it; a pack is saturated when its direct
+  items (chains plus child packs) reach its declared N, or when it holds no
+  chains at all (a pure directory pack).
+
+Because chains come from the index, this runs on the read-only volume while an
+extraction is busy.
 """
 
 import argparse
 import bisect
 import csv
-import mmap
-import struct
-import zlib
 from collections import Counter
 from pathlib import Path
 
-SELF_TAG = 5
-TAG_MAX = 0x0A
-MIN_HITS = 2
+CHUNK = 65536
 
 
 def align16(value):
@@ -35,23 +36,10 @@ def load_packs(census, archive):
                   if row["archive"] == archive)
 
 
-def is_struct(body):
-    for base in (0, 0x100):
-        if base + 0x40 > len(body):
-            continue
-        hits = 0
-        for offset in range(base, base + 0x40, 4):
-            value = struct.unpack_from("<I", body, offset)[0]
-            tag = value >> 28
-            if not (SELF_TAG <= tag <= TAG_MAX) or value & 0xF:
-                continue
-            target = value & 0x0FFFFFFF
-            if tag == SELF_TAG and not (base <= target < len(body)):
-                continue
-            hits += 1
-        if hits >= MIN_HITS:
-            return True
-    return False
+def load_streams(index):
+    return sorted((int(row["start"], 16), int(row["end"], 16), int(row["decoded_bytes"] or 0))
+                  for row in csv.DictReader(index.open(), delimiter="\t")
+                  if row["kind"] == "zlib")
 
 
 def padding_before(mm, offset, maximum=1 << 20):
@@ -69,92 +57,111 @@ def main():
     parser.add_argument("--index", type=Path, required=True)
     parser.add_argument("--census", type=Path, default=Path("handoff/header-census-full.tsv"))
     parser.add_argument("--tsv", type=Path, default=None)
+    parser.add_argument("--unit", choices=("chains", "structs"), default="chains",
+                        help="entry unit: 64 KiB chains (index only) or decoded "
+                             "struct roots (needs the payload)")
     args = parser.parse_args()
 
     packs = load_packs(args.census, args.archive.name)
-    streams = sorted((int(row["start"], 16), int(row["end"], 16), int(row["decoded_bytes"] or 0))
-                     for row in csv.DictReader(args.index.open(), delimiter="\t")
-                     if row["kind"] == "zlib")
-    stream_starts = [stream[0] for stream in streams]
-    print(f"{args.archive.name}: packs {len(packs)}, streams {len(streams)}")
+    streams = load_streams(args.index)
+    starts = [stream[0] for stream in streams]
+
+    if args.unit == "structs":
+        # Struct mode decodes each stream; use it on a local archive copy.
+        import mmap as _mmap
+        import struct as _struct
+        import zlib as _zlib
+
+        def is_struct(body):
+            for base in (0, 0x100):
+                if base + 0x40 > len(body):
+                    continue
+                hits = 0
+                for offset in range(base, base + 0x40, 4):
+                    value = _struct.unpack_from("<I", body, offset)[0]
+                    tag = value >> 28
+                    if not (5 <= tag <= 0x0A) or value & 0xF:
+                        continue
+                    target = value & 0x0FFFFFFF
+                    if tag == 5 and not (base <= target < len(body)):
+                        continue
+                    hits += 1
+                if hits >= 2:
+                    return True
+            return False
+
+        with args.archive.open("rb") as handle:
+            mm = _mmap.mmap(handle.fileno(), 0, access=_mmap.ACCESS_READ)
+            chain_of = []
+            for stream in streams:
+                try:
+                    chain_of.append(0 if is_struct(_zlib.decompress(mm[stream[0]:stream[1]])) else -1)
+                except _zlib.error:
+                    chain_of.append(-1)
+            mm.close()
+        # Struct mode: each struct is its own item; non-structs are ignored.
+        chain_of = [index if value == 0 else -1 - index
+                    for index, value in enumerate(chain_of)]
+        chain_starts = [stream[0] for stream, value in zip(streams, chain_of) if value >= 0]
+    # Chain grouping, index only.
+    if args.unit == "chains":
+        chain_of = []
+        chain_starts = []
+        previous = None
+        for stream in streams:
+            continues = (previous is not None and previous[0] == CHUNK
+                         and stream[0] == align16(previous[1]))
+            if not continues:
+                chain_starts.append(stream[0])
+            chain_of.append(len(chain_starts) - 1)
+            previous = (stream[2], stream[1])
+
+    print(f"{args.archive.name}: packs {len(packs)}, streams {len(streams)}, "
+          f"chains {len(chain_starts)}")
 
     with args.archive.open("rb") as handle:
+        import mmap
         mm = mmap.mmap(handle.fileno(), 0, access=mmap.ACCESS_READ)
         size = len(mm)
-        kinds = {}
-        for index, stream in enumerate(streams):
-            try:
-                kinds[index] = is_struct(zlib.decompress(mm[stream[0]:stream[1]]))
-            except zlib.error:
-                kinds[index] = False
 
-        events = [(row[0], 0, pack_index) for pack_index, row in enumerate(packs)]
+        events = [(row[0], 0, index) for index, row in enumerate(packs)]
         events.extend((stream[0], 1, index) for index, stream in enumerate(streams))
         events.sort()
+        header_bounds = [packs[index + 1][0] if index + 1 < len(packs) else size
+                         for index in range(len(packs))]
 
         stack = []
         resolved = {}
 
         def close(pack, boundary):
-            # The zero-padding boundary is exact for the last sibling only; for
-            # every other pack the end follows its own last item or child.
             own = align16(pack["last_end"]) + pack["trailer"]
             end = min(max(own, pack["front_end_abs"] + pack["trailer"]), boundary)
             pack["end"] = end
             resolved[pack["offset"]] = pack
-            if stack_parent := pack.get("parent"):
-                stack_parent["last_end"] = max(stack_parent["last_end"], end)
+            parent = pack.get("parent")
+            if parent is not None:
+                parent["last_end"] = max(parent["last_end"], end)
 
-        next_offset = None
-        for event_index, (offset, kind, index) in enumerate(events):
+        for position, (offset, kind, index) in enumerate(events):
             if kind == 0:
-                next_offset = events[event_index + 1][0] if event_index + 1 < len(events) else size
-                # Leaf fast path: if the pack's own window (up to the physical
-                # boundary of the next header) already holds exactly N struct
-                # roots, it is a leaf and closes on the physical boundary.  The
-                # count is used only to *classify* leaf vs parent, never to
-                # drive the walk, so an ambiguous N cannot collapse the tree.
-                row = packs[index]
-                front = row[0] + row[2]
-                boundary = next_offset - padding_before(mm, next_offset) if next_offset else size
-                lo = bisect.bisect_left(stream_starts, front)
-                hi = bisect.bisect_left(stream_starts, boundary)
-                own = sum(1 for k in range(lo, hi) if kinds.get(k))
-                if own == row[1] and boundary > front:
-                    leaf = {
-                        "offset": row[0], "count": row[1], "trailer": row[3],
-                        "front_end_abs": front, "items": own, "children": 0,
-                        "direct": own, "last_end": boundary - row[3],
-                    }
-                    leaf["end"] = boundary
-                    resolved[row[0]] = leaf
-                    if stack:
-                        stack[-1]["children"] += 1
-                        stack[-1]["direct"] += 1
-                        stack[-1]["last_end"] = max(stack[-1]["last_end"], boundary)
-                    next_offset = events[event_index + 1][0] if event_index + 1 < len(events) else size
-                    continue
-                # Only a header can end a pack: trailing data streams after the
-                # last counting entry still belong to it and must not close it.
+                boundary = header_bounds[index]
+                low = bisect.bisect_left(starts, offset + packs[index][2])
+                high = bisect.bisect_left(starts, boundary)
+                window_chains = len({chain_of[k] for k in range(low, high) if chain_of[k] >= 0})
                 while stack:
                     top = stack[-1]
                     saturated = top["direct"] >= top["count"]
-                    if saturated and offset >= top["front_end_abs"]:
-                        boundary = offset - padding_before(mm, offset)
-                        close(top, boundary)
+                    if saturated:
+                        close(top, offset - padding_before(mm, offset))
                         stack.pop()
                     else:
                         break
-                pack_offset, count, front_end, trailer = packs[index]
                 pack = {
-                    "offset": pack_offset,
-                    "count": count,
-                    "trailer": trailer,
-                    "front_end_abs": pack_offset + front_end,
-                    "items": 0,
-                    "children": 0,
-                    "direct": 0,
-                    "last_end": pack_offset + front_end,
+                    "offset": offset, "count": packs[index][1],
+                    "trailer": packs[index][3],
+                    "front_end_abs": offset + packs[index][2],
+                    "items": 0, "children": 0, "direct": 0,
+                    "last_end": offset + packs[index][2], "seen": set(),
                 }
                 if stack:
                     stack[-1]["children"] += 1
@@ -165,7 +172,11 @@ def main():
                 if not stack:
                     continue
                 pack = stack[-1]
-                if kinds.get(index):
+                key = chain_of[index]
+                if key < 0:
+                    continue
+                if key not in pack["seen"]:
+                    pack["seen"].add(key)
                     pack["items"] += 1
                     pack["direct"] += 1
                 pack["last_end"] = max(pack["last_end"], streams[index][1])
@@ -177,29 +188,24 @@ def main():
     rows = []
     for offset in sorted(resolved):
         pack = resolved[offset]
-        end = pack["end"]
-        ok = pack["direct"] == pack["count"]
         rows.append((offset, pack["count"], pack["items"], pack["children"],
-                     pack["direct"], end, end - pack["front_end_abs"], int(ok)))
-    exact = sum(row[7] for row in rows)
+                     pack["direct"], pack["end"], int(pack["direct"] == pack["count"])))
+    exact = sum(row[6] for row in rows)
     print(f"  packs resolved: {len(rows)}, count satisfied: {exact} ({exact / len(rows):.1%})")
-    residuals = Counter(row[1] - row[4] for row in rows)
-    print(f"  residual (N - direct): {residuals.most_common(6)}")
-    aligned = sum(1 for row in rows if row[5] % 16 == 0)
-    print(f"  ends 16-aligned: {aligned}/{len(rows)}")
-    print(f"\n{'pack':>12} {'N':>4} {'structs':>7} {'children':>8} {'direct':>6} "
-          f"{'end':>12} {'payload':>10}")
-    for row in rows:
-        print(f"0x{row[0]:010x} {row[1]:>4} {row[2]:>7} {row[3]:>8} {row[4]:>6} "
-              f"0x{row[5]:010x} {row[6]:>10}")
+    print(f"  residual (N - direct): "
+          f"{Counter(row[1] - row[4] for row in rows).most_common(6)}")
+    print(f"  ends 16-aligned: {sum(1 for row in rows if row[5] % 16 == 0)}/{len(rows)}")
+    print(f"\n{'pack':>12} {'N':>5} {'chains':>7} {'children':>8} {'direct':>6} {'end':>12}")
+    for row in rows[:16]:
+        print(f"0x{row[0]:010x} {row[1]:>5} {row[2]:>7} {row[3]:>8} {row[4]:>6} 0x{row[5]:010x}")
 
     if args.tsv:
         args.tsv.parent.mkdir(parents=True, exist_ok=True)
         with args.tsv.open("w") as out:
-            out.write("archive\toffset\tcount\tstructs\tchildren\tdirect\tend\tpayload\tok\n")
+            out.write("archive\toffset\tcount\tchains\tchildren\tdirect\tend\tok\n")
             for row in rows:
                 out.write(f"{args.archive.name}\t0x{row[0]:x}\t{row[1]}\t{row[2]}\t{row[3]}\t"
-                          f"{row[4]}\t0x{row[5]:x}\t{row[6]}\t{row[7]}\n")
+                          f"{row[4]}\t0x{row[5]:x}\t{row[6]}\n")
         print(f"wrote {args.tsv}")
 
 

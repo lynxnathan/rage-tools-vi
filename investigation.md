@@ -4212,3 +4212,44 @@ So `data.rpf` entries are one chain each, not struct-rooted, and the residual
 `+2…+6` is a small systematic excess (multi-chain entries or undetected
 continuations) rather than directory rows. The directory-row model is
 independently confirmed by the two zero-chain packs.
+
+## Journal: localization chain diff, 0xb07000, and the per-archive entry unit (2026-11-21)
+
+All index-only.
+
+### The chain linker is clean
+
+Across the thirteen N = 1,115 localization packs there are **zero** boundaries
+where a 65,536-byte stream is followed by anything other than its continuation
+on the align16 boundary of its end. So the +2…+5 excess is not a linker bug.
+
+Per-pack chain census: 1,110–1,114 single-stream chains plus **6–15 two-stream
+chains**, totalling 1,117–1,121 against N = 1,115. The two-stream chains are
+language files that crossed the 64 KiB boundary, which is exactly why the packs
+differ at the same chain indices (6, 9, 187, 219, 222, 682–685, 728–731,
+917–929): the same entry is one chain in a small language and two in a large
+one. The residual +2…+6 is therefore genuine extra chains per pack (companion
+streams or multi-stream entries), not a detection failure.
+
+### 0xb07000 is a genuinely multi-chain pack
+
+N = 147, 405 streams, **361 chains** (317 single, 44 double), decoded sizes 320 B
+to 12.1 MB, and **no sub-headers** inside its window. Contrast `0x15000`:
+N = 683, 695 streams, **683 chains** — exactly one chain per entry. So entries
+carry 1…k chains and the ratio is a pack property, not an archive-wide constant.
+
+### The entry unit is per archive
+
+`tools/pack_extents.py` now takes `--unit chains|structs` and reproduces both
+measurements:
+
+| Archive | Unit | Packs with direct == N | Ends 16-aligned |
+| --- | --- | ---: | ---: |
+| `textures` | struct roots | **17 / 21** | 21/21 |
+| `textures` | chains | 0 / 21 | 21/21 |
+| `data` | chains | **14 / 42** | 42/42 |
+| `data` | struct roots | 11 / 42 | 42/42 |
+
+The zero-padding boundary is universal (every run 16-aligned); only the entry
+unit changes. For `navmeshes` (struct/entry 0.96) the struct unit is the right
+one to try first.
