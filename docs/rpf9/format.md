@@ -21,10 +21,15 @@ stores **absolute archive offsets**:
 | Word | Offset | Role | Evidence |
 | --- | ---: | --- | --- |
 | `word_04` | `+0x04` | `front_end` | end of Front B |
-| `word_08` | `+0x08` | Front A/B candidate boundary | not confirmed |
-| `word_0c` | `+0x0c` | trailer byte length | trailer at `end - value` |
-| `word_24` | `+0x24` | count-like field | compared with candidate entries |
-| shared | `+0x40..+0x60` | 32-byte shared block | compared with the archive root's bytes |
+| `word_08` | `+0x08` | Front A/B boundary | `align16(9N)`/`align16(10N)` from it in mode family 1 |
+| `word_0c` | `+0x0c` | trailer byte length | equals the trailer length in 4,373/4,373 headers |
+| `word_24` | `+0x24` | entry count N | Front B law fits every family-1 header |
+| `word_2c` | `+0x2c` | entry format tag | 2 values, split at N = 255/256 |
+| `word_34..3c` | `+0x34..+0x3c` | zero | constant |
+| shared | `+0x40..+0x4c` | 16-byte constant block | identical across all 4,373 headers |
+| profile | `+0x50..+0x5c` | profile block | 4 values |
+
+Full word map, size laws, and masking evidence: [Metadata regions](metadata.md).
 
 ## UML view of a pack
 
