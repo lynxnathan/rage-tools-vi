@@ -1,0 +1,9 @@
+/target/
+/output/
+/*.rpf
+/bus
+
+/site/
+/.venv-docs/
+__pycache__/
+*.pyc

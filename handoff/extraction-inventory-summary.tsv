@@ -1,0 +1,6 @@
+archive	kind	ranges	stored_bytes	decoded_bytes
+data.rpf	front	1	69728	0
+data.rpf	trailer	1	22640	0
+data.rpf	unclassified	673	19130746	0
+data.rpf	zero_run	28467	39041835	0
+data.rpf	zlib	28509	423279355	1403250069
