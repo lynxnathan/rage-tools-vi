@@ -89,7 +89,8 @@ nav:
       - Inventory and entry point: extraction/inventory.md
       - Containment view: extraction/containment.md
       - Downloads corpus: extraction/downloads-corpus.md
-      - Large archive pilot: extraction/large-archives.md
+      - Large archives: extraction/large-archives.md
+      - Audio (AWC/XMA2): extraction/audio.md
       - Packs signatures: extraction/packs-signatures.md
       - Quadtree view: extraction/quadtree.md
   - Data:

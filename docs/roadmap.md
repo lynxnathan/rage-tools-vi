@@ -15,9 +15,12 @@ gantt
     Script object graph           :done, 2026-11-20, 1d
     Typed array header            :done, 2026-11-20, 1d
     Class-0 bone table            :done, 2026-11-20, 1d
+    Full output rebuild           :done, 2026-11-21, 1d
+    XMA2 audio decode             :done, 2026-11-21, 1d
     section Active
-    Bone hash names / geometry    :active, 2026-11-21, 5d
-    Remaining typed arrays        :2026-11-22, 4d
+    Bink Audio 0x0B framing       :active, 2026-11-21, 3d
+    Bone hash names / geometry    :2026-11-24, 4d
+    Remaining typed arrays        :2026-11-24, 4d
     section Blocked
     Front A metadata cipher       :crit, 2026-11-20, 10d
     Texture codec and top mip     :2026-11-20, 10d
@@ -46,11 +49,12 @@ stateDiagram-v2
 
 | Priority | Task | Evidence | Blocker |
 | --- | --- | --- | --- |
-| 1 | Name or align the 612 bone hashes | `handoff/script-bones.tsv` | hash namespace |
-| 2 | Geometry-classify bones | `handoff/script-bone-points.tsv` | no model orientation |
-| 3 | Decode remaining typed arrays | `0xb066759f`, `0xb1ee00d0` | field semantics |
-| 4 | Front A milestone | metadata size model | key/framing/decoded field |
-| 5 | Texture top-mip verification | spinner + HUD holdouts | codec/pitch/tile |
+| 1 | Decode `0x0B` Bink Audio framing | 2,081 streams / 20+ GB | packet framing or key |
+| 2 | Name or align the 612 bone hashes | `handoff/script-bones.tsv` | hash namespace |
+| 3 | Geometry-classify bones | `handoff/script-bone-points.tsv` | no model orientation |
+| 4 | Decode remaining typed arrays | `0xb066759f`, `0xb1ee00d0` | field semantics |
+| 5 | Front A milestone | metadata size model | key/framing/decoded field |
+| 6 | Texture top-mip verification | spinner + HUD holdouts | codec/pitch/tile |
 
 ## Done
 
@@ -62,6 +66,8 @@ stateDiagram-v2
 - [x] Name 306 of 483 object roots with JOAAT.
 - [x] Decode typed array headers and the `vector3` type tag.
 - [x] Flatten the 44 class-0 bone tables and 3,043 bones.
+- [x] Rebuild all six verified archive extractions after a clean output wipe.
+- [x] Decode 151 AWC codec-`0x05` streams as XMA2 WAV.
 
 ## Parked
 

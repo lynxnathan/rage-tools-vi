@@ -6,7 +6,7 @@ Scope: raw AWC containers, container/framing analysis, and decode experiments.
 ## Result
 
 - AWC magic `ADAT` at `0x129b000` inside `audio.rpf`.
-- Extracted **6,625 containers**, **23,510,389,456 bytes** (22 GB).
+- Extracted **6,625 containers**, **23,510,392,992 bytes** (22 GB).
 - Manifest: `manifest.tsv` with start/end, flags, streams, data_offset, SHA-256.
 - Header: version 1, flags `0xff21`, 6–24 streams, `data_offset` consistent.
 - Chunk types observed: `0x55` data, `0x36` peak, `0xA3` seektable,

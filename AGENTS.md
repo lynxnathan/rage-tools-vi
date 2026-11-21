@@ -39,6 +39,10 @@ are appended here.
 
 ## Workstreams
 
+> 2026-11-21: the `script` and `data` worktrees were archived and removed.
+> Only `main` remains; the bullets below preserve the historical ownership
+> contract and are not active worktrees.
+
 - `main` at `REPO_ROOT` is integration only. It owns
   `plan.md`, `AGENTS.md`, `investigation.md`, `COLLAB.md`, and merges.
 - Script work happens in `SCRIPT_WORKTREE` on

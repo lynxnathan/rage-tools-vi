@@ -1,6 +1,6 @@
 # Plan
 
-Last updated: 2026-11-20.
+Last updated: 2026-11-21.
 
 Roadmap, todo, and current state for the RPF9 extraction work. Detailed evidence
 and narrative live in [investigation.md](investigation.md), which is an
@@ -10,14 +10,11 @@ append-only journal. Add new findings there and keep this file current.
 
 | Worktree | Branch | Role |
 | --- | --- | --- |
-| `REPO_ROOT` | `main` | Integration, shared docs, merges |
-| `SCRIPT_WORKTREE` | `investigate/script-graph` | Script object graph, RPF9 metadata, Front A/cipher; grunt scans and tooling |
-| `DATA_WORKTREE` | `investigate/data-rpf` | `data.rpf`, localization, model/bone/layout semantics; overall picture and priorities |
+| `main` | `main` | Integration, shared docs, extraction, analysis, merges |
 
-The script/integrator side does the bulk scanning and normalization. The
-high-cost data model reviews the big picture, validates hypotheses, and sets
-priorities; it should not run long scans. Cross-workstream messages go through
-the visible bus in `COLLAB.md`.
+The two investigation worktrees were archived and removed after consolidation;
+only `main` remains. The historical script/data ownership notes are preserved in
+the journal and `COLLAB.md`.
 
 ## Objective
 
@@ -251,7 +248,7 @@ entry identification, coverage, or decoding across the archive set.
 ## Audio (Xbox AWC)
 
 - `audio.rpf` contains `ADAT` AWC containers inside a large unclassified span.
-- Extracted **6,625 AWC containers / 23,510,389,456 bytes** with SHA-256;
+- Extracted **6,625 AWC containers / 23,510,392,992 bytes** with SHA-256;
   local report `handoff/audio-awc.md`, tool `tools/extract_awc.py`.
 - Header: version 1, flags `0xff21`, 6–24 streams, chunks `0x55` data /
   `0x36` peak / `0xA3` seektable / `0x76` format.
@@ -281,6 +278,22 @@ entry identification, coverage, or decoding across the archive set.
 - The Rust 16 MiB `MAX_PAYLOAD_SIZE` would lose **96 streams**. Tested stream
   `0xed61e010..0xee4ff55f` (20,578,304 bytes): mmap extracts with sha256
   `e9600e6f…c7c9`; Rust fails at the start.
+
+## Full output rebuild (2026-11-21)
+
+- `output/` was deleted and rebuilt from the external source tree; the canonical
+  export command is `tools/export_all.sh SOURCE_ROOT OUTPUT_ROOT`.
+- Indexed all 8 large archives: **2,190,635 zlib streams / 360,572,388,767
+  decoded bytes**. `levels` and `movies` are index-only; `levels` alone decodes
+  to 174.9 GB.
+- Extracted and SHA-verified six archives: `anim` 130,510 / 11.59 GB;
+  `packs` 144,366 / 9.74 GB; `navmeshes` 90,305 / 20.55 GB; `core_bvh4`
+  565,596 / 129.93 GB; `story000` 141,163 / 13.77 GB; `audio` 838 / 54.1 MB.
+  All 6/6 verification rows PASS (missing 0, extra 0, failures 0).
+- Rebuilt `audio.rpf` AWC/XMA2 with `tools/rebuild_audio.sh`: 6,625 AWC
+  containers / 23.51 GB and 151 XMA2 WAVs / 86 MB.
+- Current output is ~209 GB; local disk has ~100 GB free. Move to the external
+  volume before extracting `levels`.
 
 ## Bulk extraction
 

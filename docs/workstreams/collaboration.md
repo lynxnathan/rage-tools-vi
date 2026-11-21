@@ -15,16 +15,14 @@ the bus remains the visible handoff surface, but no session is polling it.
 
 ```mermaid
 flowchart TB
-    MAIN["main<br/>REPO_ROOT<br/>integration · docs · merge target"]
-    SCRIPT["investigate/script-graph<br/>SCRIPT_WORKTREE<br/>object graph · RPF9 · tools"]
-    DATA["data (archived)<br/>archived worktree<br/>data.rpf · corpus"]
-    BUS["bus<br/>BUS_DIR<br/>messages.jsonl"]
+    MAIN["main<br/>REPO_ROOT<br/>integration · docs · extraction"]
+    BUS["bus (historical)<br/>BUS_DIR/messages.jsonl"]
 
-    MAIN <--> SCRIPT
-    MAIN <--> DATA
-    SCRIPT <--> BUS
-    DATA <--> BUS
+    MAIN -.-> BUS
 ```
+
+The script/data worktrees were archived after consolidation; the dual-session
+sequence below is retained as protocol history.
 
 ## Dual-session sequence
 

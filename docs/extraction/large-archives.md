@@ -38,7 +38,7 @@ bytes; 37,742,843 unclassified bytes.
 The extra stream at `0xed61e010..0xee4ff55f` decodes 20,578,304 bytes and is
 missed by Rust because `MAX_PAYLOAD_SIZE` is 16 MiB.
 
-## Remaining eight
+## Indexed large archives
 
 | Archive | Stored | zlib | Decoded | >16 MiB | Wall | Peak RSS |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -51,14 +51,28 @@ missed by Rust because `MAX_PAYLOAD_SIZE` is 16 MiB.
 | audio | 28.54 GB | 838 | 54.1 MB | 0 | 73s | 15.91 GB |
 | levels | 76.16 GB | 1,117,857 | 174.94 GB | 40 | 819s | 1.21 GB |
 
-41.5? see summary; 2,190,635 zlib and 360,572,388,767 decoded. The Rust 16 MiB
-cap would lose 96 streams.
+Totals: **2,190,635 zlib streams / 360,572,388,767 decoded bytes**. The Rust
+16 MiB cap would lose 96 streams; the streaming index is the source of truth.
 
-## Local extraction
+## Full output rebuild
 
-`packs` and `anim` are now on the NVMe repo disk under `output/extracted/`;
-both manifests point there and both verifier rows PASS. The external output
-copies were removed after verification; the RPF source stays on Mammoth.
+On 2026-11-21 `output/` was deleted and rebuilt from the external source tree
+with `tools/export_all.sh`. All six extracted archives have zero missing, extra,
+or failed streams:
+
+| Archive | Streams | Decoded | Status |
+| --- | ---: | ---: | --- |
+| anim | 130,510 | 11.59 GB | PASS |
+| packs | 144,366 | 9.74 GB | PASS |
+| navmeshes | 90,305 | 20.55 GB | PASS |
+| core_bvh4 | 565,596 | 129.93 GB | PASS |
+| story000 | 141,163 | 13.77 GB | PASS |
+| audio | 838 | 54.1 MB | PASS |
+
+`levels` and `movies` are index-only. `levels` decodes to 174.9 GB, so extract
+it only after moving the output set to the external volume. The complete
+verification log is `output/verification.tsv`; the source archives stay on the
+external volume.
 
 ## Blocker
 

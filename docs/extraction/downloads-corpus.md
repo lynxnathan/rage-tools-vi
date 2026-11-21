@@ -1,17 +1,8 @@
 # Downloads corpus
 
-the operator supplied the source tree `GTA6.Xbox.v1.0.2.1-CYBERLEEK`. The read-only
-inventory counts **22 RPF9 files / 161,307,137,472 bytes**. All eight repository
-samples match byte-for-byte.
-
-The canonical large-file source is the external volume:
-
-```text
-CORPUS
-```
-
-It has the same 22 RPF9 files / 161,307,137,472 bytes and **619 GB free**. Use
-it read-only for the remaining archives; do not copy a second corpus.
+The source tree `GTA6.Xbox.v1.0.2.1-CYBERLEEK` contains **22 RPF9 files /
+161,307,137,472 bytes**. The canonical copy is the external volume; keep it
+read-only and do not duplicate it.
 
 ## Inventory
 
@@ -19,44 +10,52 @@ it read-only for the remaining archives; do not copy a second corpus.
 | --- | ---: |
 | RPF9 files | 22 |
 | total bytes | 161,307,137,472 |
-| verified archives | 14 |
-| verified source bytes | 3,542,353,632 |
-| remaining archives | 8 |
-| remaining source bytes | 157,764,783,840 |
+| indexed archives | 8 large archives |
+| indexed zlib streams | 2,190,635 |
+| indexed decoded bytes | 360,572,388,767 |
+| fully extracted archives | 6 |
+| index-only archives | `levels`, `movies` |
 
-```mermaid
-flowchart LR
-    S[downloads corpus] --> V[8 verified repo samples]
-    S --> P[14 source packs]
-    P --> B[6 smaller packs<br/>output/downloads-corpus]
-    B --> I[integrator verification]
-    V --> R[repo inventory]
+The smaller repository samples are verified byte-for-byte and are used by the
+Rust path. The eight large archives are handled by `stream_index.py` and
+`bulk_extract.py`.
+
+## Current rebuild
+
+On 2026-11-21 the output set was deleted and rebuilt from source:
+
+```text
+output/index/                8 streaming indexes
+output/extracted/            anim, packs, navmeshes, core_bvh4, story000, audio
+output/extracted/audio-awc/  6,625 ADAT containers
+output/extracted/audio-xma2/ 151 decoded WAVs
+output/verification.tsv      6/6 PASS rows
 ```
 
-## Ownership boundary
+`levels` and `movies` are indexed only. `levels` decodes to about **174.9 GB**;
+extract it after moving the output set to the external volume.
 
-The integrator verified the six additional smaller packs under
-`output/downloads-corpus` in `f37b99f`. Coverage is now **14/22 archives** and
-**3,542,353,632 source bytes**. The remaining eight archives total
-**157,764,783,840 bytes**; the workspace volume has 81 GiB free.
+## Selective access
 
-Script does not start duplicate extraction jobs. This page is
-metadata/inventory only.
-
-Artifact: `handoff/downloads-corpus-inventory.tsv` (relative path, stored bytes,
-magic, extraction manifest).
-
-## Selective access to large archives
-
-The anim.rpf pilot generated an index of 130,509 zlib streams. Each stream has
-source offsets, decoded length, and a SHA-256 digest. Select a zlib row's start
-offset to extract that payload. Gap rows preserve the location of bytes whose
-contents have yet to be identified. Full archive extraction remains at 14/22.
+`tools/stream_index.py` creates a bounded-memory index of every zlib span in an
+archive. `tools/bulk_extract.py` consumes that index; `tools/verify_bulk.py`
+checks file sizes and SHA-256 against the index.
 
 ```sh
-python3 tools/stream_index.py "$archive" "$index"
-python3 tools/stream_index.py "$archive" "$index" --offset "$start" --output "$payload"
+python3 tools/stream_index.py "$archive" --out "$index"
+python3 tools/bulk_extract.py "$archive" "$index" "$out_dir" --resume
+python3 tools/verify_bulk.py "$archive" "$index" "$out_dir/manifest.tsv"
 ```
 
-The first command creates a new index. For the completed pilot, use the existing
-`output/downloads-corpus/indexes/anim.tsv` with the second command.
+The full reproducible run is:
+
+```sh
+tools/export_all.sh SOURCE_ROOT OUTPUT_ROOT
+```
+
+## Artifacts
+
+- `handoff/downloads-corpus-inventory.tsv` — relative path, stored bytes, magic,
+  extraction manifest.
+- `handoff/remaining-archive-index-summary.tsv` — index counts and timings.
+- `handoff/bulk-extraction-verification-summary.tsv` — verified extract rows.
