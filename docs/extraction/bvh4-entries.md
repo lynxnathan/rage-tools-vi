@@ -52,7 +52,13 @@ declared N (27,373 streams, median 272 bytes). Their `+0x00..+0x3F` slots hold
 the same eight values, but the tagged pointers move to `0xb0`, `0xd0`, `0xe0`,
 `0xf0` and the `+0x10` count becomes 2. So the 208-byte descriptor and those
 256-byte records are the **same serialized struct at different sizes**, with
-self-relative `0x5`-tagged pointers and one `0x6`-tagged field.
+self-relative `0x5`-tagged pointers and one `0x6`-tagged field. Within a size
+class the header is byte-identical.
+
+The struct is an `{ptr, u16 count, u16 capacity}` container family: the pairs
+`0x00010001` (1/1) in the 160-byte record and `0x00040004` (4/4) in the 272-byte
+record are count/capacity. The 272-byte record holds an array of four element
+pointers at `0xc0`, each element a 32-byte record with an 8-byte hash at `+0x10`.
 
 ## Payload
 

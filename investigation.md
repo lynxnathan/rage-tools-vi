@@ -3810,3 +3810,47 @@ size and land on section boundaries (`0x100`, `0x200` in the decoded entry).
 
 Open: the tag semantics (`0x5` vs `0x6`), and whether `+0xa4` is a pointer pair
 into the *payload* (child data) rather than into the struct itself.
+
+## Journal: the struct family is an atArray container (2026-11-21)
+
+Tabulating the small records by size (`tools/bvh4_struct_probe.py`) shows the
+same container at several cardinalities. Within a size class the first `0x40`
+bytes are byte-identical across samples, so the layout is fixed per size.
+
+**Size 160 (3,888 records).**
+
+```
++0x00 00..00            +0x08 0x50000060 (ptr 0x60)   +0x10 0,0
++0x18 1,0               +0x20 0x50000090 (ptr 0x90)   +0x28 0x00010001
++0x30 0x50000080 (ptr 0x80)                          +0x38 0x00010001
++0x50 8-byte hash       +0x60 0,0  +0x68 1,0
++0x80 0x50000040 (ptr 0x40)                          +0x90 8-byte hash
+```
+
+`0x00010001` and `0x00040004` are the giveaway: the high and low `u16` are
+count and capacity in equal pairs. The container is therefore an RAGE-style
+`{ptr, u16 count, u16 capacity}` array family — `(ptr, count, cap)` triples of
+8 bytes on this 32-bit-pointer layout.
+
+**Size 272 (11,953 records).** Same shape at four elements:
+`+0x20 → 0x100` with count/cap `4/4`, `+0x30 → 0xc0` with `4/4`. At `0xc0` sits
+an array of four pointers (`0x50000040`, `0x50000060`, `0x50000080`,
+`0x500000a0`), and each target carries an 8-byte hash at `+0x10`:
+
+```
++0x40 16 zero bytes, 8-byte hash at +0x50, 8 zero bytes
++0x60 ... hash at +0x70     +0x80 ... hash at +0x90     +0xa0 ... hash at +0xb0
+```
+
+So one element is a 32-byte record whose `+0x10` is a 64-bit (or two `u32`)
+identifier, and the pointer array at `0xc0` references four of them.
+
+**Size 256 (1,972 records).** The descriptor variant with the orthonormal basis
+at `+0x50..+0xA8`, `0x00000101` at `+0xb0`, and the `0x5`-tagged pointers moved
+to `0xb0`/`0xd0`/`0xe0`/`0xf0`.
+
+This closes the template question: the six `0x500000xx` values are self-relative
+pointers into a container whose arrays sit at content-dependent offsets, the
+`+0x10` slot counts sub-arrays, and the record size follows the array
+cardinality. It also explains why `+0xa4` behaves like an offset pair: the
+container's fields are offsets by construction.
