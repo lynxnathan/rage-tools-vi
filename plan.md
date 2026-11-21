@@ -296,8 +296,12 @@ entry identification, coverage, or decoding across the archive set.
   16,677 decoded; 4/4 PASS).
 - Roots: `CDataFileMgr__ContentChangeSetDef` ×2 (`story000_environment_bvh`,
   `story000_terrain_bvh`), `CDataFileMgr__ContentDef`, `SSetupData`.
-- This is the independent range/hash evidence for data's Front A
-  entry→payload task (#0143); it does not decode Front A itself.
+- Entry-to-range check (#0143) reproduced all four XML spans. The header's
+  `u32le(+0x04)` gives the front metadata boundary (`0x340` in story and
+  `0x330` in core). Front A, Front B, and trailer probes found no fixed-stride
+  field predicting all four starts in either control. Keep the entry proof
+  open until an independently decoded start and stored size or end are
+  available. Evidence: `handoff/story000-bvh4-entry-proof.md`.
 
 ## Extraction pilot (audio + levels)
 
@@ -412,9 +416,9 @@ entry identification, coverage, or decoding across the archive set.
 ### Now
 
 - [ ] **Front A milestone on `story000_bvh4.rpf`.** The N = 4 pack has four
-  exact XML ranges. Plain known values and the post-`0x160` table comparison both
-  fail to expose a plaintext record. The metadata size handoff is parked; the
-  next test needs independent framing, key material, or a decoded field.
+  exact XML ranges. The bounded entry probe found no offset/size pair in the
+  tested layouts. Resume with independent table framing and decoding
+  parameters or a plaintext record that predicts both range endpoints.
 - [x] **Bone geometry classification.** Exported per-bone centroids/extents and
   clustered the roots into 16 skeleton families.
 - [ ] **Name the skeleton families.** Validate the bone hash namespace and order

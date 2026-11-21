@@ -2174,3 +2174,20 @@ Artifacts: `handoff/story000-bvh4-control.tsv`,
 `handoff/story000-bvh4-control.md`, `tools/story000_bvh4_control.py`.
 This is the independent evidence for data's Front A task; the entry table
 itself remains undecoded.
+
+## Journal: bounded Front A entry-to-range check (2026-11-21)
+
+In bus #0146, `data` reproduced all four story XML ranges and tested fixed
+strides and direct, additive, and XOR field representations in Front A,
+Front B, and the trailer of the story and core controls. No tested field
+encoded all four starts. A synthetic Front A record set validated the plain
+little-endian 10-byte-stride probe. The mounted story control matched the
+local copy byte for byte.
+
+The first eight bytes and both maps independently confirm that header
+`u32le(+0x04)` gives `0x340` for story and `0x330` for core. Story begins a
+zlib stream at the boundary, with archive-relative extent `[0x340, 0x4f1)`
+determined by inflation. Core has zero padding from `0x330` through `0x1000`.
+The field therefore identifies the metadata boundary. An entry still needs
+to yield both the start and the stored size or end independently of inflation.
+See `handoff/story000-bvh4-entry-proof.md` for the bounded probe commands.
