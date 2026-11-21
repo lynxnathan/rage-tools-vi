@@ -1944,3 +1944,13 @@ Remaining audio work: `0x0B` is still the Bink Audio 2/UEBA hypothesis and
 for `0x0B`; AWC/XXTEA encryption is only a fallback if marker splitting fails.
 Artifacts: `handoff/audio-awc.md`, `handoff/audio-awc-decode.md`,
 `tools/extract_awc_xma2.py`, `tools/test_awc_xma2.py`.
+
+## Journal: consolidate collaboration docs, remove obsolete audit (2026-11-21)
+
+The collaboration protocol now lives in `AGENTS.md`; the separate `COLLAB.md`
+was removed and its ownership, merge, and handoff rules were merged into the
+single workstreams section. Only `main` remains active.
+
+`pi-payload-audit.md` was removed as an obsolete pre-collaboration attempt; the
+reproducible tool `tools/pi_archive_audit.py` remains. The earlier journal
+reference to the removed audit file is historical and is not rewritten.

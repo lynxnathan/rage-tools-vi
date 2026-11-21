@@ -11,8 +11,6 @@ flowchart LR
     INV[investigation.md] --> SITE
     FMT[format.md] --> SITE
     AG[AGENTS.md] --> SITE
-    CO[COLLAB.md] --> SITE
-    AUD[pi-payload-audit.md] --> SITE
     SJ[investigation-script.md] --> SITE
     ST[handoff/script-status.md] --> SITE
     DIAG[docs/*.md<br/>UML · Mermaid] --> SITE

@@ -37,28 +37,69 @@ are appended here.
 - Update the relevant command block in a new journal entry or in the tool table
   in `plan.md` when adding a tool.
 
-## Workstreams
+## Collaboration protocol
 
 > 2026-11-21: the `script` and `data` worktrees were archived and removed.
-> Only `main` remains; the bullets below preserve the historical ownership
-> contract and are not active worktrees.
+> Only `main` remains. These rules are retained as the protocol if a second
+> workstream is ever recreated; they are not active worktrees today.
 
-- `main` at `REPO_ROOT` is integration only. It owns
-  `plan.md`, `AGENTS.md`, `investigation.md`, `COLLAB.md`, and merges.
-- Script work happens in `SCRIPT_WORKTREE` on
-  `investigate/script-graph`. It owns `tools/script_*`, `plan-script.md`,
-  `investigation-script.md`, and `handoff/script-*`.
-- Data work happens in `DATA_WORKTREE` on
-  `investigate/data-rpf`. It owns `output/data.rpf/`, `tools/data_*`,
-  `plan-data.md`, `investigation-data.md`, and `handoff/data-*`.
-- **Grunt work belongs to the script/integrator side:** bulk scans, extraction,
-  normalization, candidate generation, and tooling. **The high-cost data model
-  provides the overall picture:** architecture, format interpretation,
-  cross-archive hypotheses, priority calls, and validation. It should not run
-  long scans. Bus waiting follows the dual-session instructions below.
-- Workstreams keep their own plan/journal. The integrator summarizes verified
-  results into `plan.md` and `investigation.md` after merge. Do not edit another
-  workstream's files.
+### Roles and cost split
+
+- **Script/integrator does the grunt work:** bulk scans, extraction,
+  normalization, tooling, candidate generation, docs, and integration.
+- **Data/high-cost model provides the overall picture:** architecture, format
+  interpretation, cross-archive hypotheses, priority calls, and validation. It
+  should not run long scans.
+- If the high-cost model needs a scan, it writes a one-paragraph request; the
+  script side runs it and returns a compact table.
+- Batch one request/answer per cycle. Skip idle pings. In dual-session standby,
+  `bus.py wait --as <name> --since <id>` blocks on direct inotify delivery and
+  stays alive across harness yields.
+- One driver/owner per active request. `claim`/`release` only for actual
+  overlap. If an owner is blocked on the other side, report the dependency.
+
+### Worktrees
+
+| Worktree | Branch | Owner | Scope |
+| --- | --- | --- | --- |
+| `REPO_ROOT` | `main` | integrator | Integration, shared docs, merge target |
+| `SCRIPT_WORKTREE` | `investigate/script-graph` | script workstream | `script.rpf` object graph, RPF9 metadata, Front A/cipher |
+| `DATA_WORKTREE` | `investigate/data-rpf` | data workstream | `data.rpf`, localization, model/bone/layout semantics |
+
+- `main` owns `plan.md`, `AGENTS.md`, `investigation.md`, and merges.
+- Script owns `tools/script_*`, `plan-script.md`, `investigation-script.md`, and
+  `handoff/script-*`.
+- Data owns `output/data.rpf/`, `tools/data_*`, `plan-data.md`,
+  `investigation-data.md`, and `handoff/data-*`.
+- The samples (`*.rpf`) and `output/` are local and untracked. Never commit them.
+- Do not edit another workstream's files. Add a new file instead of changing a
+  shared tool in place.
+
+### Merge rules
+
+- Both worktrees merge `main` before starting work and before committing.
+- No direct commits to `main` from a worktree.
+- Workstream commits use `script:` or `data:` prefixes; docs use `docs:`.
+- On a conflict in `plan.md` or `AGENTS.md`, keep `main`'s version and move the
+  workstream detail into its own plan/journal.
+- Append-only journals are per workstream. `investigation.md` is the integrated
+  main journal; workstream evidence goes to `investigation-script.md` or
+  `investigation-data.md`, and the integrator summarizes it in `plan.md`.
+- Commit early and often; uncommitted work is not shared.
+
+### Handoff contract
+
+Publish handoffs as TSV files under `handoff/`:
+
+- `data-model-bones.tsv` — model name, model hash, bone list, layout
+- `data-layouts.tsv` — layout hash, layout name, entry/bone mapping
+- `data-names.tsv` — hash, name, kind, source, confidence
+- `data-localization.tsv` — key, language, text
+- `script-roots.tsv` — root hash, name, class, source
+- `script-types.tsv` — type/class ID, role, evidence
+
+Each workstream also keeps `handoff/<stream>-status.md` with four sections:
+**Done**, **Artifacts**, **Needs**, and **Next**.
 
 ## Bus
 
@@ -68,6 +109,8 @@ are appended here.
 - At the start of a turn, run
   `python3 tools/bus.py digest --as script` (or `--as data`) and answer open
   requests. Use `read --as <name>` for full bodies and `send` for replies.
+  Useful commands: `python3 tools/bus.py log`; `read --as data`;
+  `send --from data --to script --kind answer --body "..."`.
 - Check the bus again before ending a turn or posting a final report. In
   dual-session mode, report completed work on the bus and continue waiting.
 - Do not use hidden RPC. The user can read, tail, or inject messages as

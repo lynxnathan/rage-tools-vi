@@ -14,7 +14,7 @@ append-only journal. Add new findings there and keep this file current.
 
 The two investigation worktrees were archived and removed after consolidation;
 only `main` remains. The historical script/data ownership notes are preserved in
-the journal and `COLLAB.md`.
+the journal and `AGENTS.md`.
 
 ## Objective
 
@@ -354,7 +354,7 @@ entry identification, coverage, or decoding across the archive set.
 - `mkdocs.yml` builds a Material site from `docs/`.
 - Mermaid UML is rendered through `pymdownx.superfences` + Mermaid v11.
 - Root documents (`plan.md`, `investigation.md`, `format.md`, `AGENTS.md`,
-  `COLLAB.md`, `pi-payload-audit.md`, script journal/status) are included at
+  `AGENTS.md`, script journal/status) are included at
   build time, so the site is a projection rather than a second copy.
 - `tools/docs.sh serve` runs the live site; `tools/docs.sh build` writes `site/`.
 - `.github/workflows/docs.yml` builds the site on push/PR.
