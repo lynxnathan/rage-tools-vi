@@ -59,7 +59,7 @@ def main():
         front_end = word(mm, 4)
         trailer_bytes = word(mm, 12)
         trailer_start = size - trailer_bytes
-        spans = [("front", 0, front_end, front_end, 0)]
+        spans = [("front", 0, front_end, front_end, 0, 0)]
         cursor = front_end
         pos = front_end
         streams = 0
@@ -83,11 +83,19 @@ def main():
                 continue
             if start > cursor:
                 kind = "zero_run" if all_zero(mm, cursor, start) else "unclassified"
-                spans.append((kind, cursor, start, start - cursor, 0))
+                spans.append((kind, cursor, start, start - cursor, 0, 0))
+            # A 64 KiB chunk continues the previous chain when the next stream
+            # starts on the align16 boundary of its end.  Inherit the chain's
+            # start so continuations can be grouped back into one entry.
             chain_start = start
-            if spans and spans[-1][0] == "zlib" and spans[-1][4] == 65536 and start == (spans[-1][2] + 15) // 16 * 16:
-                chain_start = spans[-1][4]
-            spans.append(("zlib", start, end, stored, decoded))
+            if (
+                spans
+                and spans[-1][0] == "zlib"
+                and spans[-1][4] == CHUNK
+                and start == (spans[-1][2] + 15) // 16 * 16
+            ):
+                chain_start = spans[-1][5] or spans[-1][1]
+            spans.append(("zlib", start, end, stored, decoded, chain_start))
             cursor = end
             pos = end
             streams += 1
@@ -98,8 +106,8 @@ def main():
                     pass
         if cursor < trailer_start:
             kind = "zero_run" if all_zero(mm, cursor, trailer_start) else "unclassified"
-            spans.append((kind, cursor, trailer_start, trailer_start - cursor, 0))
-        spans.append(("trailer", trailer_start, size, size - trailer_start, 0))
+            spans.append((kind, cursor, trailer_start, trailer_start - cursor, 0, 0))
+        spans.append(("trailer", trailer_start, size, size - trailer_start, 0, 0))
         mm.close()
 
     elapsed = time.monotonic() - started
@@ -109,8 +117,11 @@ def main():
         with args.out.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.writer(handle, delimiter="\t", lineterminator="\n")
             writer.writerow(["kind", "start", "end", "stored_bytes", "decoded_bytes", "chain_start"])
-            for kind, start, end, stored, decoded in spans:
-                writer.writerow([kind, f"0x{start:x}", f"0x{end:x}", stored, decoded or "", f"0x{start:x}" if kind == "zlib" else ""])
+            for kind, start, end, stored, decoded, chain_start in spans:
+                writer.writerow([
+                    kind, f"0x{start:x}", f"0x{end:x}", stored, decoded or "",
+                    f"0x{chain_start:x}" if kind == "zlib" else "",
+                ])
     counts = Counter(span[0] for span in spans)
     decoded = sum(span[4] for span in spans)
     rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

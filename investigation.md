@@ -3351,3 +3351,103 @@ entry identification, coverage, or decoding across the archive set.
 - What do the `0x1ebb416b` index/high-byte IDs and `0x8f18aff0` hashes name?
 - Do the high-1/high-2 pairs in the 48-byte entries encode endpoints, layers,
   or two sides?
+
+## 2026-11-21 — Resumable explorer indexing
+
+The GUI now checkpoints indexing and resumes at the same destination; the CLI
+provides `annoyed-index --resume`. A checkpoint records the scan position and
+SHA-256 of the partial index. Resumption rechecks that hash and a source
+fingerprint comprising path, size, modification time, and sampled head/tail
+bytes. The source fingerprint is not a whole-file integrity proof. Final index
+publication uses a no-overwrite hard link, so the destination filesystem must
+support hard links. Adjacent `.partial`, `.checkpoint`, and `.lock` files are
+used; a successful run removes the first two.
+
+`tools/explorer_large_e2e.sh` pauses and resumes `data.rpf` in Xvfb and compares
+all 28,509 zlib ranges and sizes to `tools/stream_index.py` output. With
+`ANNOYED_RESUME_LARGE=1`, `tools/explorer_resume_e2e.sh` kills an indexing process
+after its checkpoint advances, resumes the 4,407,626,384-byte `anim.rpf`, and
+matches all 130,510 zlib ranges and sizes against `output/index/anim.tsv`.
+Unit tests reject modified partial output, changed source samples, and a second
+concurrent holder of the lock. These checks do not prove behavior on every
+filesystem, power-loss scenario, or operating system.
+
+## Journal: index chain bug, and declared entries vs payload items (2026-11-21)
+
+### `stream_index.py` chain bug (fixed)
+
+The indexer computed a chain start and then threw it away: the writer emitted
+`0x{start:x}` for every zlib row regardless. The computation was also wrong in
+two ways — it stored the *decoded size* as the chain id, and it looked at
+`spans[-1]`, which is the inter-stream zero padding row rather than the previous
+stream. Result: `chain_start == start` in all eight large indexes, so no
+consumer could group 64 KiB continuations. Commit `tools/stream_index.py` fixes
+the writer and propagates the first stream's start through a chain. The eight
+large indexes still carry the old column; `tools/entry_reconciliation.py`
+derives chains from `decoded_bytes` and `start` instead of trusting it.
+
+### Declared entries versus payload items
+
+With the continuation rule (predecessor decoded exactly 65,536 bytes, next
+stream on the align16 boundary of its end), ΣN over every pack in a file should
+equal `items + (packs - roots)` because each nested pack is one entry of one
+parent:
+
+| Archive | Packs | ΣN | Continuations | Items (chains + opaque) | Nested | Residual |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| story000_bvh4 | 1 | 4 | 0 | 4 | 0 | **0** |
+| script | 3 | 1,016 | 44 | 1,016 | 2 | −2 |
+| core_licenses_data | 2 | 6 | 0 | 4 | 1 | +1 |
+| appdata0 | 1 | 2 | 0 | 1 | 0 | +1 |
+| common | 1 | 418 | 677 | 331 | 0 | +87 |
+| data | 42 | 23,075 | 2,021 | 26,864 | 41 | −3,830 |
+| anim | 236 | 84,940 | 15,392 | 115,374 | 235 | −30,669 |
+| packs | 60 | 80,470 | 2,964 | 142,663 | 59 | −62,252 |
+| navmeshes | 29 | 64,779 | 224 | 90,111 | 28 | −25,360 |
+| story000 | 442 | 160,082 | 18,655 | 123,346 | 441 | +36,295 |
+| core_bvh4 | 1,282 | 295,244 | 6 | 566,852 | 1,281 | −272,889 |
+| levels | 2,051 | 526,538 | 67,980 | 1,072,298 | 2,050 | −547,810 |
+| audio | 104 | 7,283 | 819 | 22 | 103 | +7,158 |
+| movies | 1 | 515 | 0 | 1 | 0 | +514 |
+| shaders | 1 | 3 | 4,204 | 2 | 0 | +1 |
+
+Artifact: `handoff/entry-reconciliation.tsv`; tool:
+`tools/entry_reconciliation.py`.
+
+Readings:
+
+- The identity holds exactly for the single-stream control (`story000_bvh4`)
+  and to within the opaque-span splitting for `script`, `core_licenses_data`,
+  and `appdata0`. `script` collapses the 42-stream object to one chained entry
+  and matches 1,013 chains + 2 real opaque items against 1,014 expected.
+- Positive residuals mark declared entries whose payload is not zlib:
+  `audio` (AWC), `movies` (video), `shaders` (opaque), and `common`'s known
+  24-group gap — my index splits its opaque spans into 54 instead of 117, which
+  accounts for most of the +87.
+- Negative residuals mark archives where a declared entry carries **several
+  zlib streams** rather than one: `levels` −547,810, `core_bvh4` −272,889,
+  `packs` −62,252, `anim` −30,669. Those are not chunk continuations of 64 KiB;
+  each entry holds multiple complete streams (per-page or per-track
+  compression). Entry count therefore cannot be recovered by counting streams in
+  those archives.
+
+### Pack hierarchy attempt (failed, deleted)
+
+I tried to resolve per-pack extents and direct-item counts by sweeping headers
+and index items in offset order, using the declared count as the closing oracle
+(a pack closes when it is saturated and the next event passes its payload end).
+It validates on `story000_bvh4` and `core_licenses_data`, but not in general:
+the flat index merges a nested pack's whole Front A/B region into an opaque span
+that begins in the previous pack, so pack-local item counts are contaminated,
+and a saturated parent is indistinguishable from a parent with one item and one
+child. The tool was removed rather than shipped with wrong parent links. A
+working resolver needs per-pack extents from an independent trailer locator, not
+the flat index.
+
+### Index coverage
+
+All 22 source archives now have stream indexes under `output/index/`
+(14 added today: script, common, data, textures, shaders, story000_bvh4,
+appdata0, core_licenses_data, core_restofworld, core_restofworld001,
+shared_minigame000, shared_minigame000_bvh4, story000_restofworld,
+story000_script). Total index time under two minutes for the 14.
