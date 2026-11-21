@@ -2297,3 +2297,16 @@ only with a dictionary whose descriptor mip-count byte (`+0x3e`) is at least 2.
 Evidence: `handoff/texture-mip-tail-blocker.md`;
 tool: `tools/texture_control_probe.py` (adds `--min-mips`). No full texture
 extraction was performed.
+
+## Journal: multi-mip search extended to data.rpf (2026-11-21)
+
+Extended the #0166 texture control search beyond `textures.rpf`. I indexed the
+481,544,304-byte source `data.rpf` with `stream_index.py` (28,509 zlib streams /
+1,403,250,069 decoded bytes), extracted it to `/tmp`, and ran
+`native_texture_scan.py`: **73 valid dictionaries / 788 textures**. Running
+`texture_control_probe.py --min-mips 2` over every unique dictionary start in
+formats `0x4D` and `0x62` produced **zero hits**.
+
+Packed mip tails remain blocked for lack of any descriptor with mip count >=2;
+the verified single-mip BC3/BC7 formulas are unchanged. Evidence updated in
+`handoff/texture-mip-tail-blocker.md`. No output tree was modified.

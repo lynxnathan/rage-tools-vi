@@ -16,6 +16,20 @@ The probe's existing `min_mips` check reads the descriptor mip-count byte at
 system-relative `+0x3e`. It found the verified single-mip `trophy` and
 `switch_jason` controls with `--min-mips 1`, so the filter path is exercised.
 
+## Additional `data.rpf` search
+
+The rebuilt corpus has no `output/data.rpf` extraction, so I rebuilt a bounded
+copy under `/tmp`:
+
+- `stream_index.py` on the 481,544,304-byte `data.rpf`: 28,509 zlib streams /
+  1,403,250,069 decoded bytes.
+- `bulk_extract.py` to `/tmp/data-rpf/decoded`.
+- `native_texture_scan.py`: **73 valid dictionaries / 788 textures**.
+- `texture_control_probe.py --min-mips 2` over every unique dictionary start,
+  formats `0x4D` and `0x62`: **zero hits**.
+
+This confirms the missing multi-mip control is not hiding in `data.rpf` either.
+
 ## Status
 
 Packed mip-tail placement, mip ordering, and multi-mip pitch remain open.

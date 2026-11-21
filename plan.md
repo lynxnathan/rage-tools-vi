@@ -455,10 +455,11 @@ entry identification, coverage, or decoding across the archive set.
   trailer start or a decoded parent entry. See `handoff/data-last-child.md`.
 - [x] **Bone geometry classification.** Exported per-bone centroids/extents and
   clustered the roots into 16 skeleton families.
-- [ ] **Multi-mip texture tail.** A full `textures.rpf` scan (24 windows,
-  `0x4D`/`0x62`, `min_mips>=2`) found no multi-mip control; tail placement
-  remains open. Reopen with a sample whose descriptor `+0x3e` is >=2.
-  Evidence: `handoff/texture-mip-tail-blocker.md`.
+- [ ] **Multi-mip texture tail.** Full `textures.rpf` (24 windows) and
+  `data.rpf` (73 dictionaries / 788 textures) scans with `min_mips>=2` found
+  no multi-mip control; tail placement remains open. Reopen with a sample
+  whose descriptor `+0x3e` is >=2. Evidence:
+  `handoff/texture-mip-tail-blocker.md`.
 - [ ] **Name the skeleton families.** Validate the bone hash namespace and order
   with an independently decoded model skeleton. Use geometry to prioritize
   vehicle, ped, weapon, and prop candidates. The TSV-only vehicle comparison
