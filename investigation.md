@@ -2514,3 +2514,26 @@ for families 4–8. The extra table is not a function of N alone in families 2
 and 3 (least-squares slopes of 17.3 and 5.2 bytes per entry with large
 residuals), so those two families carry variable-length material in Front B as
 well.
+
+## Journal: `+0x28` groups packs into content classes (2026-11-21)
+
+The `+0x28` word takes 10 values over the 4,373 headers and stays constant
+across long contiguous offset runs within a file, so it groups packs rather
+than identifying single packs. The groups are size-typed:
+
+| `+0x28` | Packs | Median N | Dominant mode | Archives |
+| --- | ---: | ---: | --- | --- |
+| `c0a92754` | 2,570 | 85 | `0x00010004` | nearly all |
+| `da72573e` | 1,111 | 7 | `0x00010005` | nearly all |
+| `d98004d5` | 199 | 29 | `0x0006000a` | 12 |
+| `abe9b070` | 198 | 275 | `0x00030009` | levels, story000, data |
+| `5a5b4c6f` | 174 | 170 | `0x00010005` | data, packs, script |
+| `1c1945bb` | 67 | 796 | `0x0008000d` | levels, story000 |
+| `1481d21e` | 26 | 1,547 | `0x00020008` | levels, shared_minigame000 |
+| `e7642d58` | 7 | 2,802 | `0x00020008` | levels |
+
+JOAAT, CRC32, FNV-1, FNV-1a, and djb2 over 400 mount/type-name candidates do
+not reproduce any of the ten values, so `+0x28` is not a hash of a simple
+content-type name. Its practical value is grouping: it separates the tiny
+resource packs (median N = 7) from the large spatial packs (median N = 1,547),
+which is what the families 6–8 bytes-per-entry finding already suggested.
