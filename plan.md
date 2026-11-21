@@ -12,10 +12,16 @@ Last updated: 2026-11-21.
 - [ ] **Finish `levels.rpf` extraction, verify, rebuild the browser.**
   1,117,857 streams / 174.9 GB, running on Mammoth (16 workers, `--resume`).
   Then `tools/pipeline.py --source SRC --output output verify` and `pilot`.
-- [ ] **Explorer (`explorer/`)**: finish the bounded disk-backed manifest index
-  and paged hierarchy, wire streaming export with cancellation, check index
-  provenance against the archive, add asset previews, and measure peak memory
-  and throughput on the largest archives.
+- [ ] **Explorer (`explorer/`)**: finish the paged hierarchy, wire export
+  cancellation, strengthen archive/index provenance beyond sampled identity,
+  add asset previews, and measure throughput on the largest archives. Verify
+  resumable indexing on other filesystems and operating systems.
+- [ ] **Resolve per-pack extents with an independent locator.** Needed for the
+  pack hierarchy and per-pack entry coverage; the flat stream index cannot
+  supply it (nested metadata merges into opaque spans). See the hierarchy
+  attempt recorded in `investigation.md`.
+- [ ] **Re-index the eight large archives** once, to pick up the corrected
+  `chain_start` column (`tools/stream_index.py`).
 - [ ] **Identify the extra Front B table `S` in mode families 2–8** (0 … 36 kB,
   16-byte aligned; family 4 is 224 B/entry ±8). Candidate: directory or
   resource-descriptor table. Test against packs with known child counts.
