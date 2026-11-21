@@ -2135,3 +2135,6 @@ headless Chromium. Both archive roots, all three range statuses, the audio
 hash, the levels extent, and Back to the root passed. The verifier opens the
 standalone artifact directly. With Playwright available to Node, reproduce
 from the repository root with `node tools/verify_extraction_index_pilot.cjs`.
+
+`data` independently ran the same Chromium check and accepted the pilot in
+bus #0142. Both runs used the cached Playwright package without installation.
