@@ -2127,3 +2127,11 @@ levels `0x1d000..0x1d701` matched the index with no bulk extraction manifest.
 No reindex or payload extraction was performed. The Playwright drill-down
 verifier is present but its dependency is not installed in the base image.
 Report: `handoff/extraction-pilot.md`.
+
+## Journal: standalone extraction pilot browser check (2026-11-21)
+
+Used the locally cached Playwright installation to exercise the final HTML in
+headless Chromium. Both archive roots, all three range statuses, the audio
+hash, the levels extent, and Back to the root passed. The verifier opens the
+standalone artifact directly. With Playwright available to Node, reproduce
+from the repository root with `node tools/verify_extraction_index_pilot.cjs`.
