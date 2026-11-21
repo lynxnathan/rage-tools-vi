@@ -63,7 +63,8 @@ entry identification, coverage, or decoding across the archive set.
   and zero runs.
 - `data.rpf` has 42 plausible headers including the root, 28,509 verified zlib
   streams, and 40 carved child-pack candidates. The child at `0x1a279000`
-  still needs an independently supported end.
+  ends at or before `0x1cab4000` under the contiguous trailer convention.
+  Its exact end still needs an independent trailer start or parent entry.
 - Thirteen localization packs share identical 29,856-byte trailers. The
   translated payloads identify every language in the order declared by
   `core_language`. Each pack has 1,115 minimum-padding zlib groups.
@@ -419,11 +420,11 @@ entry identification, coverage, or decoding across the archive set.
   exact XML ranges. The bounded entry probe found no offset/size pair in the
   tested layouts. Resume with independent table framing and decoding
   parameters or a plaintext record that predicts both range endpoints.
-- [ ] **Bound the last `data.rpf` child at `0x1a279000` (active, bus #0151).**
-  Check bounded trailer candidates against the control child at `0x120d7000`
-  and the root trailer boundary. Require two independent structural checks
-  for an end-exclusive endpoint. This can advance extraction coverage while
-  Front A awaits independent decoding evidence.
+- [ ] **Resolve the exact end of the last `data.rpf` child (bus #0151).**
+  A verified PSIN and the root trailer bound the end at or before `0x1cab4000`
+  under the contiguous trailer convention. The two nearby candidates lack
+  the control's zero-delimited start. Reopen with an independently identified
+  trailer start or a decoded parent entry. See `handoff/data-last-child.md`.
 - [x] **Bone geometry classification.** Exported per-bone centroids/extents and
   clustered the roots into 16 skeleton families.
 - [ ] **Name the skeleton families.** Validate the bone hash namespace and order
@@ -518,6 +519,7 @@ entry identification, coverage, or decoding across the archive set.
 | `tools/extract_archive_ranges.py` | Extract all mapped ranges and verify source and output hashes |
 | `tools/decode_raw_deflate.py` | Find and extract raw DEFLATE, including packed RBF0 objects |
 | `tools/data_rpf_inventory.py` | Audit nested ranges, localization, credits, mixed PSIN records, and resource names |
+| `tools/data_last_child.py` | Probe bounded trailer endpoints and validate the terminal PSIN in local `data.rpf` |
 | `tools/export_localized_text.py` | Export readable UTF-8 string runs from the language resources |
 | `tools/scan_libmagic.py` | Inventory file signatures across a local extraction |
 | `tools/audit_opaque_streams.py` | Check weak DOS labels, verify zlib candidates, and reconstruct mixed PSIN objects |

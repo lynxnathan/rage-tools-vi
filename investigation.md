@@ -2191,3 +2191,20 @@ determined by inflation. Core has zero padding from `0x330` through `0x1000`.
 The field therefore identifies the metadata boundary. An entry still needs
 to yield both the start and the stored size or end independently of inflation.
 See `handoff/story000-bvh4-entry-proof.md` for the bounded probe commands.
+
+## Journal: upper bound on the final data.rpf child (2026-11-21)
+
+The child at archive offset `0x1a279000` declares a `0xf970`-byte trailer
+at header `+0x0c` (little-endian). The candidate trailer ending at
+`0x1cb2f340` is entirely inside a PSIN stored tail. The full PSIN range is
+`0x1cab4000..0x1cb2f340`, archive-relative and end-exclusive. Its 34
+64-KiB chunks pass zlib verification and its reconstructed section chain
+terminates in CHKS with declared and actual length `0x2419e0`.
+
+The root trailer starts at `0x1cb37000`, leaving `0x7cc0` bytes after the
+PSIN. A contiguous child trailer cannot fit there or overlap the PSIN.
+Under that convention the child end is at or before `0x1cab4000`, or
+`0x283b000` child-relative. Two earlier candidate windows lack a leading
+zero separator and include either 11 or 379 trailing zeros. The exact
+endpoint remains open pending a trailer start or decoded parent extent.
+Bounded windows and commands are in `handoff/data-last-child.md`.
