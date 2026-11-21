@@ -13,7 +13,18 @@ from extraction_tree import HTML
 
 OUTPUT = Path("output")
 ARCHIVES = ("audio", "anim", "core_bvh4", "levels", "movies", "navmeshes", "packs", "story000")
-INDEX_ONLY = {"levels", "movies"}
+
+
+def index_only_archives():
+    """Archives without an extraction manifest stay index-only.
+
+    Derived from the output tree so finishing an extraction promotes the
+    archive without editing this file.
+    """
+    return {
+        key for key in ARCHIVES
+        if not (OUTPUT / f"extracted/{key}/manifest.tsv").exists()
+    }
 VERIFICATION = OUTPUT / "verification.tsv"
 PAGE_SIZE = 32
 
@@ -125,7 +136,7 @@ def archive_root(key, verification):
     total, pages = index_pages(index, full)
     if not pages:
         raise ValueError(f"Index is empty: {index}")
-    if key in INDEX_ONLY:
+    if key in index_only_archives():
         if manifest.exists():
             raise ValueError(f"Index-only archive now has an extraction manifest: {manifest}")
         source, matched, status = name, {}, "Indexed only"

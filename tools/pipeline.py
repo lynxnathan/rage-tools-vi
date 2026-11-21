@@ -34,7 +34,7 @@ ARCHIVES = {
     "movies": "movies.rpf",
     "levels": "levels.rpf",
 }
-EXTRACTED = ("anim", "packs", "navmeshes", "core_bvh4", "story000", "audio")
+EXTRACTED = ("anim", "packs", "navmeshes", "core_bvh4", "story000", "audio", "levels")
 
 
 def log(record: dict, out: Path, dry: bool):
@@ -135,7 +135,10 @@ def verify(source: Path, out: Path, args):
     archives = source_map(source)
     if not args.dry_run:
         (out / "verification.tsv").unlink(missing_ok=True)
-    for name in EXTRACTED:
+    names = [name for name in EXTRACTED
+             if (out / f"extracted/{name}/manifest.tsv").is_file()
+             or args.dry_run]
+    for name in names:
         index_path = out / "index" / f"{name}.tsv"
         manifest = out / "extracted" / name / "manifest.tsv"
         if not args.dry_run and (not index_path.is_file() or not manifest.is_file()):

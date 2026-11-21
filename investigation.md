@@ -2367,6 +2367,11 @@ loads its existing stream index, and selects a binary zlib stream under Xvfb.
 The test exposed and led to removal of a duplicate long path in the header
 that wrapped and shifted the controls.
 
+The ignored release test `local_anim_corpus` scanned the full 4,407,626,384-byte
+archive in 61.20 s and compared all 130,510 zlib starts, ends, stored sizes and
+decoded sizes with `output/index/anim.tsv`; all matched. This is one local run,
+not a performance guarantee for other storage, inputs, or operating systems.
+
 ## Journal: corpus-wide RPF9 header census (2026-11-21)
 
 Enumerated every RPF9 header in the 22-archive source tree on Mammoth
@@ -2485,3 +2490,27 @@ the offset/size records (which change with each language's compressed payload)
 and the trailer holds name or hash records that repeat across languages. This
 supports the fixed-stride reading of Front B as the entry table and makes the
 trailer the better first target for a name-hash crib.
+
+## Journal: mode families differ in Front B bytes per entry (2026-11-21)
+
+Front B bytes per declared entry, by mode family, over all 4,373 headers:
+
+| Family | Headers | Median B/N | p10–p90 | Modes |
+| --- | ---: | ---: | --- | --- |
+| 1 | 2,908 | 9.26 | 9.00–16.00 | 0x00010003–0x00010008 |
+| 2 | 1,058 | 23.27 | 18.76–30.84 | 0x00020005–0x00020008 |
+| 3 | 92 | 16.48 | 13.37–19.16 | 0x00030006, 0x00030009 |
+| 4 | 68 | 224.00 | 221.33–229.33 | 0x00040007 |
+| 5 | 52 | 178.00 | 169.14–192.00 | 0x00050009 |
+| 6 | 80 | 135.90 | 129.66–186.31 | 0x0006000a, 0x0006000b |
+| 7 | 83 | 233.01 | 224.04–265.67 | 0x0007000b, 0x0007000c |
+| 8 | 32 | 266.74 | 251.96–273.63 | 0x0008000d |
+
+Family 1 is the only family whose Front B is exactly `align16(9N)` or
+`align16(10N)`; the others add a 16-byte-aligned extra table with a median of
+14–257 bytes per entry. Family 4 is the tightest (224 bytes per entry within
+±8, i.e. 14 × 16), so a fixed-size per-entry descriptor is the leading reading
+for families 4–8. The extra table is not a function of N alone in families 2
+and 3 (least-squares slopes of 17.3 and 5.2 bytes per entry with large
+residuals), so those two families carry variable-length material in Front B as
+well.
