@@ -2362,6 +2362,11 @@ Prefix search cannot find names appearing later in a stream.
 starts indexing, cancels through the GUI, and checks that the partial index is
 removed. This is a responsiveness/cancellation check, not a 209 GB benchmark.
 
+`tools/explorer_anim_e2e.sh` opens the local 4,407,626,384-byte `anim.rpf`,
+loads its existing stream index, and selects a binary zlib stream under Xvfb.
+The test exposed and led to removal of a duplicate long path in the header
+that wrapped and shifted the controls.
+
 ## Journal: corpus-wide RPF9 header census (2026-11-21)
 
 Enumerated every RPF9 header in the 22-archive source tree on Mammoth
@@ -2464,3 +2469,19 @@ are triaged. `audio` is dominated by AWC containers, as expected.
 `levels.rpf` extraction was started after this check: 1,117,857 streams,
 174.9 GB decoded, 8 workers, about 47 MB/s write to Mammoth. It is the last
 index-only archive.
+
+## Journal: localization packs separate Front B from the trailer (2026-11-21)
+
+The thirteen `data.rpf` localization packs at `0x11de000`..`0x9326000` share
+N = 1,115, mode `0x00020007`, profile `+0x50 = 67759ffb`, and a byte-identical
+29,856-byte trailer, yet **all thirteen Front B bodies differ** (distinct
+SHA-256, distinct first block). The fourteenth pack at `0x11d10000` (N = 1,168,
+54,160-byte trailer) also has its own Front B.
+
+Under the deterministic build-wide cipher, equal plaintext gives equal
+ciphertext, so the trailers carry language-independent plaintext while Front B
+carries language-dependent plaintext. The natural split is that Front B holds
+the offset/size records (which change with each language's compressed payload)
+and the trailer holds name or hash records that repeat across languages. This
+supports the fixed-stride reading of Front B as the entry table and makes the
+trailer the better first target for a name-hash crib.
