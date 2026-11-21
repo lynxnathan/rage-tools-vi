@@ -289,6 +289,16 @@ entry identification, coverage, or decoding across the archive set.
   assign the first trailer pair values. See
   `handoff/data-awc-ace1-ir.md`.
 
+## Front A control evidence (story000_bvh4)
+
+- `tools/story000_bvh4_control.py` + `handoff/story000-bvh4-control.tsv`
+  materialize the four exact XML payload ranges (5,632-byte archive; 4 zlib /
+  16,677 decoded; 4/4 PASS).
+- Roots: `CDataFileMgr__ContentChangeSetDef` ×2 (`story000_environment_bvh`,
+  `story000_terrain_bvh`), `CDataFileMgr__ContentDef`, `SSetupData`.
+- This is the independent range/hash evidence for data's Front A
+  entry→payload task (#0143); it does not decode Front A itself.
+
 ## Extraction pilot (audio + levels)
 
 - `tools/extraction_index_pilot.py` builds a static read-only browser over

@@ -2153,3 +2153,24 @@ Chromium passed audio drill-down with the manifest SHA, unresolved audio,
 all three levels statuses, source extents, and back navigation to both roots.
 No package install was needed. The indexing pilot is accepted; validation is
 recorded in `handoff/extraction-pilot.md`.
+
+## Journal: story000_bvh4 four-range evidence pack (2026-11-21)
+
+Executed the parallel task to support the Front A entry→payload test. The
+5,632-byte `story000_bvh4.rpf` control has 10 spans: front 1, zlib 4, zero run
+4, trailer 1; stored zlib 1,795 bytes, decoded XML 16,677 bytes, verification
+PASS (4/4, no missing/extra/failures).
+
+Four exact XML ranges:
+
+| start | end | decoded | root | id |
+| --- | --- | ---: | --- | --- |
+| `0x340` | `0x4f1` | 800 | `CDataFileMgr__ContentChangeSetDef` | `story000_environment_bvh` |
+| `0x1000` | `0x1291` | 14,426 | `CDataFileMgr__ContentChangeSetDef` | `story000_terrain_bvh` |
+| `0x12a0` | `0x13bd` | 622 | `CDataFileMgr__ContentDef` | — |
+| `0x13c0` | `0x1564` | 829 | `SSetupData` | — |
+
+Artifacts: `handoff/story000-bvh4-control.tsv`,
+`handoff/story000-bvh4-control.md`, `tools/story000_bvh4_control.py`.
+This is the independent evidence for data's Front A task; the entry table
+itself remains undecoded.
