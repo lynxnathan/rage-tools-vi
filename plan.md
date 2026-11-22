@@ -8,44 +8,47 @@ Last updated: 2026-11-21.
 
 ## Current state
 
-- **Extraction:** all 22 archives indexed (4.42 M ranges / 161.3 GB stored /
-  365.0 GB decoded). Six archives plus `levels` have bulk manifests
-  (2,190,635 of 2,241,410 zlib ranges); the rest are analysed locally. `levels` (174.9 GB) verified by completeness pass plus
-  a 1,500-file hash sample. `movies` is the only index-only root (no zlib
-  payload).
-- **Entry level:** `core_bvh4` has a payload-derived entry manifest
-  (`handoff/core-bvh4-entries.tsv`) with 1,214 of 1,282 packs matching the
-  declared count exactly, and a full descriptor inventory
-  (`handoff/core-bvh4-descriptors.tsv`).
-- **Pack extents:** zero-padding boundaries proven on every archive tested; leaf
-  extents published in `handoff/pack-extents-leaves.tsv`; parents remain open.
-- **Metadata:** header census complete (`handoff/header-census-full.tsv`), Front
-  A/B/trailer masked, size laws characterised. Metadata decoding is
-  information-blocked.
-- **Skeleton families:** the 16 clusters now carry readings — F12 is a hand rig
-  (the decoded one), F13 a genital rig, F03/F04/F09 large animals; the unnamed
-  families are the small-prop population and hold the 330-hash universe.
-- **Naming:** bone-table and weight hashes share one namespace, JOAAT of
-  `skel_`/`mh_`/`rb_` names: 99 of 612 table hashes and 21 of 252 weight hashes
-  resolved, one rig fully decoded (`handoff/script-skeleton-0x48dcbb01.tsv`).
-  A second, disjoint 330-hash universe remains unnamed.
+- **Extraction:** all 22 source archives indexed — 4,415,850 ranges / 161.3 GB
+  stored / 365.0 GB decoded, every index tiling its archive exactly. Six
+  archives plus `levels` carry bulk manifests (2,190,635 of 2,241,410 zlib
+  ranges); the rest are analysed locally. `levels` verified (completeness pass
+  plus a 1,500-file hash sample).
+- **Unclassified:** closed. Every large span is media — 38.1 GB AWC audio,
+  13.4 GB Bink/Bink2 video, ~1.2 GB fragments. No unexplained game payload.
+- **Cutscene audio:** `story000`'s 9.56 GB AWC chain extracted (63,853
+  containers) but it is a container variant (`ADAT`, flags `0xff25`) the current
+  parser does not read.
+- **Entry level:** payload-derived manifests cover four archives — 328,481
+  entries with exact boundaries: `core_bvh4` (pairs, 1,214/1,282 packs),
+  `navmeshes` (chains, 13/29), `data` (chains, 19/42), `textures` (pairs, 19/21).
+  Unverified packs are exactly those whose entries mix shapes.
+- **Descriptors:** both bvh4 archives inventoried — `core_bvh4` 269,106 rows and
+  `shared_minigame000_bvh4` 1,233, with exact allocated sizes and an orthonormal
+  right-handed basis (269,105/269,106 within 1e-3).
+- **Pack extents:** zero-padding boundaries are exact and 16-aligned on every
+  archive tested; leaf extents published; parents still need a row model.
+- **Metadata:** header census complete (4,373 headers); Front A/Front B/trailer
+  remain masked; size laws characterised.
+- **Naming:** all identifiers are `JOAAT(lowercase name)`. 99 of 612 bone-table
+  hashes and 21 of 252 weight hashes resolved across `skel_`/`mh_`/`rb_`
+  families; one rig fully decoded (34/34); the 16 skeleton families carry
+  readings (hand, genital, large animal, small props). The 330-hash universe is
+  the unnamed small-prop families.
 - **Browser:** `output/extraction-index-pilot/index.html` rebuilt with seven
   verified archives.
-- **Tooling:** `tools/pipeline.py` runs index → extract → audio → pilot → verify;
-  exploration caches live in the untracked `cache/` on the NVMe.
+- **Disk:** Mammoth at 94 % (245 GB free) after the cutscene extraction.
 
 ## Now
 
-- [ ] Cover `shared_minigame000_bvh4` with the same descriptor harvest.
+- [ ] Parse the `story000` AWC variant and decode the 63,853 captured containers.
+- [ ] Name the remaining ped-rig bone hashes (99 of 282 done).
 - [ ] Name the remaining weight hashes (21 of 252 done).
-- [ ] Name the remaining ped-rig bone hashes.
-- [ ] Open the unnamed hash universe with a new name source.
+- [ ] Open the 330-hash universe with a new vocabulary source.
+- [ ] Emit entry manifests for the mixed packs (68 `core_bvh4`, 16 `navmeshes`,
+  23 `data`, 2 `textures`).
 - [ ] Rehash all of `levels`.
 
 ## Next
-
-- [ ] Parse the `story000` AWC variant (`ADAT`, flags `0xff25`, data offset
-  `0x66`, non-monotonic index table) and decode the 63,853 extracted containers.
 
 - [ ] Re-index the eight large archives for `chain_start`.
 - [ ] Map the type/class IDs and transforms.
@@ -61,7 +64,7 @@ Last updated: 2026-11-21.
 Each needs a specific input, not more effort.
 
 - [ ] Directory/virtual rows in the entry count — needs Front B key material.
-- [ ] Multi-chain entry grouping — needs a decoded per-entry marker.
+- [ ] Multi-chain entry grouping inside mixed packs — needs a per-entry marker.
 - [ ] Front B table `S` — same mask problem.
 - [ ] 9→10 byte stride boundary — needs a pack at N = 255 or 256.
 - [ ] `+0x50` profiles as cipher parameters — needs a crib or key material.
