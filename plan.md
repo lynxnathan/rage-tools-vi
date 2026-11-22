@@ -90,3 +90,12 @@ Each needs a specific input, not more effort.
 ## Not mine
 
 - [ ] `explorer/` — owned by another session.
+
+## rdna2-spirv (adjacent workstream)
+
+- [ ] M0 decode tables: generate GFX10.x tables from AMD's MIT machine-readable
+  ISA XML, decode SOP/VOP/SMEM sample, match `llvm-mc` on 100 random
+  instructions. See `rdna2-spirv/PLAN.md`.
+- [ ] Keep the tool generic: input is a byte range plus `--mcpu`; game or
+  console containers stay optional adapters, never the core, and no proprietary
+  or NDA material may become a dependency or an acceptance criterion.

@@ -32,6 +32,18 @@ are appended here.
   (untracked `cache/`), not only on the Mammoth volume. Keep archive slices,
   decoded samples, and analysis caches local when re-reading the source would
   cost minutes; never commit them.
+- 2026-11-22: The operator has licensed, NDA-approved access to Microsoft
+  (Dev Center / Partner) material, including GDK headers. Any such material is
+  local-only: keep it outside git (`.gitignore` covers `private/` and
+  `rdna2-spirv/private/`), never commit it, never paste it into docs, journals,
+  or bus messages, and never push it. Record only the independently verifiable
+  fact (a symbol name, a layout decision) and mark it as "GDK-confirmed" without
+  quoting the source. Public documentation and the AMD machine-readable ISA
+  remain the only citable sources.
+  NDA material must never be a dependency, a deliverable, or an acceptance
+  criterion of any project here, and in particular not of `rdna2-spirv`. That
+  project must stay reproducible from public sources (AMD machine-readable ISA,
+  LLVM, SPIR-V specifications) with nothing else installed.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling
