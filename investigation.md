@@ -5581,3 +5581,44 @@ candidates were kept out.
 The cheap sweep is now exhausted: 174k tokens × 24 shapes covers the plausible
 single-word names, and it produced one hit in 231 targets. Further weight naming
 needs a different vocabulary source, not a wider search.
+
+## Journal: chain_start re-index, and why the rule must stay conservative (2026-11-22)
+
+The open item was "re-index the eight large archives for `chain_start`", because
+the indexes were written before the chain-propagation fix. All 22 archives are
+now indexed with the current tool and verified:
+
+| Check | Result |
+| --- | --- |
+| indexes tiling their archive (contiguous, start 0, end == file size) | **22 / 22** |
+| `chain_start` not a real range start | 0 |
+| `chain_start` greater than the range it labels | 0 |
+| archives whose chains actually group (anim, audio, levels, packs, `story000`) | 6 |
+
+`tools/chain_start_verify.py` performs the second and third checks; a re-index
+run is `tools/reindex_all.sh`, which prints ranges, stored bytes and chain count
+per archive.
+
+### The bug behind the missing grouping, and why the obvious fix is wrong
+
+The rule only chains a 64 KiB chunk when the previous *span* is that zlib
+stream, but any inter-chunk padding inserts a `zero_run` span first, so
+`spans[-1]` is the padding and the test never fires on padded chains. Tracking
+the previous stream separately (rather than `spans[-1]`) makes it fire: on
+`data.rpf` it raised multi-stream chains from 0 to 598, largest 255, with the
+index still tiling.
+
+It also **over-grouped** the page archives. In `shaders.rpf` every one of the
+4,205 streams decodes to exactly 65,536 bytes and starts on the alignment
+boundary of its predecessor, so the rule merged the entire archive into **one
+chain of 4,205 pages**. `anim.rpf` (4.4 GB of pages) has the same shape. A chain
+that contains every page of an archive is not an entry.
+
+The adjacency-plus-size heuristic therefore cannot be enabled: it is blind to
+where one entry ends and the next begins. That is the same missing signal as
+"multi-chain entry grouping inside mixed packs" — a per-entry marker. Until one
+is found, the conservative rule stays, and entry manifests must keep deriving
+their own chains from the payload rather than from `chain_start`.
+
+Reverted after the experiment; the indexes in `output/index/` are the
+conservative pass.

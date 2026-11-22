@@ -69,7 +69,10 @@ Last updated: 2026-11-21.
 
 ## Next
 
-- [ ] Re-index the eight large archives for `chain_start`.
+- [x] Re-index all 22 archives for `chain_start`; verified tiling 22/22 and the
+  column is sound. The rule stays conservative by design: enabling the obvious
+  padding fix merges every page archive into one chain (`shaders`: 4,205 pages
+  in 1 chain), so grouping still needs a per-entry marker.
 - [ ] Map the type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.
 - [ ] Packs active-learning queue.
