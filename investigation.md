@@ -6014,3 +6014,11 @@ discriminator lives inside the masked rows.
 `align16(stride × count) == size_b` holds for every solved header, which keeps
 the count as a usable oracle for pack extents, and 1,344 headers still solve to
 no stride in range — those are the mixed-shape packs already listed as blocked.
+
+## Journal: handoff index (2026-11-22)
+
+`handoff/` has grown to 72 data tables with no index, so a consumer had no way to
+know what exists, how big it is, or which tool regenerates it.
+`handoff/README.md` now lists every file with its row count and columns, plus a
+table mapping products to their producing tool. The archive inputs stay local;
+everything listed is rebuilt from the committed tools.
