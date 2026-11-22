@@ -1,98 +1,115 @@
 # Rage Tools VI
 
-RPF9 archive extraction, range indexing, and object-graph analysis for
-GTA VI / Leonida.
+RPF9 archive extraction, payload reconstruction, and object-graph analysis for
+**GTA VI / Leonida** — built as an evidence problem, not a guessing game.
 
-The project treats extraction as an evidence problem: every stored byte gets a
-range, every payload gets a hash, and every semantic claim is separated from
-the deterministic verifier.
+> **Goal:** enumerate every archive entry, locate its stored bytes, and extract it
+> with the correct decoding.
 
-## Status
+## The idea in three lines
 
-- 8 local RPF9 archives fully covered at the range layer.
-- 22 RPF9 source files inventoried; 14 verified, 8 with verified range indexes.
-- `packs.rpf`: 144,366 streams / 9.7 GB decoded, verified.
-- `anim.rpf`: 130,510 streams / 11.6 GB decoded, verified.
-- Script object: 7,960 typed arrays, 3,043 class-0 bones, 1,935 vehicle curves.
-- Living MkDocs Material + Mermaid documentation.
+RPF9 archives hide their table of contents behind masked metadata (Front A,
+Front B, the trailer), so this project reconstructs entries from the **payload**
+and uses the masked table only as a cross-check:
 
-Open semantic work: unclassified bytes, metadata cipher, texture codec, and the
-Rust 16 MiB payload cap.
+- every payload range is found by scanning and **verified by zlib checksum**;
+- every pack declares an entry count `N`, and Front B's size law
+  (`align16(stride × N)`) turns that count into an oracle;
+- every identifier met so far is **`JOAAT(lowercase name)`**, so names are
+  recoverable by vocabulary instead of by key.
+
+Full walkthrough: **[From first principles](docs/explained.md)**.
+
+## Highlights
+
+| Area | Result |
+| --- | --- |
+| Corpus index | **22 archives · 4,415,850 ranges · 161.3 GB stored · 365.0 GB decoded** — every index tiles its archive exactly |
+| Bulk extraction | **2,190,635** zlib ranges extracted and SHA-256 verified |
+| Entry manifests | **328,481 entries** with exact boundaries across 4 archives, self-consistency PASS |
+| `core_bvh4` descriptors | **269,106** rows: exact payload size, orthonormal basis (269,105/269,106 within 1e-3) |
+| Unclassified layer | **closed** — 38.1 GB audio, 13.4 GB video, no unnamed game payload |
+| Cutscene audio | **196,350 Opus streams / 148.3 hours** decoded from a second AWC variant |
+| Naming | **99 / 612** bone-table hashes and **21 / 252** weight hashes resolved via `skel_`/`mh_`/`rb_` |
+| Decoded rig | root `0x48dcbb01`, **34 / 34 bones** — a two-sided hand rig |
+| Browser | static extraction browser over seven verified archives |
+
+## What is solved, and what is not
+
+**Solved.** Payload coverage and verification; entry boundaries for four
+archives; the `core_bvh4` descriptor format; three AWC audio container variants;
+the JOAAT naming convention for rigs; the media composition of the "unknown"
+bytes.
+
+**Open.** The masked metadata itself (Front A, Front B, trailer) — four questions
+are information-blocked on key material or a crib. 330 bone hashes belong to a
+namespace whose vocabulary is unknown. Packs whose entries mix shapes cannot be
+counted exactly and are marked rather than guessed.
+
+The live list is [`plan.md`](plan.md); the raw evidence is
+[`investigation.md`](investigation.md).
+
+## Documentation
+
+The site is built with MkDocs Material + Mermaid:
+
+```bash
+tools/docs.sh build     # writes site/
+tools/docs.sh serve     # live preview
+```
+
+Start with [From first principles](docs/explained.md), then
+[What we found](docs/findings.md). Deeper pages: [RPF9 format](docs/rpf9/format.md),
+[Metadata regions](docs/rpf9/metadata.md), [Entry manifests](docs/extraction/entries.md),
+[Rig names](docs/data/rig-names.md), [Audio](docs/extraction/audio.md).
 
 ## Layout
 
 | Path | Purpose |
 | --- | --- |
 | `src/` | Rust CLI: inspect, map, packs, partition, sections, extract |
-| `tools/` | Python extraction, indexing, verification, and semantic probes |
-| `docs/` | MkDocs Material site with Mermaid/UML diagrams |
-| `handoff/` | Verified TSV/JSON manifests and semantic reports |
-| `plan.md` | Live check/todo list only |
+| `tools/` | Python indexing, extraction, verification, and semantic probes |
+| `docs/` | MkDocs Material site with Mermaid diagrams |
+| `handoff/` | Verified TSV manifests and semantic reports |
+| `plan.md` | Live check/todo list |
 | `investigation.md` | Append-only evidence journal |
 
-## Build
+## Quick start
 
 ```bash
 cargo build
 target/debug/rage-tools-vi --help
 ```
 
-## Extraction
-
-```bash
-python3 tools/extraction_inventory.py
-python3 tools/archive_inventory.py
-python3 tools/extraction_coverage.py
-python3 tools/verify_extraction.py
-```
-
-Reproducible full pipeline:
+Reproducible full pipeline (index → extract → audio → browser → verify):
 
 ```bash
 python3 tools/pipeline.py --source SOURCE_ROOT --output output all --resume
-# subcommands: index, extract, audio, pilot, verify
-# safety: non-empty output needs --resume or --force; --dry-run prints commands
+# non-empty output requires --resume or --force; --dry-run prints every command
 ```
 
-Index-driven bulk extraction:
+Focused tools:
 
 ```bash
-python3 tools/extract_entry.py --archive ARCHIVE --kind zlib \
-  --start 0x0 --end 0x1000 --output /tmp/out.bin
-python3 tools/bulk_extract.py ARCHIVE INDEX_TSV OUT_DIR --resume
-python3 tools/verify_bulk.py ARCHIVE INDEX_TSV OUT_DIR/manifest.tsv
+# stream index, then bulk extraction and verification
+python3 tools/stream_index.py ARCHIVE --out output/index/name.tsv
+python3 tools/bulk_extract.py ARCHIVE INDEX.tsv OUT_DIR --resume
+python3 tools/verify_bulk.py ARCHIVE INDEX.tsv OUT_DIR/manifest.tsv
+
+# one entry / one range
+python3 tools/extract_entry.py --archive ARCHIVE --kind zlib --start 0x0 --end 0x1000 --output out.bin
+
+# entry manifests from the payload
+python3 tools/pair_entry_manifest.py --archive core_bvh4.rpf --index output/index/core_bvh4.tsv --out entries.tsv
 ```
-
-Large archives use streaming `mmap` index and selective extraction:
-
-```bash
-python3 tools/stream_index.py ARCHIVE --out INDEX_TSV
-python3 tools/mmap_extract.py ARCHIVE --start 0x0 --end 0x1000 --output /tmp/out.bin
-```
-
-## Documentation
-
-```bash
-python3 -m venv .venv-docs
-.venv-docs/bin/pip install -r requirements-docs.txt
-tools/docs.sh serve
-```
-
-## Spectral test
-
-```bash
-pip install -r requirements-ml.txt
-python3 tools/test_audio_spectral.py
-```
-
-The test asserts that a harmonic/speech control is tonal while the decoded Bink
-candidate is broadband noise.
 
 ## Data policy
 
-`*.rpf`, `output/`, `site/`, `target/`, the bus, and extracted corpora are
-local-only and ignored. Source archives and verified manifests stay outside Git.
+`*.rpf`, `output/`, `site/`, `target/`, `cache/`, the bus and extracted corpora
+are local-only and ignored. Source archives and multi-gigabyte extractions never
+enter Git; verified manifests and their hashes do.
 
 ## License
 
-No license has been chosen yet. Treat the repository as private research.
+No license has been chosen yet. Treat the code and findings as research material
+until one is published.
