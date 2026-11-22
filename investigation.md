@@ -5978,3 +5978,39 @@ table supplied:
 
 1,785 segments were written to `handoff/psin-segments.tsv`; 5 records segment
 cleanly above 95 % agreement and 869 stay flat, which is the honest split.
+
+## Journal: the 9→10 byte stride is not a count threshold (2026-11-22)
+
+The blocked item read "9→10 byte stride boundary — needs a pack at N = 255 or
+256". `tools/frontb_stride.py` solves the stride for every header from
+`size_b == align16(stride × count)` and shows that framing is wrong.
+
+3,029 of 4,373 headers solve to a stride in 4..20. Grouping the unambiguous ones:
+
+| Stride | Packs | Count range |
+| --- | ---: | --- |
+| 9 only | 1,658 | 10..**254** |
+| 10 only | 495 | **76**..27,172 |
+
+The interesting part is the overlap. If the stride stepped at a count threshold,
+every 10-byte pack would have more rows than every 9-byte pack. Instead a pack
+with **76 rows already uses 10 bytes**, while packs with 254 rows still use 9.
+Count alone cannot be the discriminator, so an `N = 255` pack would not have
+settled anything — it would have produced one more data point on both sides of an
+overlap that already exists.
+
+What the stride most plausibly depends on is the *magnitude of the values in the
+rows*: a 9-byte row is a 4-byte offset, a 4-byte size and a flag byte, and once
+an offset exceeds what 32 bits can hold, a longer row is needed. That is a
+per-pack property, decided by the pack's own payload layout, and it cannot be
+recovered from the header alone.
+
+So the item is closed as **mis-framed** rather than blocked: the stride is
+solvable per pack (69 % of headers), the value set is `{9, 10, ...}`, and the
+discriminator lives inside the masked rows.
+
+### What is still true
+
+`align16(stride × count) == size_b` holds for every solved header, which keeps
+the count as a usable oracle for pack extents, and 1,344 headers still solve to
+no stride in range — those are the mixed-shape packs already listed as blocked.

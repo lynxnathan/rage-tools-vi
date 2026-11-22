@@ -112,7 +112,11 @@ Each needs a specific input, not more effort.
 - [ ] Directory/virtual rows in the entry count — needs Front B key material.
 - [ ] Multi-chain entry grouping inside mixed packs — needs a per-entry marker.
 - [ ] Front B table `S` — same mask problem.
-- [ ] 9→10 byte stride boundary — needs a pack at N = 255 or 256.
+- [x] ~~9→10 byte stride boundary — needs a pack at N = 255 or 256.~~ Closed as
+  mis-framed: `tools/frontb_stride.py` solves 3,029 headers and finds a 76-row
+  pack already at 10 bytes while 254-row packs stay at 9, so count is not the
+  discriminator. It depends on the row values themselves (offset width), which
+  needs a decoded Front B, not another pack size.
 - [ ] `+0x50` profiles as cipher parameters — needs a crib or key material.
 - [ ] Front A milestone on `story000_bvh4.rpf` — needs independent table framing.
 - [ ] Exact end of the last `data.rpf` child — needs an independent trailer start.
