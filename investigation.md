@@ -4554,3 +4554,17 @@ verification and naming.
 Note `tools/extraction_inventory.py` is stale: it reads the pre-rebuild
 `output/data.rpf/ranges.tsv` and produced an empty inventory. The manifests above
 are the authoritative coverage record.
+
+### `levels` verification
+
+The full rehash of 175 GB exceeds a single foreground run (it takes ~40 min and
+long children get reaped mid-flight), so verification was split:
+
+- **Completeness pass** (`verify_bulk.py --no-hash`, 35 s): manifest 1,117,857 =
+  index 1,117,857, **missing 0, extra 0, failures 0 — PASS**, appended to
+  `output/verification.tsv`.
+- **Content sample** (random 1,500 files, 214,398,624 bytes re-hashed): **0
+  missing, 0 SHA-256 mismatches.**
+
+Full rehash remains available as an overnight run; the sample plus the
+extraction-time hash makes truncation or corruption at scale very unlikely.
