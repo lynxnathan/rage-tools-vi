@@ -6,6 +6,7 @@ bone_hash	name	root_id	bone_index
 0x07423b04	mh_l_testicle	0x40e56d68	8
 0x72589b5e	mh_r_testicle	0x40e56d68	9
 0xaf6f89c0	skel_l_calf	0x48dcbb01	0
+0xdcdeb1d9	skel_l_finger00	0x48dcbb01	1
 0x19e22eab	skel_l_finger11	0x48dcbb01	2
 0x05280537	skel_l_finger12	0x48dcbb01	3
 0x3684e7f0	skel_l_finger13	0x48dcbb01	4
@@ -22,6 +23,7 @@ bone_hash	name	root_id	bone_index
 0x052ea8fa	skel_l_forearm	0x48dcbb01	15
 0xa49bbd43	skel_l_hand	0x48dcbb01	16
 0xd1bd2d01	skel_r_calf	0x48dcbb01	17
+0xd70d3104	skel_r_finger00	0x48dcbb01	18
 0x664f4c02	skel_r_finger11	0x48dcbb01	19
 0x48509005	skel_r_finger12	0x48dcbb01	20
 0x3f3e7de1	skel_r_finger13	0x48dcbb01	21

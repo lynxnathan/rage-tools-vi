@@ -48,7 +48,7 @@ SIDES = ("", "l_", "r_", "c_", "m_", "lf_", "rf_", "lr_", "rr_")
 # Finger chains use two-digit segment ids (21, 22, 23) and rings run into the
 # tens, so cover plain 0..99 plus zero-padded forms.
 SUFFIXES = (("",) + tuple(str(i) for i in range(100))
-            + tuple(f"{i:02d}" for i in range(1, 100))
+            + tuple(f"{i:02d}" for i in range(0, 100))
             + ("000", "010", "020", "100"))
 
 

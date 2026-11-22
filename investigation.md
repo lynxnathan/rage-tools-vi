@@ -4458,3 +4458,25 @@ Also worth recording: the corpus contains only **29** prefixed rig tokens
 (17 `skel_`, `ph_`, `rb_`, `ik_`, `mover_`, none `mh_`), so the `mh_` vocabulary
 cannot be harvested from the archive text — it has to be generated, which is why
 the anatomy word list is the limiting factor.
+
+### First fully decoded skeleton: root `0x48dcbb01` (34/34)
+
+Two hashes were left in that rig, the mirror pair at indices 1 and 18 immediately
+after the calf. Animal-leg vocabulary plus the `00` suffix resolved both:
+`skel_l_finger00` and `skel_r_finger00`.
+
+The rig is now complete and structurally clean:
+
+```
+l: calf 0 | finger00 1 | finger11-13 2-4 | finger21-23 5-7 |
+   finger31-33 8-10 | finger41-43 11-13 | foot 14 | forearm 15 | hand 16
+r: same block at +17 (calf 17 … hand 33)
+```
+
+That is 17 bones per side = 1 calf + 13 finger segments (1 + 4 chains × 3) +
+foot + forearm + hand. Artifact:
+`handoff/script-skeleton-0x48dcbb01.tsv` (34 rows, all named).
+
+Totals now: **99 of 612 hashes**, families `mh_` 43 / `skel_` 36 / `rb_` 20,
+and 13 roots carry names (285+ bone slots). `00` was missing from the suffix set;
+with it, `skel_` gained the finger-chain roots.
