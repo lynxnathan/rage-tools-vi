@@ -4940,3 +4940,32 @@ game data is ~2.4 GB (`core_restofworld` 1.24 GB plus the remainder).
 New opportunity, not a blocker: the 9.56 GB of `story000` AWC is cutscene audio
 that the existing XMA2/Opus/ACE1 decoders could handle with `extract_awc.py` in
 the same way `audio.rpf` was done.
+
+## Journal: `story000` AWC chain extracted — a new container variant (2026-11-21)
+
+`tools/extract_awc.py` over the full 9.56 GB span produced **63,853 containers /
+8,896,691,094 bytes** in 4.5 min,
+manifest `output/extracted/story000-awc/manifest.tsv`.
+
+They are **not** the `audio.rpf` layout. Header comparison:
+
+| Field | `audio.rpf` | `story000` |
+| --- | --- | --- |
+| magic | `ADAT` | `ADAT` |
+| version | 1 | 1 |
+| flags | `0xff21` | **`0xff25`** |
+| stream index at `+0x10` | `0,4,8,12,16,20` (u16, monotonic) | `0,3,4,4,4` (not monotonic) |
+| `+0x0c` data offset | `0x110` (6 streams) | **`0x66`** (5 streams) |
+
+`tools/awc_framing.py` therefore returns **zero streams** for these containers:
+the parser assumes the `0xff21` layout. Only 245 of the 63,853 containers parsed,
+which look like a second, already-supported sub-variant embedded in the chain.
+
+So the cutscene audio is extracted and hashed but **not decodable yet**: it needs
+a variant-aware framing parser (flags `0xff25`, shorter header, different index
+table). The extraction itself is sound — every container starts with `ADAT`,
+version 1, and carries a plausible 5-stream header.
+
+Disk note: the extraction added 8.9 GB and the volume is now at 94 % (245 GB
+free), so decoding 63k containers should be planned with the output budget in
+mind.

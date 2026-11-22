@@ -44,8 +44,8 @@ Last updated: 2026-11-21.
 
 ## Next
 
-- [ ] Extract the `story000` AWC chain (9.56 GB of cutscene audio) with the
-  existing AWC decoders.
+- [ ] Parse the `story000` AWC variant (`ADAT`, flags `0xff25`, data offset
+  `0x66`, non-monotonic index table) and decode the 63,853 extracted containers.
 
 - [ ] Re-index the eight large archives for `chain_start`.
 - [ ] Map the type/class IDs and transforms.
