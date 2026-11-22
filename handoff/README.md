@@ -1,8 +1,9 @@
 # handoff artifacts
 
-This directory holds the verified data products: manifests, name tables and
-measurements. Every file is regenerable from the committed tools plus the
-source archives, which are local-only.
+Verified data products: manifests, name tables and measurements.
+Every file is regenerable from the committed tools plus the source
+archives, which stay local. `tools/check.sh` verifies that the tools
+still agree with these files.
 
 | File | Rows | Columns |
 | --- | ---: | --- |
@@ -34,6 +35,7 @@ source archives, which are local-only.
 | `navmeshes-entries.tsv` | 2,447 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
 | `pack-extents-leaves.tsv` | 45 | `archive`, `offset`, `count`, `units`, `end`, `unit` |
 | `pack-extents-textures.tsv` | 21 | `archive`, `offset`, `count`, `structs`, `children`, `direct`, … (9 total) |
+| `pack-model-fit.tsv` | 3,467 | `archive`, `pack`, `declared`, `streams`, `structs`, `chains`, … (7 total) |
 | `packs-0f000080-probe.tsv` | 62 | `metric`, `value`, `count` |
 | `packs-4042-classes.tsv` | 20 | `size`, `streams`, `entropy`, `zero_fraction`, `adjacent_equal` |
 | `packs-4042-probe.tsv` | 64 | `metric`, `value`, `count` |
@@ -104,16 +106,16 @@ source archives, which are local-only.
 | `texture-trophy-control.md` | — | notes |
 | `unclassified-gaps.md` | — | notes |
 
-## How they are produced
+## Producing tools
 
 | Product | Tool |
 | --- | --- |
-| `names.tsv`, `name-coverage.tsv` | `tools/name_registry.py --build`, `tools/annotate_handoff.py` |
-| `psin-*.tsv` | `tools/psin_extract.py`, `tools/psin_entries.py`, `tools/psin_segment.py` |
-| `bone-*`, `weight-*` | `tools/bone_name_probe.py`, `tools/rig_name_corpus_probe.py` |
-| entry manifests | `tools/pair_entry_manifest.py` |
-| index and extent tables | `tools/stream_index.py`, `tools/pack_extents.py` |
-| audio tables | `tools/awc_framing_ff02.py`, `tools/extract_awc_ff02.py` |
-| `header-census*.tsv`, `frontb_stride` inputs | `tools/header_census.py` |
-
-`tools/check.sh` verifies the tools still agree with these files.
+| names.tsv, name-coverage.tsv | `tools/name_registry.py --build, tools/annotate_handoff.py` |
+| psin-*.tsv | `tools/psin_extract.py, tools/psin_entries.py, tools/psin_segment.py` |
+| bone-hash-names*.tsv, rig-names-corpus.tsv | `tools/bone_name_probe.py, tools/rig_name_corpus_probe.py` |
+| weight-hash*.tsv | `tools/rig_name_corpus_probe.py` |
+| pack-model-fit.tsv | `tools/pack_model_fit.py` |
+| entry manifests (*-entries*.tsv) | `tools/pair_entry_manifest.py` |
+| index and extents tables | `tools/stream_index.py, tools/pack_extents.py, tools/frontb_stride.py` |
+| audio tables | `tools/awc_framing_ff02.py, tools/extract_awc_ff02.py` |
+| header census | `tools/header_census.py` |
