@@ -5282,3 +5282,54 @@ remaining candidates are both masked: the LSNS bodies (needs key material) and
 the 331,728-byte blob (entropy 7.996, no zlib/raw-DEFLATE stream at its start).
 Decompilation of GTA VI scripts is therefore gated on key material or a second
 sample, exactly like the RPF9 metadata wall — not on more format work.
+
+## Journal: PSIN block 3 is a typed property array, and cross-archive LSNS test (2026-11-21)
+
+### PSIN record layout
+
+The large PSIN block (`0x1d40..0x12120` in record `0xe7000`, 66,528 bytes) is a
+flat array of **16-byte records**:
+
+| Offset | Width | Meaning |
+| --- | --- | --- |
+| `+0x0` | u32 | value (union, interpreted by the type field) |
+| `+0x4` | u32 | type: **0x101 int, 0x102 float**, 0x103, 0x105 |
+| `+0x8` | u64 | name hash |
+
+Evidence: 4,158 records; every `+0x4` word is in {0x101, 0x102, 0x103, 0x105}
+(stride-16 check: last u32 < 4096 in 0 % of records). The value column carries
+floats where the type says float: `0x41f00000` = 30.0 appears 109 times and
+`0x3b449ba6` = 0.003 appears 110 times, both only under type 0x102, while type
+0x101 values are small ints (0, 21, 22). So the block is a **typed key/value
+property array** `(value, type, name_hash)` — a schema/property tree, not
+bytecode. 475 distinct u64 name hashes appear; none of their 32-bit halves match
+the 30,935 known archive/root/bone/descriptor hashes.
+
+The next block (`0x12120..0x15000`) is **not** on the same 16-byte grid: its
+`+0x4` words land on patterns like `0x1020003`, i.e. the array continues at a
+2-byte shift, so the block boundary in the PSIN directory is not a record
+boundary there.
+
+`[u32 count][u32 type][u64 name]` also explains the 32 % zero share: zero is the
+most common value in every type class (0 appears 490/1186 times under 0x101,
+1405/1975 under 0x102).
+
+### Cross-archive LSNS comparison
+
+PSIN-prefixed zlib streams also occur outside `script.rpf`:
+
+| Archive | PSIN records (scanned) |
+| --- | ---: |
+| `script.rpf` | 1,012 |
+| `story000_script.rpf` (78 MB, full) | 2,309 |
+| `shared_minigame000.rpf` (811 MB, full) | 73 |
+| `packs.rpf` (first 400 MB) | 471 |
+
+Across those four sources: **2,669 distinct LSNS bodies, 0 cross-archive
+duplicates**, and **0 shared PSIN block heads (317 distinct)**. The record sets
+are disjoint, so this neither confirms nor refutes a per-archive key — it only
+shows that no script is shipped twice in the scanned data.
+
+LSNS header variants across 3,616 bodies: first u16 ∈ {1, 2, 3, 4}
+(1512/1223/849/32), second u16 = 0, version word `0x101`, length always a
+multiple of 16. No record has a plaintext body.

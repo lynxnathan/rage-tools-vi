@@ -47,6 +47,10 @@ Last updated: 2026-11-21.
 
 ## Now
 
+- [ ] Parse the PSIN property tree (16-byte `(value, type, name_hash)` records,
+  types 0x101 int / 0x102 float / 0x103 / 0x105) and union the u64 name hashes
+  across all 1,012 records; then test 64-bit RAGE hash variants against known
+  property names.
 - [ ] Script decomp pipeline is gated on key material. Section split and PSIN
   directory are done; PSIN blocks are typed tables (22–38 % invalid opcodes vs
   49 % random), and LSNS is genuinely encrypted (uniform entropy, deterministic,
