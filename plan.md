@@ -80,7 +80,10 @@ Last updated: 2026-11-21.
   is exhausted for *types*: 174k tokens against 35,106 type hashes returns 0 hits
   (1.42 expected by chance). The engine metadata table (CodeWalker, 20,300
   names) resolves 57 properties but only 4 of 234,720 `id1` values, so types are
-  a third vocabulary — most likely script class names.
+  a third vocabulary. Three attempts (corpus, engine metadata, 40 engine class
+  names) give 0 usable hits against 21 `root_type` + 21 `type_tag` values, so the
+  names are probably not readable strings at all — likely stored in the encrypted
+  LSNS. Do not retry with another dictionary.
 - [ ] Rehash all of `levels`.
 
 ## Next

@@ -5912,3 +5912,30 @@ descriptors, and all four look like collisions (`MenuItems`,
 `VFXGROUP_SAND_UNDERWATER`). So the `root_type`/`type_tag` namespace is neither
 metadata names nor model strings — it is a third vocabulary, most likely the
 script/engine class names that only appear in decompiled code.
+
+## Journal: the type namespace is not a vocabulary problem (2026-11-22)
+
+Three vocabularies have now been tried against the type hashes, and all three
+fail:
+
+| Vocabulary | Size | Targets | Hits | Expected by chance |
+| --- | ---: | ---: | ---: | ---: |
+| harvested corpus | 173,999 | 35,106 type-ish hashes | **0** | 1.42 |
+| engine metadata names | 20,300 | 234,720 `id1` values | **4**, all doubtful | 0.5 |
+| engine class names (`CPed`, `fragType`, `grmGeometry`, …) | 40 | 21 `root_type` + 21 `type_tag` | **0** | 0.0 |
+
+The metadata hits deserve a second look because three of them are plausible
+words (`MenuItems`, `TimeBeforeFiringMax`, `VFXGROUP_SAND_UNDERWATER`), but they
+land in a per-entry id column where unrelated values dominate, so they are
+collisions rather than type names.
+
+The real type namespace is tiny — **21 `root_type` and 21 `type_tag` values**
+cover every table in `handoff/`. A namespace that small should be trivially
+nameable by vocabulary if its names were plain strings. Zero hits from three
+different word lists therefore says something stronger than "we need more words":
+the type names are most likely not stored as readable strings we can harvest at
+all, and the natural place for them is the encrypted `LSNS` table — the same wall
+as script decoding.
+
+That closes the vocabulary route for types and connects it to the key-blocked
+work. The next move is not another dictionary.
