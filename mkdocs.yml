@@ -99,6 +99,7 @@ nav:
   - Data:
       - data.rpf: data/data-rpf.md
       - Textures: data/textures.md
+      - Rig names: data/rig-names.md
       - Localization: data/localization.md
   - Workstreams:
       - Collaboration: workstreams/collaboration.md

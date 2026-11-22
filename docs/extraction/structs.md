@@ -13,7 +13,13 @@ Guardrails learned the hard way:
   per 6 MB body;
 - `+0xa0` is a **bvh4 class field**, not a container field — it is harvested only
   when the record is 208 bytes and carries the full bvh4 pointer table
-  (`0x50000080/a0/b0/c0/50`, `1` at `+0x10`, `0x60000000` at `+0x20`).
+  (`0x50000080/a0/b0/c0/50`, `1` at `+0x10`, `0x60000000` at `+0x20`);
+- **tag-5 targets need not stay inside the stream.** `core_bvh4`'s descriptor
+  points inside its own 208 bytes, but `navmeshes` structs point far outside
+  (a 1,840-byte body holds `0x53149a19`, target `0x3149a19`). Requiring an
+  in-body target rejected 2,446 of 2,447 navmeshes structs; alignment alone is
+  the correct filter, and the shares in the table below are therefore lower
+  bounds for archives whose pointers leave their stream.
 
 ## Corpus map
 
