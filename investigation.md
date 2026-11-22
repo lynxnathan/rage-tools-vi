@@ -4748,3 +4748,31 @@ bones), which is consistent with their arrays summing to 1.0.
 Artifact: `handoff/weight-hash-names.tsv`. The run takes 8 s with the curated
 vocabulary; the earlier 40-minute timeout was the 147k-word corpus sweep, which
 is unnecessary for this namespace.
+
+## Journal: descriptor inventory completed with the basis (2026-11-21)
+
+`handoff/core-bvh4-descriptors.tsv` now carries the orientation basis as well:
+**269,106 rows**, 15 columns (`stream, allocated, pair_lo, pair_hi, id0, id1,
+r0{x,y,z}, r1{…}, r2{…}`), 21 MB.
+
+Full-scale validation of the basis:
+
+| Check | Result |
+| --- | ---: |
+| Rows / unique streams | 269,106 / 269,106 |
+| Orthonormal within 1e-3 | **269,105 / 269,106** |
+| Worst error | 1.52e-03 |
+| Right-handed (det > 0) | **269,106 / 269,106** |
+
+So the orthonormal right-handed basis holds across the whole archive, not just
+the 4,000-record sample.
+
+Two process notes worth keeping:
+
+- **Rows are 16-byte padded.** Reading nine contiguous floats from `+0x50`
+  mixes the `w` padding and yields **0/269,106** orthonormal; reading three
+  floats at `+0x50`, `+0x60`, `+0x70` yields 269,105/269,106. The first run's
+  failure was the tool, not the data.
+- **Slices in parallel.** 20 slices at `-P 6` finish in **7–8 s per slice batch**
+  (8.5 min total) versus 60 s per serial slice; the idle drive rewards queue
+  depth.

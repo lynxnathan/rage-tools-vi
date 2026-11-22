@@ -55,7 +55,8 @@ def main():
                 pass
         out_path.parent.mkdir(parents=True, exist_ok=True)
         with out_path.open("w") as out:
-            out.write("stream\tallocated\tpair_lo\tpair_hi\tid0\tid1\n")
+            out.write("stream\tallocated\tpair_lo\tpair_hi\tid0\tid1\t"
+                      "r0x\tr0y\tr0z\tr1x\tr1y\tr1z\tr2x\tr2y\tr2z\n")
             for start, end in picked:
                 try:
                     body = zlib.decompress(mm[start:end])
@@ -67,8 +68,14 @@ def main():
                     continue
                 allocated, pair = struct.unpack_from("<II", body, 0xA0)
                 id0, id1 = struct.unpack_from("<II", body, 0x40)
+                # Basis rows are 16-byte padded, so read three floats at
+                # 0x50, 0x60 and 0x70 rather than nine contiguous floats.
+                rows = (struct.unpack_from("<3f", body, 0x50)
+                        + struct.unpack_from("<3f", body, 0x60)
+                        + struct.unpack_from("<3f", body, 0x70))
                 out.write(f"0x{start:x}\t{allocated}\t{pair & 0xFFFF}\t"
-                          f"{pair >> 16}\t0x{id0:08x}\t0x{id1:08x}\n")
+                          f"{pair >> 16}\t0x{id0:08x}\t0x{id1:08x}\t"
+                          + "\t".join(f"{value:.6g}" for value in rows) + "\n")
                 accepted += 1
         mm.close()
     print(f"accepted {accepted} bvh4 descriptors -> {out_path}")

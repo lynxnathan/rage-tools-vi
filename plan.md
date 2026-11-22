@@ -32,8 +32,7 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] Finish the `core_bvh4` descriptor inventory: add the basis rows and cover
-  `shared_minigame000_bvh4`.
+- [ ] Cover `shared_minigame000_bvh4` with the same descriptor harvest.
 - [ ] Name the remaining weight hashes (21 of 252 done).
 - [ ] Name the remaining ped-rig bone hashes.
 - [ ] Open the unnamed hash universe with a new name source.
