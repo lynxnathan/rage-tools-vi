@@ -71,6 +71,18 @@ def main():
     check("entries carry Id/Type pairs",
           any(row["field_a"] in ("Id", "Type") for row in entries))
 
+    if (ROOT / "script.rpf").is_file():
+        print("extraction from the archive")
+        result = run("tools/psin_extract.py", "script.rpf",
+                     "--out", "cache/psin-properties-test.tsv")
+        check("extract runs", result.returncode == 0, result.stderr[:120])
+        rows = list(csv.DictReader((ROOT / "cache/psin-properties-test.tsv").open(),
+                                   delimiter="\t"))
+        check("extract finds the same 62,910 rows", len(rows) == 62910, f"({len(rows)})")
+        check("extract column layout", "class_hash" in rows[0], set(rows[0]))
+    else:
+        print("extraction from the archive: skipped (script.rpf not present)")
+
     print()
     if FAILED:
         print(f"FAIL: {len(FAILED)} check(s) failed: {', '.join(FAILED)}")

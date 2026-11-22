@@ -54,6 +54,9 @@ Last updated: 2026-11-21.
 - [x] PSIN record roles settled: small vocabulary = property name, large =
   object key (`location_*` keys carry two properties; a value cannot).
   Relabelled in the tool and `handoff/psin-names.tsv`.
+- [x] `tools/psin_extract.py` produces the property dump directly from
+  `script.rpf` (62,910 rows, identical to the earlier dump), so the chain
+  archive -> dump -> lookup -> entries needs no external cache.
 - [x] PSIN records render as entries: `tools/psin_segment.py --describe` pairs
   local `Id`/`Type` runs and resolves the payload from the key column, so record
   1054 reads as vehicle parts (bonnet, side, roof, cosmetics) and locations.

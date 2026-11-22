@@ -66,7 +66,8 @@ python3 tools/name_registry.py --lookup 0x01166164 0x67d26872 0xf5436868
 python3 tools/name_registry.py --annotate handoff/script-bones.tsv \
     --column bone_hash --out handoff/script-bones-named.tsv
 
-# read a script's schema instead of 62,910 lines of hex
+# from the archive to a readable schema: one command
+python3 tools/psin_extract.py script.rpf          # writes cache/psin-properties.tsv
 python3 tools/psin_dump.py --record 110
 
 # ...or as entries, with Id/Type rows paired (vehicle parts, locations, ...)
