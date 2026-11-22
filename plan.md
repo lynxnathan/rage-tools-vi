@@ -120,6 +120,11 @@ Each needs a specific input, not more effort.
 - [ ] The 331,728-byte `script.rpf` blob — needs a PC launch or a new sample.
 - [ ] Full RPF9 metadata key recovery — needs key material or a second build.
 
+## Health
+
+- [x] `tools/check.sh` runs the analysis tests, the index invariants, the
+  `rdna2-spirv` suite and the docs build in one go; all four pass today.
+
 ## Not mine
 
 - [ ] `explorer/` — owned by another session.

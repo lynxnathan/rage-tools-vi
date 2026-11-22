@@ -49,6 +49,17 @@ counted exactly and are marked rather than guessed.
 The live list is [`plan.md`](plan.md); the raw evidence is
 [`investigation.md`](investigation.md).
 
+## Checking the repository
+
+```bash
+tools/check.sh          # analysis tests, index invariants, shader suite, docs build
+tools/check.sh --fast   # skip the docs build and the shader suite
+```
+
+It fails loudly and skips cleanly: anything needing the source archives reports
+`skipped` instead of failing, so a fresh clone with only the committed data still
+gets a meaningful answer.
+
 ## Using the names
 
 Every resolved hash across the repository — bones, weights, script properties and
