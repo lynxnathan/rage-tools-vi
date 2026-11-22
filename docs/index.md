@@ -171,3 +171,15 @@ python3 -m venv /tmp/mkdocs-venv
 /tmp/mkdocs-venv/bin/pip install -r requirements-docs.txt
 /tmp/mkdocs-venv/bin/mkdocs serve
 ```
+
+## Sibling: the GPU layer
+
+The archive work stops at stored bytes. What the GPU does with them is a
+separate project, kept in its own repository and included here as a submodule:
+
+| Path | What it does |
+| --- | --- |
+| `rdna2-spirv/` | Generic AMD RDNA2 (GFX10.x) decompiler — machine code to SPIR-V, with decoder agreement against LLVM, golden buffer tests, and exact pixel tests on a software Vulkan backend |
+
+Its method, evidence, and open gaps are recorded there, in its own `plan.md` and
+`investigation.md`. Clone with `--recurse-submodules` to get it.
