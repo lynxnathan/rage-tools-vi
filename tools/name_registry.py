@@ -35,6 +35,8 @@ SOURCES = [
     ("handoff/weight-hash-candidates.tsv", "weight_hash", "name", "weight", "candidate", None),
     ("handoff/rig-names-corpus.tsv", "hash", "name", "bone", "corpus", None),
     ("handoff/psin-names.tsv", "hash", "name", "property/key", "corpus", None),
+    # rig families list every member root in one comma-separated column
+    ("handoff/script-bone-template-families.tsv", "roots", "family_id", "rig", "corpus", None),
 ]
 
 RANK = {"curated": 3, "grammar": 2, "corpus": 1, "candidate": 0}
@@ -49,13 +51,18 @@ def build(path=REGISTRY):
         for row in csv.DictReader(handle.open(), delimiter="\t"):
             raw = (row.get(hash_column) or "").strip()
             name = (row.get(name_column) or "").strip()
-            if not raw.startswith("0x") or not name:
+            if not raw or not name:
                 continue
-            value = int(raw, 16)
-            entry = entries.setdefault(value, {"kind": kind, "best": None, "seen": []})
-            entry["seen"].append((confidence, name, Path(source).name))
-            if entry["best"] is None or RANK[confidence] > RANK[entry["best"][0]]:
-                entry["best"] = (confidence, name, Path(source).name)
+            # Some tables list several hashes in one cell (rig family membership).
+            for piece in raw.replace(";", ",").split(","):
+                piece = piece.strip()
+                if not piece.startswith("0x"):
+                    continue
+                value = int(piece, 16)
+                entry = entries.setdefault(value, {"kind": kind, "best": None, "seen": []})
+                entry["seen"].append((confidence, name, Path(source).name))
+                if entry["best"] is None or RANK[confidence] > RANK[entry["best"][0]]:
+                    entry["best"] = (confidence, name, Path(source).name)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w") as out:
         out.write("hash\tname\tkind\tconfidence\tsource\talso_known_as\n")

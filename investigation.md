@@ -5820,3 +5820,43 @@ The remaining 14,138 keys and 276 properties are unresolved, but they are now
 *joinable*: any new hash source plugged into `SOURCES` in `name_registry.py`
 lands in the same table and immediately serves lookup, annotation and the schema
 dump.
+
+## Journal: every handoff table joined against the registry (2026-11-22)
+
+`tools/annotate_handoff.py` walks all 60-odd handoff tables and finds hash
+columns by their *values* (`0x` plus eight hex digits) instead of their names,
+because the same concept appears as `bone_hash`, `root_id`, `id0`, `type_tag`,
+`key_hash` and half a dozen others.
+
+Two things were needed to make the join worth doing. The registry learned to
+split comma-separated cells, which is how the rig family table lists its member
+roots, adding **44 root ids** (`0x48dcbb01` → `F12`, `0x074d551a` → `F02`). With
+those, named hash values across the corpus went from 3,734 of 746,679 (0.50 %)
+to **31,896 (4.27 %)** — root columns in a dozen tables resolved at once.
+
+Where the names land now:
+
+| Table | Named | Share |
+| --- | ---: | ---: |
+| `script-bone-geometry.tsv` | 3,351 / 6,086 | 55.1 % |
+| `script-bone-points.tsv` | 17,149 / 47,196 | 36.3 % |
+| `script-bones.tsv` | 3,351 / 12,172 | 27.5 % |
+| `script-array-inventory.tsv` | 3,055 / 23,880 | 12.8 % |
+| `script-pair-arrays.tsv` | 552 / 22,890 | 2.4 % |
+
+Six tables still resolve nothing: both `bvh4` descriptor inventories, the
+`navmeshes` entries, and two vehicle tables.
+
+### Type hashes remain unresolved, and this time the vocabulary is the wall
+
+The unnamed columns are dominated by *type* hashes (`root_type`, `type_tag`,
+`id0`, `id1`) — 35,106 distinct values. Hashing all 173,999 corpus tokens against
+them returns **0 hits** where chance predicts 1.42. That is not a near miss; the
+engine's type names are simply not in this vocabulary, which was harvested from
+model, bone and variant strings. Resolving types needs a RAGE type-name list
+(`fragType`, `phBound`, `grmGeometry` and so on), not a bigger sample of the same
+words.
+
+Recorded so the next attempt does not re-run the sweep: the corpus route is
+exhausted for types, and the same negative applies to the 14,138 unresolved PSIN
+keys with the same vocabulary.

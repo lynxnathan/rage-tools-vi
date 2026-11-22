@@ -17,6 +17,7 @@ hash	name	kind	confidence	source	also_known_as
 0x070efcdb	unisex	property/key	corpus	psin-names.tsv	
 0x0736d435	location_griffin_shootingrange_name	property/key	corpus	psin-names.tsv	
 0x07423b04	mh_l_testicle	bone	curated	bone-hash-names-curated.tsv	
+0x074d551a	F02	rig	corpus	script-bone-template-families.tsv	
 0x08b5e78b	location_alines_thrift_name	property/key	corpus	psin-names.tsv	
 0x091b2bc5	nb_rnf01_mod_1_modcam_01	property/key	corpus	psin-names.tsv	
 0x09b98cc8	gabrielwexler	property/key	corpus	psin-names.tsv	
@@ -29,12 +30,14 @@ hash	name	kind	confidence	source	also_known_as
 0x0b9b50fb	mh_l_latissimus	bone	curated	bone-hash-names-curated.tsv	
 0x0c727881	payments	property/key	corpus	psin-names.tsv	
 0x0c818530	rb_r_wrist01	bone	curated	bone-hash-names-curated.tsv	
+0x0caddddb	F01	rig	corpus	script-bone-template-families.tsv	
 0x0cd75695	nb_lel01_gas_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x0ce682c0	sb47_clt_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x0db8db36	aperture	property/key	corpus	psin-names.tsv	
 0x0e4a4ee7	skel_r_collarbone	weight	curated	weight-hash-names.tsv	
 0x0eaa5e86	location_acpc_name	property/key	corpus	psin-names.tsv	
 0x10208625	ky32b_cha_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
+0x10bbc4ce	F02	rig	corpus	script-bone-template-families.tsv	
 0x10e5bf81	tw3_13_tat_1_gfa	property/key	corpus	psin-names.tsv	
 0x11236880	location_leroys_name	property/key	corpus	psin-names.tsv	
 0x1125fb89	dollars	property/key	corpus	psin-names.tsv	
@@ -47,6 +50,7 @@ hash	name	kind	confidence	source	also_known_as
 0x12f890cf	ds09_apt_1_f1a_bespoke	property/key	corpus	psin-names.tsv	
 0x1324c9da	engine	property/key	corpus	psin-names.tsv	
 0x13465ea5	location_alphagasstation_name	property/key	corpus	psin-names.tsv	
+0x1364bcaf	F02	rig	corpus	script-bone-template-families.tsv	
 0x13fdb2e7	location_au_courant_name	property/key	corpus	psin-names.tsv	
 0x140688c1	location_globeoil_name	property/key	corpus	psin-names.tsv	
 0x142bd7eb	sb28b_cnv_1_gf	property/key	corpus	psin-names.tsv	
@@ -85,6 +89,7 @@ hash	name	kind	confidence	source	also_known_as
 0x216993ea	interior	property/key	corpus	psin-names.tsv	
 0x229f14a7	skel_l_collarbone	weight	curated	weight-hash-names.tsv	
 0x2366a9d3	sn20_lqr_1_gf	property/key	corpus	psin-names.tsv	
+0x23c15e0f	F02	rig	corpus	script-bone-template-families.tsv	
 0x2419545a	mh_l_thigh	bone	curated	bone-hash-names-curated.tsv	
 0x2428a412	tw2_05_gas_1_gf	property/key	corpus	psin-names.tsv	
 0x25469927	location_whislermotorsport_name	property/key	corpus	psin-names.tsv	
@@ -158,6 +163,8 @@ hash	name	kind	confidence	source	also_known_as
 0x3c0eff3c	sb17_har_1_gfa	property/key	corpus	psin-names.tsv	
 0x3cd82f9f	ambrosia	property/key	corpus	psin-names.tsv	
 0x3d00516c	sb47_elc_2_gfa_bespoke	property/key	corpus	psin-names.tsv	
+0x3d485acc	F01	rig	corpus	script-bone-template-families.tsv	
+0x3d833a20	F07	rig	corpus	script-bone-template-families.tsv	
 0x3e6bb300	rb_r_shoulder03	bone	curated	bone-hash-names-curated.tsv	catena29
 0x3eb58547	mh_l_teres	bone	curated	bone-hash-names-curated.tsv	
 0x3ec3bb37	skel_l_foot	bone	curated	bone-hash-names-curated.tsv	
@@ -170,6 +177,7 @@ hash	name	kind	confidence	source	also_known_as
 0x40094776	fh_shl04_gun_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x404a504b	location_crosstown_cutz_name	property/key	corpus	psin-names.tsv	
 0x4076431f	tw2_03_gas_1_gf	property/key	corpus	psin-names.tsv	
+0x40e56d68	F13	rig	corpus	script-bone-template-families.tsv	
 0x4109508e	location_biffs_gunsupply_name	property/key	corpus	psin-names.tsv	
 0x4152f0da	ma_mar04_gas_1_gfa	property/key	corpus	psin-names.tsv	
 0x4185d1f4	location_podiumsports_name	property/key	corpus	psin-names.tsv	
@@ -193,6 +201,7 @@ hash	name	kind	confidence	source	also_known_as
 0x4753a438	nm24_cnv_1_gf	property/key	corpus	psin-names.tsv	
 0x48509005	skel_r_finger12	bone	grammar	bone-hash-names.tsv	
 0x4883d393	sn35_gas_1_gf	property/key	corpus	psin-names.tsv	
+0x48dcbb01	F12	rig	corpus	script-bone-template-families.tsv	
 0x4951a688	chest	property/key	corpus	psin-names.tsv	
 0x49ba09ae	location_xyzmarket_name	property/key	corpus	psin-names.tsv	
 0x4a5811e6	skel_l_finger32	bone	grammar	bone-hash-names.tsv	
@@ -204,11 +213,13 @@ hash	name	kind	confidence	source	also_known_as
 0x4c2e0c51	location_poppers_conveniencestore_name	property/key	corpus	psin-names.tsv	
 0x4c9ada84	location_simplysound_name	property/key	corpus	psin-names.tsv	
 0x4cbfa687	int_clt_5_gfa	property/key	corpus	psin-names.tsv	
+0x4cc638fa	F01	rig	corpus	script-bone-template-families.tsv	
 0x4ccb74fd	tw7_19_gas_1_gf	property/key	corpus	psin-names.tsv	
 0x4d0c2c8d	ss18_gas_1_gf	property/key	corpus	psin-names.tsv	
 0x4d319959	sn20_cnv_1_gf	property/key	corpus	psin-names.tsv	
 0x4d72a5fe	rb_r_thigh03	bone	curated	bone-hash-names-curated.tsv	
 0x4da2c7f1	tops	property/key	corpus	psin-names.tsv	
+0x4e92c5ed	F01	rig	corpus	script-bone-template-families.tsv	
 0x4f0ea104	nm08_elc_1_gfa	property/key	corpus	psin-names.tsv	
 0x4f884881	location_waves_name	property/key	corpus	psin-names.tsv	
 0x4fbb9cf3	radius	property/key	corpus	psin-names.tsv	
@@ -224,6 +235,7 @@ hash	name	kind	confidence	source	also_known_as
 0x54f3af8b	tw3_05_gun_1_gfa	property/key	corpus	psin-names.tsv	
 0x5515a3f7	hand_l	property/key	corpus	psin-names.tsv	
 0x55be5204	location_quickscope_name	property/key	corpus	psin-names.tsv	
+0x55c07340	F10	rig	corpus	script-bone-template-families.tsv	
 0x56946eac	lo_slv02_cnv_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x56bcdf8c	ky23_lqr_1_gf	property/key	corpus	psin-names.tsv	
 0x5703e71b	int_del_23_gfa_bespoke	property/key	corpus	psin-names.tsv	
@@ -243,6 +255,7 @@ hash	name	kind	confidence	source	also_known_as
 0x5bcdbf12	lo_spl07_gas_1_gf_bespoke	property/key	corpus	psin-names.tsv	
 0x5bd818b2	fh_shl01_gas_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x5c4c5883	group_thrown	property/key	corpus	psin-names.tsv	
+0x5c61bea2	F02	rig	corpus	script-bone-template-families.tsv	
 0x5cc43e9c	location_pawn_gun_name	property/key	corpus	psin-names.tsv	
 0x5d131c7c	location_rustyanchor_name	property/key	corpus	psin-names.tsv	
 0x5dc760d3	location_telegraphe_name	property/key	corpus	psin-names.tsv	
@@ -258,6 +271,8 @@ hash	name	kind	confidence	source	also_known_as
 0x626ca419	sb03_tat_1_gfa	property/key	corpus	psin-names.tsv	
 0x628246ed	rb_l_wrist03	bone	curated	bone-hash-names-curated.tsv	
 0x62e89a72	int_del_9_gfa_bespoke	property/key	corpus	psin-names.tsv	
+0x633ce607	F01	rig	corpus	script-bone-template-families.tsv	
+0x637f37fd	F02	rig	corpus	script-bone-template-families.tsv	
 0x63a55d89	rb_l_shoulder02	bone	curated	bone-hash-names-curated.tsv	
 0x64657d6f	location_sarenasstore_name	property/key	corpus	psin-names.tsv	
 0x6512e1d6	wheel_lr	property/key	corpus	psin-names.tsv	
@@ -284,6 +299,7 @@ hash	name	kind	confidence	source	also_known_as
 0x6d344b55	mh_l_sterno	weight	curated	weight-hash-names.tsv	
 0x6e2cf6c9	location_electric_blvd_name	property/key	corpus	psin-names.tsv	
 0x6eaf6b7d	news	property/key	corpus	psin-names.tsv	
+0x6f03cd44	F02	rig	corpus	script-bone-template-families.tsv	
 0x6f596e80	tw5_12b_gas_2_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x6f6a1339	portgellhorn	property/key	corpus	psin-names.tsv	
 0x6fb43e8b	tw10_05_tat_1_gf	property/key	corpus	psin-names.tsv	
@@ -301,8 +317,10 @@ hash	name	kind	confidence	source	also_known_as
 0x74e06fac	medium	property/key	corpus	psin-names.tsv	
 0x752e66c5	fh_shl01_mod_1_modcam_01	property/key	corpus	psin-names.tsv	
 0x7562ddb9	skel_l_scapula	bone	curated	bone-hash-names-curated.tsv	
+0x77468022	F01	rig	corpus	script-bone-template-families.tsv	
 0x77992709	dn05c_clt_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x77dd4010	rotation	property/key	corpus	psin-names.tsv	
+0x7864b65e	F15	rig	corpus	script-bone-template-families.tsv	
 0x787e4c22	watsonbay	property/key	corpus	psin-names.tsv	
 0x78ddfcc5	mh_r_finger01	bone	curated	bone-hash-names-curated.tsv	
 0x79822480	location_loriscott_hairbeauty_name	property/key	corpus	psin-names.tsv	
@@ -325,6 +343,7 @@ hash	name	kind	confidence	source	also_known_as
 0x7ea8c1d8	torso	property/key	corpus	psin-names.tsv	
 0x7ec4ae6c	location_phils_ammunation_name	property/key	corpus	psin-names.tsv	
 0x7eca6615	supplies	property/key	corpus	psin-names.tsv	
+0x7f359514	F16	rig	corpus	script-bone-template-families.tsv	
 0x7f3b51ab	text	property/key	corpus	psin-names.tsv	
 0x7f8078d5	location_rongasstation_name	property/key	corpus	psin-names.tsv	
 0x7fcdbc5b	ky24_jwl_1	property/key	corpus	psin-names.tsv	
@@ -354,6 +373,7 @@ hash	name	kind	confidence	source	also_known_as
 0x85d4d1db	location_dynamix_fitness_name	property/key	corpus	psin-names.tsv	
 0x8650f673	legs	property/key	corpus	psin-names.tsv	
 0x866389fc	skel_l_finger31	bone	grammar	bone-hash-names.tsv	
+0x8667f0e4	F04	rig	corpus	script-bone-template-families.tsv	
 0x86919f03	location_a_better_you_name	property/key	corpus	psin-names.tsv	
 0x86e8f08a	location_blessed_foodmarket_name	property/key	corpus	psin-names.tsv	
 0x871347b2	location_keylento_kahuna_name	property/key	corpus	psin-names.tsv	
@@ -362,6 +382,7 @@ hash	name	kind	confidence	source	also_known_as
 0x87f0cb9c	lo_int102_gas_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x882a381b	location_eris_name	property/key	corpus	psin-names.tsv	
 0x89686deb	location_vicecity_firearms_name	property/key	corpus	psin-names.tsv	
+0x89a5d573	F06	rig	corpus	script-bone-template-families.tsv	
 0x89d0a26f	huge	property/key	corpus	psin-names.tsv	
 0x8a010d97	skel_l_finger23	bone	grammar	bone-hash-names.tsv	
 0x8a71fbdc	location_ltd_gasstation_name	property/key	corpus	psin-names.tsv	
@@ -376,11 +397,14 @@ hash	name	kind	confidence	source	also_known_as
 0x8cb81681	spoiler	property/key	corpus	psin-names.tsv	
 0x8d48fd33	bumper_r	property/key	corpus	psin-names.tsv	
 0x8d5c25d4	origin	property/key	corpus	psin-names.tsv	
+0x8dd19d59	F01	rig	corpus	script-bone-template-families.tsv	
 0x8e1539a8	sb15_clt_1_gf	property/key	corpus	psin-names.tsv	
+0x8e1e553e	F01	rig	corpus	script-bone-template-families.tsv	
 0x8e430383	vicecity	property/key	corpus	psin-names.tsv	
 0x8ea1bcea	location_salonbelle_name	property/key	corpus	psin-names.tsv	
 0x8ea496e2	skel_l_finger21	bone	grammar	bone-hash-names.tsv	
 0x8fa92765	location_thisthat_name	property/key	corpus	psin-names.tsv	
+0x8fb71e69	F06	rig	corpus	script-bone-template-families.tsv	
 0x90795c1c	nm19_har_1_gfa	property/key	corpus	psin-names.tsv	
 0x917311a8	shorts	property/key	corpus	psin-names.tsv	
 0x923d69b7	tr_abi02_gas_1_gf_bespoke	property/key	corpus	psin-names.tsv	
@@ -389,10 +413,15 @@ hash	name	kind	confidence	source	also_known_as
 0x94645ef4	rb_r_shoulder02	bone	curated	bone-hash-names-curated.tsv	catena28
 0x94aee27d	int_del_17_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x950bce70	nm06b_gas_1_gf	property/key	corpus	psin-names.tsv	
+0x9567cdf4	F03	rig	corpus	script-bone-template-families.tsv	
 0x9643261b	skel_l_finger22	bone	grammar	bone-hash-names.tsv	
+0x969961e4	F02	rig	corpus	script-bone-template-families.tsv	
+0x96d8bd92	F03	rig	corpus	script-bone-template-families.tsv	
+0x96f3700e	F05	rig	corpus	script-bone-template-families.tsv	
 0x973918e4	fh_shl05_gas_1_gf_bespoke	property/key	corpus	psin-names.tsv	
 0x979ee3fb	ky44_clt_1_gf	property/key	corpus	psin-names.tsv	
 0x98a6ceea	campos	property/key	corpus	psin-names.tsv	
+0x98c93fb3	F08	rig	corpus	script-bone-template-families.tsv	
 0x98e6111d	int_del_20_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0x98e72fd5	region_grayson	property/key	corpus	psin-names.tsv	
 0x992827f7	group_launcher	property/key	corpus	psin-names.tsv	
@@ -448,10 +477,12 @@ hash	name	kind	confidence	source	also_known_as
 0xac82ad6b	fullbody	property/key	corpus	psin-names.tsv	
 0xacfadbd6	lo_dhl02_cnv_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xad0d186f	mh_r_latissimus	bone	curated	bone-hash-names-curated.tsv	
+0xad3949d9	F01	rig	corpus	script-bone-template-families.tsv	
 0xae1edf2b	lo_shc01_gun_1_gfa	property/key	corpus	psin-names.tsv	
 0xae29f7f3	handlebars	property/key	corpus	psin-names.tsv	
 0xae679517	shifter	property/key	corpus	psin-names.tsv	
 0xaf6f89c0	skel_l_calf	bone	curated	bone-hash-names-curated.tsv	
+0xaf83defd	F01	rig	corpus	script-bone-template-families.tsv	
 0xaf86a617	int_del_13_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xafb0a3a2	mh_r_hip	bone	curated	bone-hash-names-curated.tsv	
 0xafce3373	skel_r_foot	bone	curated	bone-hash-names-curated.tsv	
@@ -466,6 +497,7 @@ hash	name	kind	confidence	source	also_known_as
 0xb409b89d	skel_r_forearm	bone	curated	bone-hash-names-curated.tsv	
 0xb43ec51f	location_beach_please_name	property/key	corpus	psin-names.tsv	
 0xb4a00aac	sn35_mod_2_modcam_01	property/key	corpus	psin-names.tsv	
+0xb4e9e8ce	F05	rig	corpus	script-bone-template-families.tsv	
 0xb5317599	layer	property/key	corpus	psin-names.tsv	
 0xb576d17f	nm05_clt_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xb5be7f58	location_euroform_auto_name	property/key	corpus	psin-names.tsv	
@@ -491,6 +523,7 @@ hash	name	kind	confidence	source	also_known_as
 0xbc96a7e5	roof	property/key	corpus	psin-names.tsv	
 0xbd22fc68	skel_r_finger41	bone	grammar	bone-hash-names.tsv	
 0xbd38130b	omega	property/key	corpus	psin-names.tsv	
+0xbd62ea7b	F02	rig	corpus	script-bone-template-families.tsv	
 0xbda29487	sb47_lqr_1_gfa	property/key	corpus	psin-names.tsv	
 0xbdedabfc	nb24_gym_2_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xbe279db9	location_larrys_lagoon_name	property/key	corpus	psin-names.tsv	
@@ -501,6 +534,7 @@ hash	name	kind	confidence	source	also_known_as
 0xbfa6810b	skel_r_finger31	bone	grammar	bone-hash-names.tsv	
 0xc2619d2c	rb_l_hip	bone	curated	bone-hash-names-curated.tsv	
 0xc2ed4340	location_zenons_pawn_name	property/key	corpus	psin-names.tsv	
+0xc3ae138b	F09	rig	corpus	script-bone-template-families.tsv	
 0xc3bcdae3	location_xerogas247_name	property/key	corpus	psin-names.tsv	
 0xc40339fb	int_del_11_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xc447d152	location_washedsouvenirs_name	property/key	corpus	psin-names.tsv	
@@ -514,19 +548,25 @@ hash	name	kind	confidence	source	also_known_as
 0xc6e9a5c5	group_smg	property/key	corpus	psin-names.tsv	
 0xc703db5f	taxi	property/key	corpus	psin-names.tsv	
 0xc8638cd9	skel_r_finger22	bone	grammar	bone-hash-names.tsv	
+0xc8caacb2	F03	rig	corpus	script-bone-template-families.tsv	
 0xc9577a34	airport	property/key	corpus	psin-names.tsv	
+0xc95ef220	F14	rig	corpus	script-bone-template-families.tsv	
 0xc9a04b24	ds01_gas_1_gf	property/key	corpus	psin-names.tsv	
 0xcb0eaeea	location_ferruccio_tucci_name	property/key	corpus	psin-names.tsv	
 0xcba70f0a	location_rodgersranch_shootingrange_name	property/key	corpus	psin-names.tsv	
 0xcc53abf6	int_del_5_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xcd22eadd	int_clt_3_gfa	property/key	corpus	psin-names.tsv	
 0xcd3ff0eb	location_gifts_a_gogo_name	property/key	corpus	psin-names.tsv	
+0xce9777e1	F01	rig	corpus	script-bone-template-families.tsv	
 0xcf6811c5	ss56_gas_1_gf	property/key	corpus	psin-names.tsv	
+0xcf91b2f9	F04	rig	corpus	script-bone-template-families.tsv	
 0xcfacacb0	int_del_4_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xcfbd6c49	sb15_gun_1_gf	property/key	corpus	psin-names.tsv	
 0xd07be7e5	region_hamlet	property/key	corpus	psin-names.tsv	
+0xd0f472a0	F01	rig	corpus	script-bone-template-families.tsv	
 0xd1bd2d01	skel_r_calf	bone	curated	bone-hash-names-curated.tsv	
 0xd21b25f4	skel_r_finger32	bone	grammar	bone-hash-names.tsv	
+0xd2207719	F03	rig	corpus	script-bone-template-families.tsv	
 0xd25d700c	ky27b_bar_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xd2d046f4	int_del_25_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xd3b360c4	item	property/key	corpus	psin-names.tsv	
@@ -560,6 +600,7 @@ hash	name	kind	confidence	source	also_known_as
 0xde08ee07	bottoms	property/key	corpus	psin-names.tsv	
 0xde1c6660	tw10_01_mod_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
 0xde355450	mh_l_finger21	bone	grammar	bone-hash-names.tsv	
+0xde6422ee	F07	rig	corpus	script-bone-template-families.tsv	
 0xdeb3e8b0	capri	property/key	corpus	psin-names.tsv	
 0xdffa68c4	dn15b_clt_1_gf	property/key	corpus	psin-names.tsv	
 0xe0d1fff4	scene	property/key	corpus	psin-names.tsv	
@@ -602,8 +643,10 @@ hash	name	kind	confidence	source	also_known_as
 0xf05c2984	location_rideoutcustoms_name	property/key	corpus	psin-names.tsv	
 0xf0bd2238	int_clt_4_gfa	property/key	corpus	psin-names.tsv	
 0xf0e9c956	sn27_tat_1_gf	property/key	corpus	psin-names.tsv	
+0xf15ddc19	F02	rig	corpus	script-bone-template-families.tsv	
 0xf207a203	sn44_gas_1_gf	property/key	corpus	psin-names.tsv	
 0xf25bdb6c	sb53_elc_1_gf	property/key	corpus	psin-names.tsv	
+0xf2dba29c	F08	rig	corpus	script-bone-template-families.tsv	
 0xf3ad79f6	location_drfroogal_name	property/key	corpus	psin-names.tsv	
 0xf3e9513b	id17_gun_1_gf	property/key	corpus	psin-names.tsv	
 0xf48b45a6	int_del_8_gfa_bespoke	property/key	corpus	psin-names.tsv	
@@ -624,6 +667,7 @@ hash	name	kind	confidence	source	also_known_as
 0xfa6afe13	location_empowered_electronics_name	property/key	corpus	psin-names.tsv	
 0xfa82e6fb	rb_l_thigh01	bone	curated	bone-hash-names-curated.tsv	
 0xfa9868cf	sb14_clt_1_gfa_bespoke	property/key	corpus	psin-names.tsv	
+0xfae4b2fc	F11	rig	corpus	script-bone-template-families.tsv	
 0xfaf03981	location_kurts_barber_name	property/key	corpus	psin-names.tsv	
 0xfaf0ec23	sb21_lqr_1_gf	property/key	corpus	psin-names.tsv	
 0xfb064e6f	ma_mar05_gas_1_gfa_bespoke	property/key	corpus	psin-names.tsv	

@@ -71,6 +71,18 @@ python3 tools/psin_dump.py --record 110
 python3 tools/psin_dump.py --property position
 ```
 
+To annotate every handoff table at once (hash columns are detected by their
+values, not their names):
+
+```bash
+python3 tools/annotate_handoff.py       # writes output/named/ and handoff/name-coverage.tsv
+```
+
+`handoff/name-coverage.tsv` says, per table, how many hash values now carry a
+name — 31,896 of 746,679 (4.27 %) at present, concentrated in the bone, rig and
+script-schema tables. Annotated copies are derivable and stay untracked in
+`output/named/`.
+
 `handoff/names.tsv` is `hash, name, kind, confidence, source, also_known_as`.
 Confidence is ordered `curated > grammar > corpus > candidate`, and a hash that
 two sources disagree about keeps the losing name in `also_known_as` rather than

@@ -76,7 +76,9 @@ Last updated: 2026-11-21.
 - [ ] Name the remaining weight hashes (21 of 252 done). A 174k-token corpus
   sweep over the 231 unnamed hashes yields one candidate (`ph_hat`, 0.22 expected
   false positives); the cheap vocabulary is now exhausted — needs another source.
-- [ ] Open the 330-hash universe with a new vocabulary source.
+- [ ] Open the 330-hash universe with a new vocabulary source. The corpus route
+  is exhausted for *types*: 174k tokens against 35,106 type hashes returns 0 hits
+  (1.42 expected by chance), so a RAGE type-name list is needed, not more words.
 - [ ] Rehash all of `levels`.
 
 ## Next
