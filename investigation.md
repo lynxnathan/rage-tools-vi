@@ -4530,3 +4530,27 @@ The pipeline milestone that opened this phase — "one general extraction workfl
 across the local RPF9 archives" — now has no index-only archive left. What
 remains is verification, the browser rebuild, and the unified `+0xa0`/struct
 harvest that was queued behind this extraction.
+
+### Manifest totals match the index totals
+
+Summing every extraction manifest:
+
+| Archive | Streams | Stored | Decoded |
+| --- | ---: | ---: | ---: |
+| `levels` | 1,117,857 | 74,877,281,159 | 174,941,755,029 |
+| `core_bvh4` | 565,596 | 7,685,366,227 | 129,929,580,001 |
+| `packs` | 144,366 | 4,583,737,753 | 9,735,393,283 |
+| `navmeshes` | 90,305 | 6,540,238,597 | 20,551,068,944 |
+| `story000` | 141,163 | 6,903,882,028 | 13,766,986,233 |
+| `anim` | 130,510 | 4,203,763,861 | 11,593,461,732 |
+| `audio` | 838 (+8,959 AWC/WAV rows) | 19,210,407 | 54,143,545 |
+| **total** | **2,199,594** | **104,813,480,032** | **360,572,388,767** |
+
+The decoded total, 360,572,388,767 bytes, is exactly the index total recorded in
+`plan.md` before the rebuild. So every indexed stream now has an extracted,
+hashed manifest row — the coverage layer is closed, and what remains is
+verification and naming.
+
+Note `tools/extraction_inventory.py` is stale: it reads the pre-rebuild
+`output/data.rpf/ranges.tsv` and produced an empty inventory. The manifests above
+are the authoritative coverage record.

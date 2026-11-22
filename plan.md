@@ -13,9 +13,11 @@ Last updated: 2026-11-21.
   1,117,857 streams / 174.9 GB. Verification is running; then
   `tools/pipeline.py --source SRC --output output pilot` so no archive is
   index-only in the browser.
-- [ ] **Overnight unified pass** once `levels` is done: exact `+0xa0` harvest
-  gated to the 208-byte bvh4 table, plus the struct-root/segment harvest across
-  all archives. `cache/` on the NVMe is the scratch location.
+- [ ] **Run the unified pass now that `levels` is extracted**: exact `+0xa0`
+  harvest gated to the 208-byte bvh4 table, plus the struct-root/segment harvest
+  across all archives. `cache/` on the NVMe is the scratch location. Note
+  `tools/extraction_inventory.py` still reads the pre-rebuild
+  `output/data.rpf/ranges.tsv` and needs repointing at the manifests.
 - [ ] **Close the remaining `data.rpf` chain excess** (now known to be genuine
   multi-chain entries: `0xb07000` has 361 chains over 147 rows, `0x15000`
   exactly 1 chain per entry). Needs entry grouping inside multi-chain packs.
