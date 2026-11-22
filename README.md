@@ -68,6 +68,9 @@ python3 tools/name_registry.py --annotate handoff/script-bones.tsv \
 
 # read a script's schema instead of 62,910 lines of hex
 python3 tools/psin_dump.py --record 110
+
+# ...or as entries, with Id/Type rows paired (vehicle parts, locations, ...)
+python3 tools/psin_segment.py --describe 1054
 python3 tools/psin_dump.py --property position
 ```
 

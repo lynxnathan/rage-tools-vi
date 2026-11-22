@@ -5939,3 +5939,42 @@ as script decoding.
 
 That closes the vocabulary route for types and connects it to the key-blocked
 work. The next move is not another dictionary.
+
+## Journal: PSIN records now read as entries (2026-11-22)
+
+`tools/psin_segment.py` turns a record into something a person can read. Two
+things had to be got right.
+
+**The payload is often the key, not the value.** For `Id`/`Type` rows the value
+column holds an ordinal (1, 2, 3…) while the string sits in the key column. Once
+that is honoured, record 1054 reads:
+
+```
+  2  Type=Default        Id=0x00000000
+  3  Type=location       Id=CAR
+  4  Type=0x00000003     Id=motorbike
+  6  Type=0x00000006     Id=cosmetics
+  8  Type=0x00000009     Id=bonnet
+ 10  Type=0x0000000b     Id=side
+ 13  Type=0x0000000e     Id=roof
+```
+
+That is the vehicle customisation table: a location entry, then body parts
+(`bonnet`, `side`, `roof`, `cosmetics`) each with a type. Nothing in this listing
+required new decoding — only the name registry and the right column.
+
+**Pairing is local, not global.** Only one record in 868 repeats with period 2
+throughout (0 % of the others do), which is why a global table width never fitted.
+But inside a record, `Id`/`Type` alternates for tens of rows before the shape
+changes, so the renderer pairs run by run instead of assuming a layout.
+
+Record 110 now shows the same effect on interior data, with two names the engine
+table supplied:
+
+```
+  3  InteriorName=0x00000002      0x00000000
+  4  InteriorPosition=0x00000002  0xc90e5e6c
+```
+
+1,785 segments were written to `handoff/psin-segments.tsv`; 5 records segment
+cleanly above 95 % agreement and 869 stay flat, which is the honest split.

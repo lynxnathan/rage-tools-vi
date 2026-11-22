@@ -54,6 +54,9 @@ Last updated: 2026-11-21.
 - [x] PSIN record roles settled: small vocabulary = property name, large =
   object key (`location_*` keys carry two properties; a value cannot).
   Relabelled in the tool and `handoff/psin-names.tsv`.
+- [x] PSIN records render as entries: `tools/psin_segment.py --describe` pairs
+  local `Id`/`Type` runs and resolves the payload from the key column, so record
+  1054 reads as vehicle parts (bonnet, side, roof, cosmetics) and locations.
 - [ ] Recover the parent/child relation by segmenting on **local table width**:
   four PSIN records are fixed-width tables (width 4 x3, width 6 x1, ≥99.7 %
   agreement), while the largest (6,246 rows) has no global period — the tree
