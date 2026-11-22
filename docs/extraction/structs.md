@@ -23,25 +23,32 @@ Guardrails learned the hard way:
 
 ## Corpus map
 
-`handoff/struct-summary.tsv` (tool: `tools/struct_harvest.py`).
+`handoff/struct-summary.tsv` (tool: `tools/struct_harvest.py`), from a
+seeded **random** 200-stream sample per archive — strided sampling is biased
+because struct streams cluster in long runs.
 
-| Archive | Streams/entry | Struct share | Top segment tag | Tag-5 share | External pointers | Implied attachments |
+| Archive | Streams/entry | Struct share | Top tag | Tag-5 share | External ptrs | Implied attach |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `anim` | 1.54 | 78 % | 5 | 82 % | 0.60 | 0.54 |
-| `audio` | 0.12 | 21 % | 10 | 0 % | 2.43 | −0.88 |
-| `common` | 2.28 | 25 % | 7 | 0 % | 2.04 | 1.28 |
-| `core_bvh4` | 1.92 | 53 % | **6** | 8 % | **0.93** | **0.92** |
-| `core_restofworld` | 2.07 | 53 % | 5 | 87 % | 0.25 | 1.07 |
-| `data` | 1.24 | 79 % | 5 | 82 % | 0.60 | 0.24 |
-| `levels` | 2.13 | 57 % | 5 | 86 % | 0.30 | 1.13 |
-| `navmeshes` | 1.40 | 69 % | 5 | 99 % | 0.09 | 0.39 |
-| `packs` | 1.80 | 45 % | 5 | 98 % | 0.02 | 0.80 |
-| `script` | 1.04 | 1 % | 10 | 0 % | 4.00 | 0.04 |
-| `shaders` | 1401.7 | 20 % | 7 | 5 % | 2.70 | 1400.67 |
-| `shared_minigame000_bvh4` | 1.94 | 50 % | **6** | 2 % | **0.98** | **0.94** |
-| `story000` | 0.88 | 73 % | 5 | 88 % | 0.48 | −0.12 |
-| `story000_script` | 0.86 | 23 % | 8 | 0 % | 3.57 | −0.14 |
-| `textures` | 2.01 | 52 % | 5 | 94 % | 0.06 | 1.01 |
+| `anim` | 1.541 | 71 % | 5 | 85 % | 0.577 | 0.541 |
+| `audio` | 0.117 | 15 % | 10 | 10 % | 2.8 | -0.883 |
+| `common` | 2.282 | 19 % | 7 | 0 % | 2.184 | 1.282 |
+| `core_bvh4` | 1.924 | 52 % | 6 | 8 % | 0.923 | 0.924 |
+| `core_licenses_data` | 0.6 | 100 % | 7 | 0 % | 2.0 | -0.4 |
+| `core_restofworld` | 2.069 | 56 % | 5 | 85 % | 0.304 | 1.069 |
+| `core_restofworld001` | 1.222 | 85 % | 5 | 82 % | 0.321 | 0.222 |
+| `data` | 1.238 | 78 % | 5 | 82 % | 0.568 | 0.238 |
+| `levels` | 2.131 | 43 % | 5 | 78 % | 0.776 | 1.131 |
+| `navmeshes` | 1.395 | 62 % | 5 | 100 % | 0.0 | 0.395 |
+| `packs` | 1.795 | 49 % | 5 | 92 % | 0.173 | 0.795 |
+| `script` | 1.042 | 4 % | 10 | 0 % | 2.286 | 0.042 |
+| `shaders` | 1401.667 | 18 % | 7 | 8 % | 2.861 | 1400.667 |
+| `shared_minigame000` | 1.619 | 52 % | 5 | 74 % | 1.219 | 0.619 |
+| `shared_minigame000_bvh4` | 1.935 | 45 % | 6 | 4 % | 0.956 | 0.935 |
+| `story000` | 0.884 | 70 % | 5 | 84 % | 0.695 | -0.116 |
+| `story000_bvh4` | 1.0 | 100 % | 7 | 0 % | 2.0 | 0.0 |
+| `story000_restofworld` | 1.276 | 76 % | 5 | 91 % | 0.371 | 0.276 |
+| `story000_script` | 0.858 | 24 % | 8 | 0 % | 3.771 | -0.142 |
+| `textures` | 2.011 | 44 % | 5 | 93 % | 0.18 | 1.011 |
 
 `movies`, `appdata0` have no zlib streams.
 

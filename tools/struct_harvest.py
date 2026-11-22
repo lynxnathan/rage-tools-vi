@@ -56,7 +56,7 @@ def is_bvh4_descriptor(body):
     return struct.unpack_from("<16I", body, 0) == BVH4_HEADER
 
 
-def scan_struct(body, base=0):
+def scan_struct(body, base=0, strict=True):
     """Return (pointers, external, max_tag, self_count) for one struct header."""
     # Only the struct header carries the pointer table; scanning the whole
     # payload would count random words as pointers (a 6 MB body produced dozens
@@ -70,6 +70,8 @@ def scan_struct(body, base=0):
         if value & 0xF:
             continue
         target = value & 0x0FFFFFFF
+        if strict and tag == SELF_TAG and not (base <= target < len(body)):
+            continue
         pointers.append((offset, tag, target))
     # A self-tagged pointer whose target lies past the struct body addresses the
     # entry's attached segment, not this stream; count it apart from in-body
@@ -91,6 +93,8 @@ def main():
                         default=Path("/run/media/lynxnathan/Mammoth/GTA6.Xbox.v1.0.2.1-CYBERLEEK"))
     parser.add_argument("--census", type=Path, default=Path("handoff/header-census-full.tsv"))
     parser.add_argument("--sample", type=int, default=300)
+    parser.add_argument("--relaxed", action="store_true",
+                        help="accept tag-5 pointers whose target leaves the stream")
     parser.add_argument("--tsv", type=Path, default=Path("handoff/struct-harvest.tsv"))
     parser.add_argument("--summary", type=Path, default=Path("handoff/struct-summary.tsv"))
     args = parser.parse_args()
@@ -121,8 +125,12 @@ def main():
         print(f"\n=== {name}: packs {len(windows)}, streams {len(streams)}, "
               f"declared entries {entries}, streams/entry {len(streams)/max(1, entries):.2f}")
 
-        step = max(1, len(streams) // args.sample)
-        picked = streams[::step][: args.sample]
+        # Strided sampling is biased when struct streams cluster in long runs
+        # (navmeshes has 2,447 structs in a row), so sample randomly.
+        import random
+        rng = random.Random(0xB0DE)
+        picked = rng.sample(streams, min(args.sample, len(streams)))
+        picked.sort()
         shapes = Counter()
         nibbles = Counter()
         external_counts = Counter()
@@ -147,7 +155,7 @@ def main():
                 best = None
                 for base in (0, 0x100):
                     if base + 0x40 <= len(body):
-                        candidate = scan_struct(body, base)
+                        candidate = scan_struct(body, base, strict=not args.relaxed)
                         if best is None or len(candidate[0]) > len(best[0]):
                             best = candidate
                             best_base = base

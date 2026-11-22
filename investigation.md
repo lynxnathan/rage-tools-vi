@@ -4805,3 +4805,30 @@ and produced 0 verified packs. With alignment alone as the filter, the pack at
 Consequence: the corpus-wide struct-share table measured the stricter rule, so
 its shares are **lower bounds** for archives whose pointers leave their stream
 (`navmeshes` especially). A re-sweep with the relaxed rule is a separate pass.
+
+### Sampling bias in the struct map (corrected)
+
+The struct-share numbers in the corpus map were measured with **strided**
+sampling (`streams[::len//sample]`). Struct streams cluster in long runs —
+`navmeshes` has 2,447 consecutive structs in one pack — so the stride's phase
+decides the answer: the same archive read 41 % and 69 % depending only on the
+sample size.
+
+Switching to a seeded **random** sample of 200 streams per archive gives the
+unbiased shares (relaxed pointer rule, `handoff/struct-summary.tsv`):
+
+| Archive | Share | Archive | Share |
+| --- | ---: | --- | ---: |
+| `data` | 78 % | `shared_minigame000` | 53 % |
+| `story000_restofworld` | 76 % | `core_bvh4` | 52 % |
+| `story000` | 71 % | `packs` | 49 % |
+| `anim` | 71 % | `shared_minigame000_bvh4` | 45 % |
+| `navmeshes` | 62 % | `textures` | 45 % |
+| `core_restofworld` | 56 % | `levels` | 43 % |
+| `story000_script` | 24 % | `shaders` | 18 % |
+| `common` | 19 % | `audio` | 15 % |
+| `script` | 4 % | `movies`, `appdata0` | 0 % |
+
+Earlier figures were biased high for the clustered archives (`levels` 57 → 43,
+`textures` 52 → 45, `anim` 78 → 71). `docs/extraction/structs.md` now carries the
+corrected table and names the sampling method.
