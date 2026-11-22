@@ -76,6 +76,7 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - From first principles: explained.md
   - Living project: living.md
   - What we found: findings.md
   - Architecture:

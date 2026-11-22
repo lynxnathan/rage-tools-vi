@@ -21,7 +21,8 @@ verified on 260 re-decoded samples. Applied across the archive, it yields
 **294,614 entries** whose boundaries are payload-derived and whose count matches
 the declared index in 1,214 of 1,282 packs.
 
-The full write-up is [What we found](findings.md).
+New here? Start with **[From first principles](explained.md)**. The result list
+is in [What we found](findings.md).
 
 ## System at a glance
 
@@ -140,6 +141,8 @@ classDiagram
   Report structs, command dispatch, and extraction sequence.
 - :material-graph: **[Object graph](architecture/object-graph.md)**
   Records, pointers, typed arrays, and the class-0 bone hierarchy.
+- :material-school: **[From first principles](explained.md)**
+  The whole story from zero: what the bytes are, how we read them, why it works.
 - :material-magnify: **[What we found](findings.md)**
   The verified results in one page, with proof pointers.
 - :material-archive: **[RPF9 format](rpf9/format.md)**
