@@ -54,8 +54,11 @@ Last updated: 2026-11-21.
 - [x] PSIN record roles settled: small vocabulary = property name, large =
   object key (`location_*` keys carry two properties; a value cannot).
   Relabelled in the tool and `handoff/psin-names.tsv`.
-- [ ] Recover the parent/child relation the flat PSIN dump does not record; the
-  large containers (`0xae6b6fea`: 27 properties, 7,116 records) imply one.
+- [ ] Recover the parent/child relation by segmenting on **local table width**:
+  four PSIN records are fixed-width tables (width 4 x3, width 6 x1, ≥99.7 %
+  agreement), while the largest (6,246 rows) has no global period — the tree
+  boundary is a change of period, not a hidden field. Segment the row stream
+  where the local period changes.
   Widen the corpus to raise 25/301 properties and 515/14,653 keys.
 - [ ] Script decomp pipeline is gated on key material. Section split and PSIN
   directory are done; PSIN blocks are typed tables (22–38 % invalid opcodes vs

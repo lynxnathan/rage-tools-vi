@@ -5738,3 +5738,36 @@ Still open, and now sharply defined: 276 properties and 14,138 keys remain
 unnamed, and the big containers (key `0xae6b6fea` carries 27 properties and 7,116
 records) suggest a parent/child relation the flat dump does not record. That
 relation, not more vocabulary, is the next useful thing to recover.
+
+## Journal: PSIN rows are tables, but not one table (2026-11-22)
+
+Chasing the parent/child relation left open by the naming result, I measured
+whether a PSIN record's rows form a fixed-width table: if they do, the property
+column repeats with a period equal to the row width.
+
+`tools/psin_table_width.py` finds, per record, the smallest width whose property
+column agrees with itself shifted by that width (235 records with at least 40
+rows):
+
+| Agreement | Records | Widths |
+| --- | ---: | --- |
+| > 99 % | 4 | 4 (three records), 6 (one) |
+| best in the corpus | — | width 4, agreement 0.999 on 868 rows (`psin` 1056) |
+
+So at least some PSIN records **are** fixed-width row tables: four columns in
+three of them, six in another, at 99.7–99.9 % agreement. That is a real
+structural result — those records are `n` rows of `w` slots, which is exactly
+what a serialised object table looks like.
+
+The largest record refuses to cooperate: `psin` 1054 has 6,246 rows and its best
+period is width 30 at only **46.2 %**, with 28/29/31 at 10.9/4.0/13.1 %. A
+single flat table would show one clean period; this does not. The most likely
+explanation is nesting: the dump flattens a tree, so a global period exists only
+inside a subtree, and the subtree boundaries are exactly the information the
+flat dump lost.
+
+That reframes the next step usefully. The parent/child relation is not a hidden
+field to find; it is a **change of period** in the property column. A parser that
+segments the row stream wherever the local period changes should recover the
+tree, and the four clean records above are the calibration cases where the answer
+is known.
