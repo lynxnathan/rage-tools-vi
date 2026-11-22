@@ -91,11 +91,8 @@ Each needs a specific input, not more effort.
 
 - [ ] `explorer/` — owned by another session.
 
-## rdna2-spirv (adjacent workstream)
+## Separate project
 
-- [ ] M0 decode tables: generate GFX10.x tables from AMD's MIT machine-readable
-  ISA XML, decode SOP/VOP/SMEM sample, match `llvm-mc` on 100 random
-  instructions. See `rdna2-spirv/PLAN.md`.
-- [ ] Keep the tool generic: input is a byte range plus `--mcpu`; game or
-  console containers stay optional adapters, never the core, and no proprietary
-  or NDA material may become a dependency or an acceptance criterion.
+- `rdna2-spirv/` is its own project: plan in `rdna2-spirv/PLAN.md`, journal in
+  `rdna2-spirv/JOURNAL.md`. Only its blockers that affect *this* repository's
+  work are listed here.

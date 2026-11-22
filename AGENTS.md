@@ -44,6 +44,11 @@ are appended here.
   criterion of any project here, and in particular not of `rdna2-spirv`. That
   project must stay reproducible from public sources (AMD machine-readable ISA,
   LLVM, SPIR-V specifications) with nothing else installed.
+- 2026-11-22: `rdna2-spirv/` is a **separate project** that happens to live in
+  this repository. It keeps its own `PLAN.md` and `JOURNAL.md`; do not journal
+  its work in `investigation.md` or track it in the root `plan.md` beyond a
+  one-line pointer. The Rage Tools VI journals and plan describe only the
+  archive/script work.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling

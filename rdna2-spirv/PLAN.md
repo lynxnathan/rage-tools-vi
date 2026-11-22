@@ -1,6 +1,25 @@
 # Plan
 
-Milestones with testable acceptance criteria. The core is generic: every
+Live check list. Research record: [JOURNAL.md](JOURNAL.md).
+
+## Status
+
+M0 is done and measured: spec-driven decoder, agreement with LLVM on every
+sample and on the `llc` fixture, modules emitted and validated.
+
+```
+[x] M0  plumbing: spec -> decode -> SPIR-V, spirv-val clean
+[ ] M0b container adapter: RPF9 shader streams are containers, not ISA
+[ ] M1  full corpus decode (>=99.5% across gfx1030 + gfx1013)
+[ ] M2  CFG + EXEC regions
+[ ] M3  lift to LLVM IR + reference interpreter
+[ ] M4  SPIR-V emission + round trip through llc
+[ ] M5  corpus report and editing demo
+```
+
+## Milestones
+
+Testable acceptance criteria. The core is generic: every
 milestone is stated against a target `--mcpu`, not against a game or a console. Nothing here is speculative about
 feasibility: the two GPL projects in [PRIOR-ART.md](PRIOR-ART.md) already reach
 the end of this ladder on neighbouring inputs.
