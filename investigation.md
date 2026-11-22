@@ -5689,3 +5689,52 @@ the naming result does not.
 point: the PSIN `+0x8`/`+0xc` words were not a 64-bit hash, and the 301/14,653
 split is a property vocabulary against a name vocabulary, not a `(class, field)`
 pair in the RAGE type-system sense.
+
+## Journal: the PSIN record is `(value, type, property, key)` (2026-11-22)
+
+The role question left open in the previous entry is answered, and the answer is
+in the names themselves. Resolved keys that read as entities appear under **more
+than one property**:
+
+| key | properties |
+| --- | --- |
+| `location_rustywillis_hunting_name` | `0xb99cbc33`, `0xc4da71e7` |
+| `location_jackson_firearms_name` | `0xb99cbc33`, `0xc4da71e7` |
+| `location_quickscope_name` | `0xb99cbc33`, `0xc4da71e7` |
+| `default` | `layer`, `type`, `0x1b60404d`, `0x31dc45e3` |
+| `grillz` | `0x1b60404d`, `0x7a424145`, `0xce88b6eb` |
+| `lockdown` | `0x1b60404d`, `0x31dc45e3` |
+
+A value name cannot carry two properties; an object can. So the record is
+`(value, type, property_hash, key_hash)`: the small vocabulary (301) holds
+**property names**, the large one (14,653) holds **object keys**. 36 of the 473
+resolved keys (7.6 %) carry more than one property; the rest appear once in this
+dump, which is what small leaf objects look like.
+
+Naming artefacts are relabelled accordingly: `handoff/psin-names.tsv` now writes
+`kind = property | key`, and `tools/psin_name_probe.py` uses the same terms. The
+numbers are unchanged — 25 properties, 515 keys, 0.61 expected collisions.
+
+A worked example, PSIN record 110 (18 fields, names resolved where they exist):
+
+```
+offset  type   value       property            key
+0x0c0   0x105  0x00000000  name                0x8058fdf3
+0x0d0   0x105  0x00000001  flags               0x6e3c5c6b
+0x0e0   0x103  0x00000000  0x8e17d1ae          0x00000000
+0x0f0   0x105  0x00000002  0x92b638c0          0x00000000
+0x100   0x105  0x00000002  0x548bac33          0xc90e5e6c
+0x110   0x101  0x00000000  0x1a59185d          0x9a71c62c
+0x120   0x105  0x00000003  flags               0x6e3c5c6b
+0x180   0x103  0x00000000  0x1a59185d          scene
+0x190   0x105  0x00000007  0x836156b0          bar
+```
+
+`flags` appears three times against the same key with values 1, 3 and 6, so the
+value column is per-record, and a key can repeat with different properties — the
+flat array is interleaved, not grouped by either side.
+
+Still open, and now sharply defined: 276 properties and 14,138 keys remain
+unnamed, and the big containers (key `0xae6b6fea` carries 27 properties and 7,116
+records) suggest a parent/child relation the flat dump does not record. That
+relation, not more vocabulary, is the next useful thing to recover.

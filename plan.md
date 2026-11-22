@@ -51,9 +51,12 @@ Last updated: 2026-11-21.
   14,653 large-vocabulary hashes resolve against the 174k corpus
   (`tools/psin_name_probe.py`, `handoff/psin-names.tsv`; 0.61 expected
   collisions against 540 hits).
-- [ ] Decide the record's role question: is the large vocabulary the owner or a
-  per-property value key? Test: does one large-vocabulary name ever appear under
-  two different properties? Then widen the corpus to raise 25/301.
+- [x] PSIN record roles settled: small vocabulary = property name, large =
+  object key (`location_*` keys carry two properties; a value cannot).
+  Relabelled in the tool and `handoff/psin-names.tsv`.
+- [ ] Recover the parent/child relation the flat PSIN dump does not record; the
+  large containers (`0xae6b6fea`: 27 properties, 7,116 records) imply one.
+  Widen the corpus to raise 25/301 properties and 515/14,653 keys.
 - [ ] Script decomp pipeline is gated on key material. Section split and PSIN
   directory are done; PSIN blocks are typed tables (22–38 % invalid opcodes vs
   49 % random), and LSNS is genuinely encrypted (uniform entropy, deterministic,

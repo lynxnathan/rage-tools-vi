@@ -1,6 +1,6 @@
 """Resolve PSIN class and field hashes against a text corpus.
 
-The PSIN typed-property array stores `(value, type, class_hash, field_hash)`.
+The PSIN typed-property array stores `(value, type, property_hash, key_hash)`.
 The earlier attempt hashed 7k names with 64-bit variants (JOAAT-64, FNV-64,
 Murmur64A) and found nothing; the hashes are plain **JOAAT32 of lowercase
 names**, and the corpus matters far more than the hash function.
@@ -36,7 +36,7 @@ def joaat(text):
 
 
 def load_properties(path):
-    """class/field hash -> (records, {types}, sample values)."""
+    """property/key hash -> (records, {types}, sample values)."""
     classes = defaultdict(lambda: [0, Counter(), []])
     fields = defaultdict(lambda: [0, Counter(), []])
     for row in csv.DictReader(path.open(), delimiter="\t"):
@@ -89,16 +89,16 @@ def main():
 
     targets = len(classes) + len(fields)
     budget = len(tokens) * targets / 2 ** 32
-    print(f"tokens {len(tokens)}; classes {len(classes)}; fields {len(fields)}")
-    print(f"resolved classes {len(class_hits)} "
+    print(f"tokens {len(tokens)}; properties {len(classes)}; keys {len(fields)}")
+    print(f"resolved properties {len(class_hits)} "
           f"({len(class_hits)/len(classes):.1%}); "
-          f"fields {len(field_hits)} ({len(field_hits)/len(fields):.1%})")
+          f"keys {len(field_hits)} ({len(field_hits)/len(fields):.1%})")
     print(f"collision budget: {budget:.2f} expected false positives for "
           f"{len(class_hits) + len(field_hits)} hits")
 
     rows = []
-    for kind, hits, source in (("class", class_hits, classes),
-                               ("field", field_hits, fields)):
+    for kind, hits, source in (("property", class_hits, classes),
+                               ("key", field_hits, fields)):
         for value, name in hits.items():
             records, types, _ = source[value]
             rows.append((kind, value, name, records,
