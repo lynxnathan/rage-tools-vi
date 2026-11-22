@@ -6293,3 +6293,29 @@ The join also explains a false alarm: joining on full paths reported 411 missing
 because the same files appear as `output/extracted/...` in one table and
 `/home/.../output/extracted/...` in another. Basename matching removes 151 phantom
 gaps, which is exactly the number of XMA2 streams that had been "missing".
+
+## Journal: the `0xff21` / `0xff61` chunk table is found by scanning, not by offset (2026-11-22)
+
+The two remaining audio variants share the `0xff02` 8-byte record format but not
+its table position. `0xff02` puts the table after a `4 × streams` block, so
+`data_offset = 16 + 60n` is computable; the older containers do not, and looking
+for the table at `0x50` (the value the original inspector used) finds nothing on
+these files.
+
+The table is the **longest 8-byte-aligned suffix ending at `data_offset` whose
+records all parse**. Testing every aligned start from the bottom finds it every
+time:
+
+| File | Streams | `data_offset` | Table at | Chunks | Per stream | Types |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `000000017ec14000.awc` | 9 | 374 | **0x6e** | 33 | 3.67 | `55`×9, `76`×9, `a3`×9, `36`×6 |
+| `000000017ec1b000.awc` | 61 | 2,546 | **0x27a** | 239 | 3.92 | `55`×61, `76`×61, `a3`×61, `36`×56 |
+| `000000069dbc6000.awc` | 11 | 562 | **0x82** | 54 | 4.91 | `55`×11, `76`×11, `a3`×11, `36`×11, `5a`×6, `d9`×4 |
+
+Two facts follow directly. Every stream owns exactly one `0x55` data chunk and one
+`0x76` descriptor — so the per-stream layout is known and the 245 remaining Opus
+streams are cuttable. And the chunk count per stream varies (3.7 to 4.9) because
+the optional `0x36`, `0x5a` and `0xd9` chunks come and go, which is why a
+fixed-stride table model never fitted these files.
+
+`tools/awc_chunk_table.py` does the scan and prints the per-file structure.
