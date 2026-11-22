@@ -60,6 +60,9 @@ Last updated: 2026-11-21.
   boundary is a change of period, not a hidden field. Segment the row stream
   where the local period changes.
   Widen the corpus to raise 25/301 properties and 515/14,653 keys.
+- [x] Make names usable: `handoff/names.tsv` (646 names, confidence-ordered),
+  `tools/name_registry.py` (build/lookup/annotate) and `tools/psin_dump.py`
+  (schema in English). New hash sources plug into one `SOURCES` list.
 - [ ] Script decomp pipeline is gated on key material. Section split and PSIN
   directory are done; PSIN blocks are typed tables (22–38 % invalid opcodes vs
   49 % random), and LSNS is genuinely encrypted (uniform entropy, deterministic,

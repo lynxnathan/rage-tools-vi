@@ -49,6 +49,33 @@ counted exactly and are marked rather than guessed.
 The live list is [`plan.md`](plan.md); the raw evidence is
 [`investigation.md`](investigation.md).
 
+## Using the names
+
+Every resolved hash across the repository — bones, weights, script properties and
+object keys — is merged into one registry, so other tools can join against it
+instead of reading six files with six schemas.
+
+```bash
+# rebuild the registry from every name table
+python3 tools/name_registry.py --build
+
+# what is this hash?
+python3 tools/name_registry.py --lookup 0x01166164 0x67d26872 0xf5436868
+
+# add name / name_kind / name_confidence columns to any TSV with a hash column
+python3 tools/name_registry.py --annotate handoff/script-bones.tsv \
+    --column bone_hash --out handoff/script-bones-named.tsv
+
+# read a script's schema instead of 62,910 lines of hex
+python3 tools/psin_dump.py --record 110
+python3 tools/psin_dump.py --property position
+```
+
+`handoff/names.tsv` is `hash, name, kind, confidence, source, also_known_as`.
+Confidence is ordered `curated > grammar > corpus > candidate`, and a hash that
+two sources disagree about keeps the losing name in `also_known_as` rather than
+dropping it.
+
 ## Documentation
 
 The site is built with MkDocs Material + Mermaid:

@@ -5771,3 +5771,52 @@ field to find; it is a **change of period** in the property column. A parser tha
 segments the row stream wherever the local period changes should recover the
 tree, and the four clean records above are the calibration cases where the answer
 is known.
+
+## Journal: the names are now usable, not just measured (2026-11-22)
+
+Naming work had produced six tables with six schemas — `bone-hash-names.tsv`,
+`bone-hash-names-curated.tsv`, `weight-hash-names.tsv`,
+`weight-hash-candidates.tsv`, `rig-names-corpus.tsv`, `psin-names.tsv`. Nothing
+downstream could join against that, which made every naming result unusable in
+practice.
+
+`tools/name_registry.py` merges them into `handoff/names.tsv`:
+
+| Confidence | Names |
+| --- | ---: |
+| corpus | 542 |
+| curated | 64 |
+| grammar | 39 |
+| candidate | 1 |
+| **total** | **646** |
+
+with `hash, name, kind, confidence, source, also_known_as`. Precedence is
+`curated > grammar > corpus > candidate`; where two sources disagree the losing
+name is kept in `also_known_as` instead of being discarded.
+
+Three commands follow from it, and they are what the work was for:
+
+```bash
+python3 tools/name_registry.py --lookup 0x01166164      # position   property/key
+python3 tools/name_registry.py --annotate handoff/script-bones.tsv \\
+    --column bone_hash --out handoff/script-bones-named.tsv   # 308 of 3043 rows named
+python3 tools/psin_dump.py --record 110                 # a script schema, in English
+```
+
+`tools/psin_dump.py` is the visible payoff of the PSIN work. Record 110 now
+prints as
+
+```
+    0xc0  byte     0x00000000  name     0x8058fdf3
+    0xd0  byte     0x00000001  flags    0x6e3c5c6b
+    0x120  byte     0x00000003  flags    0x6e3c5c6b
+    0x150  hash            bar  0x7030379f  0xc847b053
+```
+
+and `--property position` answers "which records mention position" (769) without
+anyone reading the raw dump.
+
+The remaining 14,138 keys and 276 properties are unresolved, but they are now
+*joinable*: any new hash source plugged into `SOURCES` in `name_registry.py`
+lands in the same table and immediately serves lookup, annotation and the schema
+dump.
