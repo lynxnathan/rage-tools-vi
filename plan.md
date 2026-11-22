@@ -114,7 +114,10 @@ Last updated: 2026-11-21.
 Each needs a specific input, not more effort.
 
 - [ ] Directory/virtual rows in the entry count — needs Front B key material.
-- [ ] Multi-chain entry grouping inside mixed packs — needs a per-entry marker.
+- [x] Mixed packs measured per pack: `tools/pack_model_fit.py` fits an exact
+  model for 1,171/1,261 `core_bvh4` packs, 31/44 `shared_minigame000`, 14/28
+  `navmeshes`, 16/40 `data`, but only 686/2,044 `levels` and 0/1 for
+  `shaders`/`common`. Results in `handoff/pack-model-fit.tsv`.
   `tools/entry_model.py` now measures the model per archive: pairs fit
   `core_bvh4`/`levels`/`core_restofworld`; `shaders.rpf` is 3 chains of ~1,400
   pages and the page rule explains 100 % of continuations, so what is missing is

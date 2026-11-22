@@ -6144,3 +6144,40 @@ as a sign flip in the *local* frame.
 So the geometry route needs rig-space transforms, and the bone table does not
 carry them: not in the point pairs, not in the extents. That is the whole negative,
 and it is now demonstrated rather than inferred.
+
+## Journal: mixed packs, measured per pack (2026-11-22)
+
+Mixed packs are mixed *internally*: within one archive some packs follow
+`struct + data`, others chain 64 KiB pages, others are single streams. Every
+existing manifest picked one unit per archive, so a mixed pack could never verify.
+
+`tools/pack_model_fit.py` makes the decision per pack and asks a sharper question:
+does any simple model reproduce the declared count **exactly**?
+
+| Archive | Packs fitting exactly |
+| --- | ---: |
+| `core_bvh4.rpf` | **1,171 / 1,261** (93 %) |
+| `shared_minigame000.rpf` | 31 / 44 |
+| `textures.rpf` | 13 / 20 |
+| `navmeshes.rpf` | 14 / 28 |
+| `data.rpf` | 16 / 40 |
+| `story000_restofworld.rpf` | 8 / 16 |
+| `core_restofworld.rpf` | 5 / 10 |
+| `script.rpf` | 1 / 2 |
+| `levels.rpf` | 686 / 2,044 |
+| `shaders.rpf` | 0 / 1 |
+| `common.rpf` | 0 / 1 |
+
+Per-pack results are in `handoff/pack-model-fit.tsv` with the models that matched
+(`single`, `pairs`, `chains`, `data_streams`, or several).
+
+Two things follow.
+
+**`core_bvh4` is effectively solved**: 93 % of packs have an exact model fit, and
+two thirds of those fit `pairs` *and* `data_streams` simultaneously — the same
+number from two independent counts, which is the cross-check the manifests wanted.
+
+**The archives that resist are the ones whose declared count is large**: `levels`
+fits only a third of its 2,044 packs, and `shaders`/`common` fit none. For those
+the simple models are not merely unverified, they are wrong, so the next step is a
+different model rather than a bigger tolerance.
