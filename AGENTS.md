@@ -51,6 +51,12 @@ are appended here.
   repository's `investigation.md`, never list it in the root `plan.md`, and
   never copy its files into this tree. Commit it there first, then bump the
   submodule pointer here.
+- 2026-11-22: Publication model until outside contributions arrive: remote
+  `main` is a **single squashed commit** carrying the whole tree, refreshed by
+  force from the local `publication` branch. Local `main` keeps the full
+  history. When the project starts receiving external notice or contributions,
+  switch to the usual procedure (normal commits, branches, review) and stop
+  rewriting remote history. Licence: MIT.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling
