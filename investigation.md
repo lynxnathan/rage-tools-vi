@@ -5086,3 +5086,27 @@ free but is the largest output this project has produced.
 
 Tools: `tools/awc_framing_ff02.py` (variant census, 400 containers in 2 s) and
 `tools/extract_awc_ff02.py` (WAV export with manifest and SHA-256).
+
+### Full `story000` cutscene-audio decode
+
+All six manifest parts decoded:
+
+| Measurement | Value |
+| --- | ---: |
+| Streams decoded | **196,350** |
+| WAV bytes | **51,249,090,600 (47.7 GB)** |
+| Audio duration | **25,620,225,600 frames = 148.3 hours** |
+| Channels | 196,350 mono, 0 stereo |
+| Decode failures | 210 (0.1 %) |
+
+Output: `output/extracted/story000-opus/` with `manifest.tsv`
+(container, stream, packets, channels, frames, declared count, rate, path,
+SHA-256). Rate is 48 kHz and codec `0x0b` in every decoded stream.
+
+That turns the 9.56 GB `story000` unclassified span into **148 hours of
+cutscene dialogue**, the largest single payload this project has produced. Disk
+went from 236 GB free to 188 GB.
+
+The 210 failures are the containers whose chunk counts or codec differed
+(`0xff25`/`0xff21`/`0xff61` residents and one six-chunk anomaly), which the
+`0xff02` walker correctly refuses.

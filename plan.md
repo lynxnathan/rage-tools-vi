@@ -15,9 +15,10 @@ Last updated: 2026-11-21.
   plus a 1,500-file hash sample).
 - **Unclassified:** closed. Every large span is media — 38.1 GB AWC audio,
   13.4 GB Bink/Bink2 video, ~1.2 GB fragments. No unexplained game payload.
-- **Cutscene audio:** `story000`'s 9.56 GB AWC chain extracted (63,853
-  containers): 98.4 % `0xff02`, 1.1 % `0xff25`, 0.5 % `0xff61`. Only `0xff61`
-  parses today; `0xff21`/`0xff02` header formulas are known.
+- **Cutscene audio:** `story000`'s 9.56 GB AWC chain is extracted and decoded —
+  **196,350 Opus streams / 148.3 hours / 47.7 GB of WAV** in
+  `output/extracted/story000-opus/`. The `0xff02` layout (98.4 % of the chain)
+  is solved; 210 containers of other variants remain undecoded.
 - **Entry level:** payload-derived manifests cover four archives — 328,481
   entries with exact boundaries: `core_bvh4` (pairs, 1,214/1,282 packs),
   `navmeshes` (chains, 13/29), `data` (chains, 19/42), `textures` (pairs, 19/21).
@@ -40,8 +41,6 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] Parse the `story000` `0xff02` AWC layout (98.4 % of the chain; `data_offset
-  = 16 + 60n`, 8-byte chunk records, type at +3) and decode the containers.
 - [ ] Name the remaining ped-rig bone hashes (99 of 282 done).
 - [ ] Name the remaining weight hashes (21 of 252 done).
 - [ ] Open the 330-hash universe with a new vocabulary source.
