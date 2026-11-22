@@ -46,10 +46,11 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] Build the script decomp pipeline: decode the PSIN `(hash, offset)`
-  directory across all 1,012 records, identify the code block, then test the YSC
-  stack-machine model (131 public opcodes) on it. Decompilation only — no
-  recompiler; the IR must keep offsets so edits can be reinjected later.
+- [ ] Build the script decomp pipeline. Done: section split and PSIN directory.
+  PSIN's four blocks are two float blocks and two `[hash][count][kind]` tables,
+  not a flat opcode stream. Next: parse those headers and their payloads, then
+  locate the code (inside a block, in LSCH/LENM/LRSC, or nested-compressed).
+  Decompilation only — no recompiler; the IR must keep offsets for later edits.
 
 - [ ] Name the remaining ped-rig bone hashes (99 of 282 done).
 - [ ] Name the remaining weight hashes (21 of 252 done).

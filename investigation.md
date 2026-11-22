@@ -5206,3 +5206,28 @@ inside an 86,016-byte section.
 
 Step 3 is the gate: if the PSIN code block is a YSC-style stack machine, the
 public opcode tables and decompiler structure transfer directly.
+
+### First PSIN block pass: a container, not yet code
+
+`rage-tools-vi extract script.rpf 0xe7000` joins the three-stream continuation
+and yields **99,536 bytes** (matches the earlier reconstruction). The four
+directory offsets split PSIN into blocks with distinct characters:
+
+| Block | Bytes | Entropy | Character |
+| --- | ---: | ---: | --- |
+| `0x50..0xba0` | 2,896 | 6.48 | `AA`/`70` fillers then float-looking data |
+| `0xba0..0x1d40` | 4,512 | 5.89 | pure floats: head `9a 99 99 bd` = **−0.075**, `cd cc cc 3d` = **0.1** |
+| `0x1d40..0x12120` | 66,528 | 5.36 | header `[u64 hash][u32 0x30][u32 0x0105]`, then data, 32 % zero bytes |
+| `0x12120..0x15000` | 12,000 | 5.52 | header `[u64 hash][u32 0x12][u32 0x0103]`, then data |
+
+So the directory points at **two float blocks** (likely default values / statics)
+and **two hash-headed blocks** (likely typed tables, `0x0105` and `0x0103` being
+their kind). The zero share of 32 % in the 66 KB block rules that block out as
+YSC-style code: opcode `0x00` is `NOP` in the public table and a third of a code
+section being NOPs is implausible.
+
+Conclusion for the gate: **the PSIN blocks are a typed container, not a raw
+opcode stream.** The code is either inside one of these blocks after its header,
+inside `LSCH`/`LENM`/`LRSC`, or compressed again inside PSIN. The next step is to
+parse the `[hash][count][kind]` headers and follow their payload layout, rather
+than disassembling PSIN as a flat bytecode.
