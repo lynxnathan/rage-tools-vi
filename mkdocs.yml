@@ -102,6 +102,7 @@ nav:
   - Data:
       - data.rpf: data/data-rpf.md
       - Textures: data/textures.md
+      - Script schema: data/script-schema.md
       - Rig names: data/rig-names.md
       - Localization: data/localization.md
   - Workstreams:
