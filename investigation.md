@@ -5016,3 +5016,37 @@ Full accounting of the 52.8 GB unclassified layer:
 **There is no unexplained game payload left in the unclassified layer.** Every
 large span is an audio or video container; the project's "429.8 MB (later 52.8 GB)
 of unclassified bytes" question is answered: media, not unnamed assets.
+
+## Journal: `story000` AWC chain is 98 % a third variant (2026-11-21)
+
+Census of 800 sampled containers from the extracted chain:
+
+| Flags | Share | Current parser |
+| --- | ---: | --- |
+| `0xff02` | **98.4 %** | reads 0 streams |
+| `0xff25` | 1.1 % | reads 0 streams |
+| `0xff61` | 0.5 % | **parses** (codec `0x0b`, Opus) |
+
+Three flag families, not two, and the existing parser only handles `0xff21`
+(`audio.rpf`) and `0xff61` (rare here). So the earlier note that "the parser
+cannot read the chain" is right, but the reason is a family split, not one odd
+layout.
+
+Header formulas recovered from the corpora:
+
+| Variant | `data_offset` | Per-stream header |
+| --- | --- | --- |
+| `0xff21` (`audio.rpf`) | `20 + 42·n` | 42 B (verified for n = 6, 10, 12, 14, 15, 16, 22) |
+| `0xff02` (`story000`) | `16 + 60·n` | 60 B (verified for n = 1…8, 14) |
+| `0xff25` (`story000`) | `0x66` at n = 5 | compact, unresolved |
+
+For `0xff02`, the per-stream record is 60 bytes and the chunk table is a run of
+**8-byte records with the type byte at +3** (types `0x36`, `0x55`, `0x5c`,
+`0x76`, `0xa3`, `0xb2`, `0xbd`; the type offset advances by exactly 8 across a
+record run). Two candidate field splits were tested — `[u24][u8 type][u32]` and
+`[u24][u8 type][u16][u8]` — and neither yet yields a chunk tiling of the data
+region, so the record layout needs one more pass with a size/offset tiling
+constraint as the oracle.
+
+`0xff61` containers in the chain are decodable **today** (Opus, 48 kHz), so the
+variant work would only add coverage for the 98 % that is `0xff02`.
