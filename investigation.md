@@ -6232,3 +6232,30 @@ mixed-shape packs that need the masked rows.
 `levels` stays at 39 %, and that is informative rather than disappointing: a
 world archive of 2,044 packs should not all follow one shape, and the failures
 concentrate where the stream count deviates by tens, not by one.
+
+### Why `levels` resists, in numbers
+
+The 1,244 inexact `levels` packs are not noisy — they are systematic. Their
+deviations cluster around `streams - 2N ≈ +90` and `structs - N ≈ +5`:
+
+| Pack | Declared | Streams | Structs |
+| --- | ---: | ---: | ---: |
+| 1 | 499 | 559 | 503 |
+| 2 | 580 | 657 | 586 |
+| 3 | 578 | 653 | 583 |
+| 4 | 556 | 636 | 562 |
+| 5 | 510 | 558 | 513 |
+
+So each such pack carries about **five streams that classify as structs but are
+not entries**, and about **ninety more data streams than one per entry**. That is
+the signature of a world tile: a few auxiliary tables plus entries that own
+several data streams each (LODs, collision, occlusion) rather than the tidy
+`struct + data` shape of a drawable archive.
+
+The consequence is precise: no count-only model can fit `levels`, because the
+count of data streams per entry is a property of the entry's type, and the type is
+in the masked rows. `core_bvh4` reaches 99 % precisely because its entries are
+uniform; `levels` stays at 39 % because they are not.
+
+Recorded so that the next attempt starts from the entry-type distribution rather
+than from another global count.

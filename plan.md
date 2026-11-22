@@ -117,7 +117,10 @@ Each needs a specific input, not more effort.
   Not blocked: the row shows up in the payload as one extra struct stream per
   pack. With `structs-1` and positional pairs, `core_bvh4` verifies
   **1,250/1,261 packs (99 %)**, `textures` 16/20, `navmeshes` 16/28, `data` 21/40,
-  `levels` 800/2,044.
+  `levels` 800/2,044. The `levels` failures are systematic: about five
+  non-entry struct streams and ninety surplus data streams per pack, i.e. entries
+  that own several data streams (LODs, collision). No count-only model can fit
+  them; the next attempt needs the entry-type distribution.
 - [x] Mixed packs measured per pack: `tools/pack_model_fit.py` fits an exact
   model for 1,171/1,261 `core_bvh4` packs, 31/44 `shared_minigame000`, 14/28
   `navmeshes`, 16/40 `data`, but only 686/2,044 `levels` and 0/1 for
