@@ -47,10 +47,13 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] Resolve the PSIN class (301) and field (14,653) hashes. Record layout is
-  done and `tools/psin_property_tree.py --dump cache/psin-properties.tsv` gives
-  all 62,910 rows; JOAAT-64/FNV-64/Murmur64 variants all miss, so the vocabulary
-  needs the executable or the decrypted LSNS.
+- [x] PSIN names are JOAAT32: 25 of 301 small-vocabulary hashes and 515 of
+  14,653 large-vocabulary hashes resolve against the 174k corpus
+  (`tools/psin_name_probe.py`, `handoff/psin-names.tsv`; 0.61 expected
+  collisions against 540 hits).
+- [ ] Decide the record's role question: is the large vocabulary the owner or a
+  per-property value key? Test: does one large-vocabulary name ever appear under
+  two different properties? Then widen the corpus to raise 25/301.
 - [ ] Script decomp pipeline is gated on key material. Section split and PSIN
   directory are done; PSIN blocks are typed tables (22–38 % invalid opcodes vs
   49 % random), and LSNS is genuinely encrypted (uniform entropy, deterministic,

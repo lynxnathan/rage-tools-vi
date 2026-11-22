@@ -5622,3 +5622,70 @@ their own chains from the payload rather than from `chain_start`.
 
 Reverted after the experiment; the indexes in `output/index/` are the
 conservative pass.
+
+## Journal: PSIN names are JOAAT32 — 25 properties and 515 names resolved (2026-11-22)
+
+The earlier entry concluded the PSIN hashes needed the executable or the LSNS.
+That conclusion was wrong, and the reason is instructive: it tested the *hash
+function* (JOAAT-64, FNV-1a-64, Murmur64A, seeds 0 and 1) against a 7,057-name
+dictionary. The hashes are plain **JOAAT32 of lowercase names**, and what was
+missing was not a better hash but a bigger **vocabulary**.
+
+Running the 174k-token corpus from the rig work against the 62,910 dumped
+records (`tools/psin_name_probe.py`, `handoff/psin-names.tsv`):
+
+| Vocabulary | Size | Resolved | Share |
+| --- | ---: | ---: | ---: |
+| small (low u32, `+0x8`) | 301 | **25** | 8.3 % |
+| large (high u32, `+0xc`) | 14,653 | **515** | 3.5 % |
+
+`173,999 × 14,954 / 2^32 = 0.61` expected collisions against **540** observed, so
+these are names, not noise.
+
+### What the two vocabularies contain
+
+The small one is a property vocabulary, and the resolved members are exactly
+what a script object carries:
+
+| hash | name | records | type mix |
+| --- | --- | ---: | --- |
+| `0x67d26872` | `flags` | 5,270 | int 2,476, byte 2,016, hash 769 |
+| `0x43f5cf44` | `heading` | 4,509 | int 3,225, hash 785, float 437 |
+| `0x01166164` | `position` | 4,191 | **float 3,974** |
+| `0xe6e17f14` | `name` | 1,283 | byte 1,283 |
+| `0xd9a7ec35` | `val` | 1,137 | int 685 |
+| `0x3165b05d` | `type` | 790 | byte 688 |
+| `0x1470edc0` | `priority` | 541 | int 541 |
+| `0x8d5c25d4` | `origin` | 532 | float 532 |
+| `0x0db8db36` | `aperture` | 528 | float 273, byte 232 |
+| `0x3f4bb8cc` | `pitch` | 476 | hash 476 |
+| `0x98a6ceea` | `campos` | 400 | float 400 |
+| `0x7f3b51ab` | `text` | 227 | byte 227 |
+
+The type mix is independent corroboration: `position`, `origin`, `campos` are
+overwhelmingly `0x102` (float), while `name` and `text` are entirely `0x105`
+(byte-sized). A name that is right about the spelling but wrong about the type
+would show a mixed, structureless column; these do not.
+
+The large vocabulary is the other side — entity, model and variant names such as
+`sb31_gas_1_gf`, `ky23_lqr_1_gf`, `ma_mar05_clt_1_gfa_bespoke`, `idle`, `side`,
+`accessories`.
+
+### The open question, stated precisely
+
+For 90.4 % of large-vocabulary values the small-vocabulary value is fixed, which
+is the opposite of what a flat `(property, owner)` table would look like: an
+owner usually carries several properties. So the record is better read as
+`(value, type, property, <one synthesised key>)` — one *column* per property,
+each row identified by the large hash — than as `(value, type, property, owner)`.
+Which reading is correct decides whether the 515 resolved names are object names
+or value keys, and it is testable: an entity name that appears under two
+different properties settles it. Nothing in this entry depends on that choice;
+the naming result does not.
+
+### Correction to the record
+
+`schema_names.py` and the 2026-11-21 entry should be read as superseded on this
+point: the PSIN `+0x8`/`+0xc` words were not a 64-bit hash, and the 301/14,653
+split is a property vocabulary against a name vocabulary, not a `(class, field)`
+pair in the RAGE type-system sense.
