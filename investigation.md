@@ -5333,3 +5333,57 @@ shows that no script is shipped twice in the scanned data.
 LSNS header variants across 3,616 bodies: first u16 ∈ {1, 2, 3, 4}
 (1512/1223/849/32), second u16 = 0, version word `0x101`, length always a
 multiple of 16. No record has a plaintext body.
+
+## Journal: PSIN record corrected to (value, type, class, field) (2026-11-21)
+
+The earlier reading of the PSIN 16-byte record as `(value, type, u64 name_hash)`
+was wrong in the last field. Splitting the 8 bytes into two u32 shows the second
+half is not uniform: the low u32 at `+0x8` takes only **301 distinct values** and
+the high u32 at `+0xc` takes **14,653**, with the class→field relation skewed
+(one class carries 5,990 records). The record is therefore
+
+| Offset | Width | Field | Evidence |
+| --- | --- | --- | --- |
+| `+0x0` | u32 | value | union, read by type |
+| `+0x4` | u32 | type | only `0x101, 0x102, 0x103, 0x104, 0x105` occur |
+| `+0x8` | u32 | **class hash** | 301 distinct, shared across scripts |
+| `+0xc` | u32 | **field hash** | 14,653 distinct |
+
+Type semantics, from the value column:
+
+| Type | Records | Value range | Reading |
+| --- | ---: | --- | --- |
+| `0x101` | 13,257 | 0–247 | byte-sized int |
+| `0x102` | 15,277 | floats: `0x41f00000`=30.0f, `0x3b449ba6`=0.003f | float |
+| `0x103` | 14,739 | 0–4,291,471,478 | 32-bit hash |
+| `0x104` | 10 | 0 or 1 | bool |
+| `0x105` | 20,005 | 0–229 | byte-sized int |
+
+Schema consistency: `(class, field) → type` holds for 15,872 of 16,310 pairs
+(97.3 %); `field → type` for 94.3 %; `field → class` for 90.4 %. Classes per
+PSIN record: median 14, max 53. **195 of 301 classes are shared across PSIN
+records**, i.e. the class vocabulary is global to the pack, while field names are
+mostly per script. The total property count per record tracks LSNS payload length
+(Pearson +0.68; mean LSNS 264 B in the lowest property quartile, 2,307 B in the
+highest), so the encrypted LSNS is the value/string store behind this schema.
+
+This makes PSIN a compiled **reflection/schema table** `(default, type, class,
+field)`, not bytecode — 62,910 records over 1,012 scripts.
+
+### Hash attempts on the class/field vocabulary
+
+Tried against 7,057 names harvested from the handoff tables (bones, weights,
+roots, descriptors), each in raw/lower/upper/without-extension form:
+JOAAT-64 (64-bit Jenkins), FNV-1a-64, MurmurHash64A(seed 0), MurmurHash64A(seed
+1), and 32-bit JOAAT of a type vocabulary including `vector3`. **Zero hits.**
+The class and field hashes use a vocabulary we do not have yet; resolving them
+needs either the game executable or the decrypted LSNS.
+
+### Status for the pipeline
+
+`tools/psin_property_tree.py` now dumps the schema
+(`cache/psin-properties.tsv`: 62,910 rows, class and field separated) and runs
+the hash test. The remaining blocker is the same wall: the value/string store
+(LSNS) and the 331 KB blob are genuinely encrypted, and no cipher tables ship in
+the local binaries. Decompilation stays gated; the schema is fully recoverable
+today.

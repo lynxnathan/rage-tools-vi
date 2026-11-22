@@ -47,10 +47,10 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] Parse the PSIN property tree (16-byte `(value, type, name_hash)` records,
-  types 0x101 int / 0x102 float / 0x103 / 0x105) and union the u64 name hashes
-  across all 1,012 records; then test 64-bit RAGE hash variants against known
-  property names.
+- [ ] Resolve the PSIN class (301) and field (14,653) hashes. Record layout is
+  done and `tools/psin_property_tree.py --dump cache/psin-properties.tsv` gives
+  all 62,910 rows; JOAAT-64/FNV-64/Murmur64 variants all miss, so the vocabulary
+  needs the executable or the decrypted LSNS.
 - [ ] Script decomp pipeline is gated on key material. Section split and PSIN
   directory are done; PSIN blocks are typed tables (22–38 % invalid opcodes vs
   49 % random), and LSNS is genuinely encrypted (uniform entropy, deterministic,
