@@ -21,6 +21,9 @@ Last updated: 2026-11-21.
 - **Metadata:** header census complete (`handoff/header-census-full.tsv`), Front
   A/B/trailer masked, size laws characterised. Metadata decoding is
   information-blocked.
+- **Skeleton families:** the 16 clusters now carry readings — F12 is a hand rig
+  (the decoded one), F13 a genital rig, F03/F04/F09 large animals; the unnamed
+  families are the small-prop population and hold the 330-hash universe.
 - **Naming:** bone-table and weight hashes share one namespace, JOAAT of
   `skel_`/`mh_`/`rb_` names: 99 of 612 table hashes and 21 of 252 weight hashes
   resolved, one rig fully decoded (`handoff/script-skeleton-0x48dcbb01.tsv`).
@@ -42,7 +45,6 @@ Last updated: 2026-11-21.
 ## Next
 
 - [ ] Re-index the eight large archives for `chain_start`.
-- [ ] Validate the skeleton families against the decoded rig.
 - [ ] Map the type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.
 - [ ] Name the unclassified payload bytes.

@@ -4832,3 +4832,34 @@ unbiased shares (relaxed pointer rule, `handoff/struct-summary.tsv`):
 Earlier figures were biased high for the clustered archives (`levels` 57 → 43,
 `textures` 52 → 45, `anim` 78 → 71). `docs/extraction/structs.md` now carries the
 corrected table and names the sampling method.
+
+## Journal: skeleton families get names and scales (2026-11-21)
+
+Joining the 16 near-identical families with the 99 decoded bone names and the
+geometry extents:
+
+| Family | Roots | Named | Scale (x·y·z m) | Reading |
+| --- | ---: | ---: | --- | --- |
+| F03 | 4 | 37 | 3.00 × 2.43 × 2.57 | large animal; shares `mh_diaphragm`, `mh_l_calf`, `mh_l_pec`… |
+| F04 | 2 | 29 | 1.85 × 1.97 × 3.46 | large; shares `mh_l_bicep`, `mh_l_latissimus`… |
+| F09 | 1 | 30 | 3.60 × 2.00 × 1.32 | large; full finger chains plus muscles |
+| F12 | 1 | **34** | **0.22 × 0.33 × 0.39** | **hand rig** — the fully decoded `0x48dcbb01` |
+| F13 | 1 | 6 | 3.03 × 1.50 × 1.00 | genital rig (`mh_c_penis01–03`, scrotum, testicles) |
+| F05/F06 | 2+2 | 22/6 | 1.1–1.5 | mid-size; `mh_*` + `rb_*` shoulder rings |
+| F01 | 12 | 0 | 1.08 × 0.74 × 1.22 | human-scale, **unnamed** |
+| F02 | 10 | 0 | 0.44 × 0.20 × 0.95 | small, elongated, **unnamed** |
+| F07/F10/F11 | 2/1/1 | 0 | 0.2–0.7 | small, **unnamed** |
+
+Two readings:
+
+- **The families are rig types, and the names confirm it.** F12's scale
+  (0.22 × 0.33 × 0.39) is a hand, matching its 34 decoded bones exactly; F13 is a
+  six-bone genital rig; F03/F04/F09 are large animals.
+- **The 330-hash universe is the unnamed families** (F01, F02, F07, F08, F10,
+  F11, F14, F15, F16), which span 0.0–1.2 m. They are the prop/weapon/small-rig
+  population, not the ped skeletons, which is why anatomy vocabulary cannot
+  reach them.
+
+Artifacts unchanged (`handoff/script-bone-template-families.tsv`,
+`handoff/script-bone-geometry.tsv`, `handoff/bone-hash-names.tsv`); this entry
+records the join.
