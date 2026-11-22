@@ -19,10 +19,12 @@ All eight local archives now have complete contiguous range coverage.
 | `shaders.rpf` | 411,695,600 | 18,686 | 411,695,600 | 275,540,780 | 273,959,915 | full |
 | `textures.rpf` | 192,585,024 | 5,581 | 192,585,024 | 161,086,752 | 136,021,963 | full |
 
-Repo-wide totals: **86,029 ranges**, **1,096,854,128 stored bytes**,
-**1,896,307,661 decoded bytes**, and **429,764,784 unclassified bytes**.
+Repo-wide totals from the 22-archive index: **4,415,850 ranges**,
+**161,307,137,472 stored bytes**, **365,020,088,082 decoded bytes**, of which
+**2,241,410 are zlib ranges** and **2,190,635** have an extraction manifest.
 `full` means every stored byte has a span; it does not mean every record has an
-authoritative name or decoded semantics.
+authoritative name or decoded semantics. The eight-archive table above is kept
+for history; the corpus-wide figures supersede it.
 
 ## Entry point
 
@@ -64,8 +66,19 @@ Reproduce with `python3 tools/verify_extraction.py`.
 
 ## Unclassified gaps
 
-The range layer is complete; the remaining semantic work is 6,111 unclassified
-spans / 429,764,784 bytes.
+The range layer is complete. Across the full corpus the unclassified layer is
+**52,776,009,304 bytes in 26,759 spans**, and it is media, not unnamed game data:
+
+| Source | Bytes | Content |
+| --- | ---: | --- |
+| `audio.rpf` | 28.5 GB | AWC audio, decoded |
+| `story000` | 9.56 GB | AWC audio, decoded (148.3 h) |
+| `movies.rpf` | 8.8 GB | Bink video |
+| `story000` | 3.33 GB | Bink video |
+| `core_restofworld` | 1.24 GB | Bink2 video |
+| remainder | ~1.2 GB | fragments |
+
+The table below is the earlier eight-archive view and is retained as history.
 
 | Archive | Gaps | Bytes | Largest span |
 | --- | ---: | ---: | ---: |
