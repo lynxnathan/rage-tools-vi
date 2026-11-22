@@ -6207,3 +6207,28 @@ the directory row is visible as an extra struct stream in the payload, and the
 declared count is N entries plus that one row. `core_bvh4` now verifies at 97 %
 of packs with an exact model, which is as close to solved as this archive gets
 without the masked table.
+
+### Positional pairs: `core_bvh4` reaches 99 %
+
+The remaining `core_bvh4` failures are not misclassified structs but packs whose
+stream count is *odd*: the classified `pairs` model then undercounts by one. A
+positional model — `(streams + 1) // 2` — fits both the clean `2N` case and the
+`2N - 1` case, and needs no classification at all:
+
+| Archive | Packs | Exact | With `pos-pairs` |
+| --- | ---: | ---: | ---: |
+| `core_bvh4.rpf` | 1,261 | 1,227 | **1,250 (99 %)** |
+| `textures.rpf` | 20 | 13 | 16 (80 %) |
+| `story000_restofworld.rpf` | 16 | 10 | 12 (75 %) |
+| `shared_minigame000.rpf` | 44 | 31 | 32 (73 %) |
+| `navmeshes.rpf` | 28 | 14 | 16 (57 %) |
+| `data.rpf` | 40 | 21 | 21 (52 %) |
+| `levels.rpf` | 2,044 | 784 | 800 (39 %) |
+
+`core_bvh4` is now effectively closed: 1,250 of 1,261 packs have a model that
+reproduces the declared count exactly, and the eleven that do not are the
+mixed-shape packs that need the masked rows.
+
+`levels` stays at 39 %, and that is informative rather than disappointing: a
+world archive of 2,044 packs should not all follow one shape, and the failures
+concentrate where the stream count deviates by tens, not by one.

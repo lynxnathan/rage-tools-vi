@@ -11,6 +11,7 @@ models reproduces the declared count exactly:
     pairs     struct stream + data stream
     chains    one entry per chain start (continuation rule)
     structs-1 struct + data, minus one directory stream per pack
+    pos-pairs pairs by position, (streams + 1) // 2 — matches 2N and 2N-1
 
     python3 tools/pack_model_fit.py --out handoff/pack-model-fit.tsv
 """
@@ -101,6 +102,9 @@ def main():
             # Packs can carry one struct stream that is the pack's own directory
             # row rather than an entry, which makes the struct count N + 1.
             "structs-1": structs - 1,
+            # Pairs counted by position, not by classification. Fits both 2N
+            # streams and the 2N-1 case where one entry has only its data half.
+            "pos-pairs": (len(window) + 1) // 2,
         }
         exact = [name for name, value in models.items() if value == declared]
         rows.append((args.archive.name, f"0x{offset:x}", declared, len(window),
