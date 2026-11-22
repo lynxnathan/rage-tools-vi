@@ -113,7 +113,10 @@ Last updated: 2026-11-21.
 
 Each needs a specific input, not more effort.
 
-- [ ] Directory/virtual rows in the entry count — needs Front B key material.
+- [x] ~~Directory/virtual rows in the entry count — needs Front B key material.~~
+  Not blocked: the row shows up in the payload as one extra struct stream per
+  pack. With `structs-1` as a model, `core_bvh4` verifies 1,227/1,261 packs
+  (97 %), `levels` 784/2,044, `data` 21/40.
 - [x] Mixed packs measured per pack: `tools/pack_model_fit.py` fits an exact
   model for 1,171/1,261 `core_bvh4` packs, 31/44 `shared_minigame000`, 14/28
   `navmeshes`, 16/40 `data`, but only 686/2,044 `levels` and 0/1 for

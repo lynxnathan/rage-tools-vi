@@ -10,7 +10,7 @@ models reproduces the declared count exactly:
     single    one entry per stream
     pairs     struct stream + data stream
     chains    one entry per chain start (continuation rule)
-    pairs+ch  struct + chain of data streams
+    structs-1 struct + data, minus one directory stream per pack
 
     python3 tools/pack_model_fit.py --out handoff/pack-model-fit.tsv
 """
@@ -98,14 +98,19 @@ def main():
             "pairs": structs,
             "chains": chains(window),
             "data_streams": len(window) - structs,
+            # Packs can carry one struct stream that is the pack's own directory
+            # row rather than an entry, which makes the struct count N + 1.
+            "structs-1": structs - 1,
         }
         exact = [name for name, value in models.items() if value == declared]
         rows.append((args.archive.name, f"0x{offset:x}", declared, len(window),
                      structs, models["chains"], ",".join(exact) or "-"))
 
+    # A first append to a missing file still needs the header.
+    fresh = not args.out.exists() or args.out.stat().st_size == 0
     mode = "a" if args.append else "w"
     with args.out.open(mode) as out:
-        if mode == "w":
+        if mode == "w" or fresh:
             out.write("archive\tpack\tdeclared\tstreams\tstructs\tchains\texact_models\n")
         for row in rows:
             out.write("\t".join(str(c) for c in row) + "\n")

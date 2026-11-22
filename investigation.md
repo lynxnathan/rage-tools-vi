@@ -6181,3 +6181,29 @@ number from two independent counts, which is the cross-check the manifests wante
 fits only a third of its 2,044 packs, and `shaders`/`common` fit none. For those
 the simple models are not merely unverified, they are wrong, so the next step is a
 different model rather than a bigger tolerance.
+
+### The extra struct stream is a directory row
+
+The inexact packs have a consistent signature: in 15 of the `levels` failures the
+stream and struct counts are both `N + 1`, and in 56 `core_bvh4` packs the struct
+count alone is `N + 1`. A pack carrying one more struct stream than declared
+entries is exactly a **directory row** — the pack's own table of contents counted
+alongside its entries.
+
+Adding that as a model (`structs-1`) lifts exact fit substantially:
+
+| Archive | Exact before | Exact with `structs-1` |
+| --- | ---: | ---: |
+| `core_bvh4.rpf` | 1,171 / 1,261 | **1,227 / 1,261 (97 %)** |
+| `levels.rpf` | 686 / 2,044 | 784 (38 %) |
+| `data.rpf` | 16 / 40 | 21 (52 %) |
+| `story000_restofworld.rpf` | 8 / 16 | 10 (63 %) |
+| `shared_minigame000.rpf` | 31 / 44 | 31 |
+| `navmeshes.rpf` | 14 / 28 | 14 |
+| `textures.rpf` | 13 / 20 | 13 |
+
+The blocked item said the virtual row needed Front B key material. It does not:
+the directory row is visible as an extra struct stream in the payload, and the
+declared count is N entries plus that one row. `core_bvh4` now verifies at 97 %
+of packs with an exact model, which is as close to solved as this archive gets
+without the masked table.
