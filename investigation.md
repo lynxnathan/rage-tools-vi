@@ -4568,3 +4568,98 @@ long children get reaped mid-flight), so verification was split:
 
 Full rehash remains available as an overnight run; the sample plus the
 extraction-time hash makes truncation or corruption at scale very unlikely.
+
+## 2026-11-22 — Cancellable atomic export
+
+Raw and decoded exports now stream to a uniquely named adjacent partial file,
+then publish the destination with a no-overwrite hard link only after successful
+completion. GUI cancellation removes the partial file. The headless unit test
+cancels an in-progress sparse-file export; `tools/explorer_export_cancel_e2e.sh`
+repeats cancellation through Xvfb using a 1 GiB sparse RPF-shaped fixture from
+`tools/explorer_sparse_fixture.py`. Both check that no final or partial payload
+remains. A forcibly terminated process can leave an explicitly named partial
+file; hard-link support is required. This is not a cross-platform validation.
+
+## 2026-11-22 — Paged byte-slice navigation
+
+The GUI range view can subdivide the archive byte extent into four nested,
+start-inclusive and end-exclusive slices. It seeks directly into the ordered
+TSV index and pages only ranges intersecting the chosen slice. A range spanning
+a boundary may appear in both slices; these groups are byte slices, not claims
+of pack membership. `tools/explorer_e2e.sh` exercises Q4 and Up on the control
+archive, and unit tests cover the bounded page cutoff.
+
+## 2026-11-22 — Stream verification and decoder drain regression
+
+`annoyed-verify` and the GUI verification action check contiguous index coverage,
+zlib checksums and decoded sizes, declared zero runs, and calculate SHA-256 for
+the whole archive and index. The hashes are baselines, not proof that an
+undecoded entry table predicts the indexed ranges. Other ranges are counted as
+without zlib/zero content checks. `tools/explorer_verify_e2e.sh` verifies local
+`data.rpf` and independently compares both hashes with `sha256sum`.
+
+That larger verification exposed a decoder error at archive-relative range
+`data.rpf[0xa5f0e0,0xa861d0)`: 159,984 stored bytes produce 393,216 bytes, but
+remaining decoded output had to be drained after input exhaustion. The Rust
+decoder and candidate scanner now drain through stream end; regression tests
+cover this range and the scan-limit case. The full 28,509-stream `data.rpf`
+verification passed after the fix. GUI verification cancellation is exercised
+against `anim.rpf` by `tools/explorer_anim_e2e.sh`.
+
+## 2026-11-22 — Hash baselines and raw DEFLATE
+
+`annoyed-verify` can compare both complete-file SHA-256 values against a prior
+report via `--expect`. The GUI can save a no-overwrite adjacent baseline and
+repeat verification against it. `tools/explorer_e2e.sh` verifies, saves and
+compares a baseline, changes a temporary index, and checks that the GUI reports
+its mismatch. A baseline establishes whether the files match a prior run; it
+does not prove that a decoded entry table predicts any range.
+
+The extractor, search and verifier accept independently identified exact
+`raw_deflate` ranges. `tools/explorer_deflate_e2e.py` compares the known
+`data.rpf[0x966000,0x966308)` payload byte-for-byte with Python's raw-DEFLATE
+decoder (1,318 bytes, `RBF0`), and `tools/explorer_deflate_ui_e2e.sh` exercises
+preview and export. The normal indexer does not discover raw DEFLATE, and raw
+DEFLATE has no checksum; the GUI and verification report state that limitation.
+
+## 2026-11-22 — Standard image previews
+
+The GUI can preview PNG and JPEG payloads found inside an indexed zlib or exact
+raw-DEFLATE range. It caps encoded preview bytes at 8 MiB and dimensions at
+2,048×2,048; image decoder allocation limits are also configured. Unit tests
+exercise a synthetic PNG and reject oversized dimensions. `tools/explorer_image_e2e.sh`
+and `ANNOYED_IMAGE_FORMAT=jpeg tools/explorer_image_e2e.sh` run the GUI in Xvfb
+and compare a rendered pixel with the known synthetic fixture. This does not
+implement or validate native RAGE texture formats.
+
+## Journal: full `core_bvh4` descriptor inventory (2026-11-21)
+
+Ran the gated harvest over every 208-byte descriptor in `core_bvh4.rpf` in 20
+slices (`tools/bvh4_alloc_harvest.py`), so no long run had to survive a shell
+limit. **All 269,106 descriptors passed the strict bvh4 gate** — 208 bytes plus
+the full 16-word tagged-pointer table — and every one yielded a size and a pair.
+
+Artifact: `handoff/core-bvh4-descriptors.tsv`
+(`stream, allocated, pair_lo, pair_hi, id0, id1`).
+
+| Measurement | Value |
+| --- | --- |
+| Descriptors | 269,106 |
+| Exact allocated total | **119,738,500,864 B (119.7 GB)** |
+| Allocated range | 512 B … 31,394,560 B, median 56,320 |
+| Multiples of 256 | 269,106 / 269,106 |
+| Index decoded total | 129.9 GB |
+| **Padding overhead** | **10.2 GB (7.8 %)** |
+| Distinct `+0xa4` pairs | 10,012 |
+| Distinct ids | 470,235 of 538,212 values |
+
+Two results:
+
+- **The index overstates `core_bvh4` by 7.8 %.** Exact payload is 119.7 GB, the
+  index reports 129.9 GB; the difference is the zero padding to a 256-byte
+  multiple that the descriptor makes measurable per entry.
+- **`+0xa4` is dominated by `lo = 256`.** The four commonest pairs are
+  `(256,768)`, `(256,512)`, `(256,2304)`, `(256,2560)` — the low half is the body
+  start `0x100`, and only the high half varies. That matches the decoded
+  768-byte entry (`{0x100, 0x200}`) and supports "two payload offsets, second
+  section start" over any span or workspace reading.

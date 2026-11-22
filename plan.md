@@ -43,12 +43,13 @@ Last updated: 2026-11-21.
   holding 41 child packs and 0 own streams). Establish, per archive, whether N
   counts leaf entries, child packs, or a recursive total, then resume
   `navmeshes` and `data`.
-- [ ] **Explorer (`explorer/`)**: finish the paged hierarchy, wire export
-  cancellation, strengthen archive/index provenance beyond sampled identity,
+- [ ] **Explorer (`explorer/`)**: finish the paged hierarchy, strengthen
+  archive/index provenance beyond sampled identity,
   add asset previews, and measure throughput on the largest archives. Verify
   resumable indexing on other filesystems and operating systems.
-- [ ] **Publish the full `core_bvh4` descriptor inventory** (269,106 entries:
-  two ids, basis, true payload size, data stream). Run when the disk is free.
+- [ ] **Use the descriptor inventory** (`handoff/core-bvh4-descriptors.tsv`,
+  269,106 rows, exact sizes): test the 470k ids against a wider corpus and check
+  duplicate-id groups; the basis still needs one extra pass to record.
 - [ ] **Identify the two `core_bvh4` descriptor ids** at `+0x40`/`+0x44` and the
   `u16` pair at `+0xa4` (bounded like an offset pair, role open).
 - [ ] **Re-index the eight large archives** once, to pick up the corrected
