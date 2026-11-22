@@ -6123,3 +6123,24 @@ Two consequences.
 
 The method is kept in the repository with its validation, because the negative is
 the result: no candidate list, and a clear statement of what data would be needed.
+
+### Addendum: the coordinates are provably bone-local
+
+Two bones settle what the leave-one-out could only suggest:
+
+```
+skel_l_calf  idx  0   cx -0.06750  cy +0.00569  cz  0.00000
+skel_r_calf  idx 17   cx -0.06750  cy +0.00569  cz  0.00000
+skel_l_foot  idx 14   cx -0.09639  cy -0.01670  cz -0.00757
+skel_r_foot  idx 31   cx -0.09639  cy -0.01670  cz +0.00757
+```
+
+The calf pair is identical in all three axes, and the foot pair differs only in
+the sign of `cz` — by exactly twice the bone's own z extent (0.01514 against an
+extent of 0.00757). A centroid equal to ±extent/2 is the signature of a shape
+centred on its own local origin, not of a bone placed in a rig. Mirroring shows up
+as a sign flip in the *local* frame.
+
+So the geometry route needs rig-space transforms, and the bone table does not
+carry them: not in the point pairs, not in the extents. That is the whole negative,
+and it is now demonstrated rather than inferred.
