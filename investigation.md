@@ -4863,3 +4863,42 @@ Two readings:
 Artifacts unchanged (`handoff/script-bone-template-families.tsv`,
 `handoff/script-bone-geometry.tsv`, `handoff/bone-hash-names.tsv`); this entry
 records the join.
+
+## Journal: inventory rebuilt from the indexes; unclassified is 52.8 GB, not 430 MB (2026-11-21)
+
+`tools/extraction_inventory.py` now reads `output/index/*.tsv` instead of the
+pre-rebuild `data.rpf` ranges file, cross-checks each index against the file size
+(every range tiles its archive with no gap or overlap), and marks which zlib
+ranges have an extraction manifest.
+
+| Kind | Ranges | Stored | Decoded | Extracted |
+| --- | ---: | ---: | ---: | ---: |
+| zlib | 2,241,410 | 106,214,391,741 | 365,020,088,082 | 2,190,635 |
+| unclassified | 26,759 | **52,776,009,304** | 0 | 0 |
+| zero_run | 2,147,637 | 2,315,978,059 | 0 | 0 |
+| front / trailer | 22 / 22 | 446,608 / 311,760 | 0 | 0 |
+| **total** | **4,415,850** | **161,307,137,472** | **365,020,088,082** | |
+
+**Correction:** the project has been quoting "429.8 MB unclassified". The real
+figure is **52.8 GB**, and it is dominated by three archives that the old
+data-only inventory never covered:
+
+| Archive | Unclassified ranges | Stored |
+| --- | ---: | ---: |
+| `audio` | 3 | 28.5 GB (AWC containers — already decoded by the audio tools) |
+| `story000` | 838 | 12.9 GB |
+| `movies` | 1 | 8.8 GB (video) |
+| `core_restofworld` | 13 | 1.24 GB |
+| `shared_minigame000` | 138 | 362 MB |
+| `shaders` | 1 | 274 MB |
+| `levels` | 22,421 | 269 MB |
+
+So the unclassified backlog is not a 430 MB naming chore: 37.3 GB of it is audio
+and video that other tools already handle or that this pipeline cannot decode,
+and the genuinely open share is `story000` (12.9 GB), `core_restofworld`
+(1.24 GB) and the sub-gigabyte remainder.
+
+The inventory also records bulk-extraction coverage honestly: six archives plus
+`levels` have manifests (`2,190,635` zlib ranges); `data`, `shared_minigame000`,
+`shaders`, `textures`, `story000_script`, `shared_minigame000_bvh4` and the
+rest-of-world packs are analysed locally but not bulk-extracted.

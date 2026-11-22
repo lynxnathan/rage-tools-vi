@@ -8,8 +8,9 @@ Last updated: 2026-11-21.
 
 ## Current state
 
-- **Extraction:** all 22 source archives indexed; every indexed stream extracted
-  with a hashed manifest. `levels` (174.9 GB) verified by completeness pass plus
+- **Extraction:** all 22 archives indexed (4.42 M ranges / 161.3 GB stored /
+  365.0 GB decoded). Six archives plus `levels` have bulk manifests
+  (2,190,635 of 2,241,410 zlib ranges); the rest are analysed locally. `levels` (174.9 GB) verified by completeness pass plus
   a 1,500-file hash sample. `movies` is the only index-only root (no zlib
   payload).
 - **Entry level:** `core_bvh4` has a payload-derived entry manifest
@@ -39,7 +40,6 @@ Last updated: 2026-11-21.
 - [ ] Name the remaining weight hashes (21 of 252 done).
 - [ ] Name the remaining ped-rig bone hashes.
 - [ ] Open the unnamed hash universe with a new name source.
-- [ ] Repoint `tools/extraction_inventory.py` at the manifests.
 - [ ] Rehash all of `levels`.
 
 ## Next
@@ -47,7 +47,9 @@ Last updated: 2026-11-21.
 - [ ] Re-index the eight large archives for `chain_start`.
 - [ ] Map the type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.
-- [ ] Name the unclassified payload bytes.
+- [ ] Triage the unclassified backlog by archive (52.8 GB total: 37.3 GB is
+  audio AWC and movies video already handled elsewhere; the open share is
+  `story000` 12.9 GB and `core_restofworld` 1.24 GB).
 - [ ] Packs active-learning queue.
 - [ ] ACE1 trailer pairs.
 - [ ] Locate compiled shader bytecode.
