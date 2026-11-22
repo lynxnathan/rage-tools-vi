@@ -4433,3 +4433,28 @@ Two-word compounds (`mh_l_sterno_cleido` style) added **zero** — the vocabular
 single-word with numeric suffixes, not compound.
 
 Artifact regenerated: `handoff/bone-hash-names.tsv` (73 rows).
+
+### Finger chains and wider suffixes: 73 → 97 names
+
+Suffixes past 20 expose the finger chains: `mh_l_finger21/31/41`,
+`skel_l_finger22/23`, `skel_r_finger32/33` and their mirrors. With the suffix set
+widened to `0..99` plus zero-padded forms, the curated vocabulary resolves
+**97 of 612**:
+
+| Family | Names |
+| --- | ---: |
+| `mh_` | 43 |
+| `skel_` | 34 |
+| `rb_` | 20 |
+
+Per-root annotation is now an artifact too:
+`handoff/script-bone-roots-named.tsv` — 13 of 44 class-0 roots carry named bones
+(261 of 3,043 bone slots). The `rb_`-heavy roots (`0xb4e9e8ce` 18 rb_, `0x96f3700e`
+16 rb_) and the `mh_`/`skel_` mid-size roots are distinct rigs; two roots
+(`0xc8caacb2`, `0x96d8bd92`) share the same 17/10/2 family mix and bone counts of
+116/117, matching the near-identical family clustering found earlier.
+
+Also worth recording: the corpus contains only **29** prefixed rig tokens
+(17 `skel_`, `ph_`, `rb_`, `ik_`, `mover_`, none `mh_`), so the `mh_` vocabulary
+cannot be harvested from the archive text — it has to be generated, which is why
+the anatomy word list is the limiting factor.
