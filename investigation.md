@@ -6319,3 +6319,40 @@ the optional `0x36`, `0x5a` and `0xd9` chunks come and go, which is why a
 fixed-stride table model never fitted these files.
 
 `tools/awc_chunk_table.py` does the scan and prints the per-file structure.
+
+## Journal: the `0xff21` payload is marker-framed, not length-blocked (2026-11-22)
+
+With the chunk table located, the next step looked mechanical: take each stream's
+`0x55` chunk and run the `0xff02` payload walker (0x800-byte blocks of
+`[u16 size][packet]`). It even appeared to work — 93,344 WAVs, 19 failures.
+
+The validation says otherwise. Comparing decoded frames with the descriptor's
+declared sample count gives a median ratio of 1.050 but a **10th percentile of
+0.503**, and **19 % of streams decode to under 80 % of their declared length**. A
+correct demux would not lose half a stream.
+
+The reason is visible in the payload's first bytes:
+
+```
+a0 00 f8 b4 d1 f7 70 a3 69 d5 05 98 7c fe 44 b9 ...
+```
+
+`a0 00 f8` is the packet marker the original inspector recorded
+(`tools/awc_framing.py`, `MARKER`), not a length prefix. This container separates
+Opus packets with markers, while `0xff02` uses length-prefixed 0x800 blocks. The
+walker therefore read the marker as a 160-byte length and framed everything after
+it wrongly, which is exactly the 19 % that come out short.
+
+Consequences, all applied:
+
+- the 52 GB of WAVs were deleted (derivable, and wrong for a fifth of the set);
+- the decode manifest was withdrawn rather than published;
+- `tools/extract_awc_variants.py` stays as the harness, with the finding recorded
+  so nobody repeats the length-block assumption.
+
+The correct demux is the next step and it is small: split the `0x55` payload on
+`a0 00 f8` markers, keep the frame between markers, and re-run the same
+declared-count check. If the ratios come out at 1.0 for every stream, the 260
+remaining audio streams are done.
+
+Recorded as a negative with a precise cause, not as a partial success.
