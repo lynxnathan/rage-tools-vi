@@ -5050,3 +5050,39 @@ constraint as the oracle.
 
 `0xff61` containers in the chain are decodable **today** (Opus, 48 kHz), so the
 variant work would only add coverage for the 98 % that is `0xff02`.
+
+## Journal: the `0xff02` AWC variant is decoded (2026-11-21)
+
+The `story000` chain is 98 % `0xff02`, and its layout is now known:
+
+```
+0x00  ADAT
+0x04  u16 version = 1, u16 flags = 0xff02
+0x08  u32 stream count
+0x0c  u32 data offset
+0x10  4 * streams bytes            (per-stream, content unknown)
+          chunk table, ending at the data offset
+          record = offset:28 | size:28 | type:8   (little-endian u64)
+```
+
+- **Table position `0x10 + 4·streams`** — validated by chunk tiling on
+  **297/297** sampled containers, against 57/297 for a fixed `0x18` start and
+  0/297 for `0x10 + 2·streams`.
+- **Exactly seven chunks per stream**, in order
+  `0x36 0x55 0x5c 0x76 0xa3 0xb2 0xbd`, so
+  `data_offset = 16 + 4n + 56n = 16 + 60n`.
+- `0x55` is the Opus data (a multiple of 0x800 blocks of `[u16 size][packet]`).
+- `0x76` is the 32-byte descriptor. Its rate is the **low `u16` at `+0x08`**
+  (`0xBB80` = 48 kHz; the high `u16` is a count, which is why reading a `u32`
+  produced nonsense), declared samples at `+0x00`/`+0x0c`, codec at `+0x1c`.
+
+Framing census over 3,000 sampled containers: **2,952 `0xff02`, all codec `0x0b`
+(Opus) at 48 kHz**; 37 `0xff25`, 7 `0xff21`, 4 `0xff61`.
+
+**Decode control:** 50 containers → **158 streams, 37,796,392 bytes of WAV**, two
+failures (a six-chunk container and one anomaly). Scaling the control to the full
+chain projects **≈ 48 GB of PCM** for 63,853 containers, which fits the 236 GB
+free but is the largest output this project has produced.
+
+Tools: `tools/awc_framing_ff02.py` (variant census, 400 containers in 2 s) and
+`tools/extract_awc_ff02.py` (WAV export with manifest and SHA-256).
