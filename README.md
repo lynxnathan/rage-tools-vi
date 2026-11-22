@@ -73,6 +73,7 @@ Start with [From first principles](docs/explained.md), then
 | `handoff/` | Verified TSV manifests and semantic reports |
 | `plan.md` | Live check/todo list |
 | `investigation.md` | Append-only evidence journal |
+| `rdna2-spirv/` | Submodule: RDNA2 shader decompiler (separate repository) |
 
 ## Quick start
 
@@ -109,7 +110,22 @@ python3 tools/pair_entry_manifest.py --archive core_bvh4.rpf --index output/inde
 are local-only and ignored. Source archives and multi-gigabyte extractions never
 enter Git; verified manifests and their hashes do.
 
+## Sibling project: RDNA2 shaders
+
+The GPU layer is its own repository, included here as a submodule:
+
+| Path | What it does |
+| --- | --- |
+| `rdna2-spirv/` | Generic AMD RDNA2 (GFX10.x) decompiler: machine code to SPIR-V, with golden buffer and pixel tests |
+
+It is a **separate Git repository**, not part of this history: its own `plan.md`
+and `investigation.md` live there. Clone with submodules to get it:
+
+```bash
+git clone --recurse-submodules https://github.com/lynxnathan/rage-tools-vi.git
+git submodule update --init --recursive      # in an existing clone
+```
+
 ## License
 
-No license has been chosen yet. Treat the code and findings as research material
-until one is published.
+MIT — see [LICENSE](LICENSE).
