@@ -6057,3 +6057,30 @@ Adjacency plus size is not the wrong rule; it is an incomplete one.
 That is a different failure from the one the earlier entry recorded, and it
 changes what to look for: not a better continuation rule, but a marker that
 separates three chains that are individually valid.
+
+## Journal: `shaders.rpf` is one page chain, not three (2026-11-22)
+
+The previous entry concluded that `shaders.rpf` is three chains of ~1,400 pages
+and that only the boundary marker was missing. Checking where the chain could
+end says otherwise.
+
+Of the 4,205 streams, exactly **one** does not decode to 65,536 bytes: the stream
+at `0x1889cf10`, which decodes to 27,436 bytes and sits 11 KB before the end of
+the 411.7 MB file. That is the final partial page of the archive and nothing
+else. All 4,204 earlier pages are full, and every inter-stream gap is 2–12 bytes
+of alignment padding — no zero run exceeds 12 bytes, so there is no separator
+anywhere in the file.
+
+Therefore `shaders.rpf` is **one contiguous chain of 4,205 pages**, and the header
+count of 3 is not a chain count for this pack type. The boundary between the
+"three entries" is not physical: either the count means three logical groups
+inside one page stream, or the field is interpreted differently for shader packs.
+
+This also disposes of a mismatch from the entry-model table: the page rule covers
+100 % of the continuations not because there are three chains but because there
+is one, and the reconciliation residual of 1 was the only signal that the count
+did not fit.
+
+Practical consequence: for `shaders.rpf` the unit is the archive, not the entry.
+Anything that needs per-entry shader attribution has to come from the masked front
+region or from the payload's own structure, not from the stream layout.
