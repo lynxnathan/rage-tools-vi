@@ -111,6 +111,10 @@ Each needs a specific input, not more effort.
 
 - [ ] Directory/virtual rows in the entry count — needs Front B key material.
 - [ ] Multi-chain entry grouping inside mixed packs — needs a per-entry marker.
+  `tools/entry_model.py` now measures the model per archive: pairs fit
+  `core_bvh4`/`levels`/`core_restofworld`; `shaders.rpf` is 3 chains of ~1,400
+  pages and the page rule explains 100 % of continuations, so what is missing is
+  the boundary between chains, not the continuation rule.
 - [ ] Front B table `S` — same mask problem.
 - [x] ~~9→10 byte stride boundary — needs a pack at N = 255 or 256.~~ Closed as
   mis-framed: `tools/frontb_stride.py` solves 3,029 headers and finds a 76-row

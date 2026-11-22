@@ -6022,3 +6022,38 @@ know what exists, how big it is, or which tool regenerates it.
 `handoff/README.md` now lists every file with its row count and columns, plus a
 table mapping products to their producing tool. The archive inputs stay local;
 everything listed is rebuilt from the committed tools.
+
+## Journal: the entry model is measurable per archive (2026-11-22)
+
+Each archive's manifest was built with a hand-picked unit — pairs for `core_bvh4`
+and `textures`, chains for `data` and `navmeshes`. `tools/entry_model.py` replaces
+the choice with a measurement: compare the declared count with the number of zlib
+streams, and with how many streams decode to exactly 65,536 bytes (the only ones
+that can continue a chain).
+
+| Archive | Declared | Streams | Ratio | Model | Page cover |
+| --- | ---: | ---: | ---: | --- | ---: |
+| `script.rpf` | 1,016 | 1,057 | 1.04 | single | 107 % |
+| `data.rpf` | 23,075 | 28,509 | 1.24 | mixed | 42 % |
+| `navmeshes.rpf` | 64,779 | 90,305 | 1.39 | mixed | 1 % |
+| `anim.rpf` | 84,940 | 130,510 | 1.54 | mixed | 34 % |
+| `packs.rpf` | 80,470 | 144,366 | 1.79 | mixed | 5 % |
+| `core_bvh4.rpf` | 295,244 | 565,596 | 1.92 | **pairs** | 13 % |
+| `levels.rpf` | 526,538 | 1,117,857 | 2.12 | **pairs** | 12 % |
+| `core_restofworld.rpf` | 1,156 | 2,371 | 2.05 | **pairs** | 5 % |
+| `shaders.rpf` | 3 | 4,205 | 1,401.67 | **pages** | **100 %** |
+
+The selector agrees with the hand-picked units where those were right — pairs for
+`core_bvh4`, `levels` and `core_restofworld` — and names the four archives whose
+manifests carry the residuals: `data`, `navmeshes`, `anim`, `packs`.
+
+It also settles the over-grouping question from the `chain_start` work. For
+`shaders.rpf` the page rule explains **100 %** of the required continuations:
+4,205 streams against 3 declared entries means each entry really is a chain of
+~1,400 pages. Merging all pages into one chain was therefore *nearly* right — the
+grouping is correct and only the boundary between the three entries is missing.
+Adjacency plus size is not the wrong rule; it is an incomplete one.
+
+That is a different failure from the one the earlier entry recorded, and it
+changes what to look for: not a better continuation rule, but a marker that
+separates three chains that are individually valid.
