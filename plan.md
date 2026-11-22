@@ -22,7 +22,8 @@ Last updated: 2026-11-21.
 - **Entry level:** payload-derived manifests cover four archives — 328,481
   entries with exact boundaries: `core_bvh4` (pairs, 1,214/1,282 packs),
   `navmeshes` (chains, 13/29), `data` (chains, 19/42), `textures` (pairs, 19/21).
-  Unverified packs are exactly those whose entries mix shapes.
+  Unverified packs are exactly those whose entries mix shapes. All four
+  manifests pass a self-consistency check (0 index-missing, 0 duplicates).
 - **Descriptors:** both bvh4 archives inventoried — `core_bvh4` 269,106 rows and
   `shared_minigame000_bvh4` 1,233, with exact allocated sizes and an orthonormal
   right-handed basis (269,105/269,106 within 1e-3).
@@ -57,7 +58,6 @@ Last updated: 2026-11-21.
 - [ ] ACE1 trailer pairs.
 - [ ] Locate compiled shader bytecode.
 - [ ] Script object root field roles.
-- [ ] Verify any proposed entry record against exact ranges.
 
 ## Blocked
 

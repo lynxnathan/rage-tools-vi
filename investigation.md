@@ -5110,3 +5110,25 @@ went from 236 GB free to 188 GB.
 The 210 failures are the containers whose chunk counts or codec differed
 (`0xff25`/`0xff21`/`0xff61` residents and one six-chunk anomaly), which the
 `0xff02` walker correctly refuses.
+
+## Journal: entry manifests pass their self-consistency check (2026-11-21)
+
+Verified each emitted entry against the archive index: every entry's stream and
+data offsets must exist in the zlib index, no stream may appear twice inside a
+pack, and the entry count must sit within the tolerance used at emit time.
+
+| Archive | Entries | Packs | Missing from index | Duplicates | Packs outside tolerance |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `core_bvh4` | 294,614 | 1,261 | 0 | 0 | 20 |
+| `textures` | 1,349 | 19 | 0 | 0 | 0 |
+| `navmeshes` (chains) | 25,981 | 13 | 0 | 0 | 0 |
+| `data` (chains) | 6,537 | 19 | 0 | 0 | 0 |
+
+No entry points outside the index and no stream is double-counted anywhere. The
+20 `core_bvh4` packs outside tolerance are the known residual families (packs
+whose declared N counts child packs or mixed entry shapes) — they were emitted
+with `declared_ok = 0` for exactly that reason.
+
+Also verified the audio output: 250 randomly chosen WAVs (64,085,240 bytes)
+re-hashed against `output/extracted/story000-opus/manifest.tsv` — **0 missing, 0
+mismatches**.
