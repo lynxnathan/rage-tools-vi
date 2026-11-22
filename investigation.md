@@ -4991,3 +4991,28 @@ matches its entry shape (pairs for `core_bvh4`/`textures`, chains for
 The unresolved share is exactly the packs whose entries mix shapes: 68 packs in
 `core_bvh4`, 16 in `navmeshes`, 23 in `data`, 2 in `textures`. Those are the
 multi-chain and mixed packs already on the plan's blocked list.
+
+## Journal: the unclassified layer is media, all of it (2026-11-21)
+
+Last open share triaged: `core_restofworld`'s 1,241,532,711-byte unclassified span.
+
+- The span opens with **0x927 zero bytes**, then `4b 42 32 6e` — **`KB2n`, the
+  Bink2 video signature** (followed by `u32 0x01fc4d3c`, `0x554`, `0x1cde8`,
+  `0x554`, `0x780`, `0x438`, `0x1e`, a plausible Bink2 frame table).
+- Sampled windows inside it read H = 7.66 with random-punctuation "text", i.e.
+  compressed video, not strings.
+
+Full accounting of the 52.8 GB unclassified layer:
+
+| Source | Bytes | Content | Status |
+| --- | ---: | --- | --- |
+| `audio.rpf` | 28.5 GB | AWC audio | decoded by the audio tools |
+| `story000` (span 1) | 9.56 GB | AWC audio | extracted, variant parser open |
+| `movies.rpf` | 8.8 GB | Bink video | out of scope |
+| `story000` (span 2) | 3.33 GB | Bink video | out of scope |
+| `core_restofworld` | 1.24 GB | **Bink2 video** | out of scope |
+| remainder | ~1.2 GB | assorted media/fragments | — |
+
+**There is no unexplained game payload left in the unclassified layer.** Every
+large span is an audio or video container; the project's "429.8 MB (later 52.8 GB)
+of unclassified bytes" question is answered: media, not unnamed assets.

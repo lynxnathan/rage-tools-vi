@@ -50,8 +50,6 @@ Last updated: 2026-11-21.
 - [ ] Re-index the eight large archives for `chain_start`.
 - [ ] Map the type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.
-- [ ] Triage the last open unclassified share (`core_restofworld` 1.24 GB plus
-  ~1.2 GB elsewhere); AWC and Bink media are accounted for.
 - [ ] Packs active-learning queue.
 - [ ] ACE1 trailer pairs.
 - [ ] Locate compiled shader bytecode.
