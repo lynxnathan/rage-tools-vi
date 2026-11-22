@@ -4413,3 +4413,23 @@ are JOAAT collisions on ordinary words (`l_tempered2`, `rb_gefundenes3`,
 `pack_l_beschimpfungen`), so the curated 60 is the number to trust.
 
 Artifact: `handoff/bone-hash-names.tsv` (60 rows, sorted by root then index).
+
+### Vocabulary and suffix expansion: 60 → 73 names
+
+Widening the suffix range to `0..9` and `01..20` (ragdoll rings and finger chains
+number into the teens) added finger and ring entries, and adding a dozen
+anatomical words (`collarbone`, `penis`, `nipple`, `navel`, `kneecap`, `eyelid`,
+…) reached **73 of 612** with zero collision risk:
+
+| Family | Names |
+| --- | ---: |
+| `mh_` | 37 |
+| `rb_` | 20 |
+| `skel_` | 16 |
+
+New members include `mh_l_collarbone`, `mh_l_finger01`, `mh_l_finger11`,
+`mh_c_penis01–03`, `mh_diaphragm`, and the corresponding right-side mirrors.
+Two-word compounds (`mh_l_sterno_cleido` style) added **zero** — the vocabulary is
+single-word with numeric suffixes, not compound.
+
+Artifact regenerated: `handoff/bone-hash-names.tsv` (73 rows).

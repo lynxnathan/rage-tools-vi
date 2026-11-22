@@ -67,7 +67,7 @@ Last updated: 2026-11-21.
 - [ ] **Multi-mip texture tail.** No descriptor with `+0x3e >= 2` exists in the
   corpus, so tail placement, mip order, and multi-mip pitch stay open. Reopen
   with a multi-mip dictionary. See `handoff/texture-mip-tail-blocker.md`.
-- [ ] **Name the remaining 552 bone hashes.** 60 verified across eight roots
+- [ ] **Name the remaining 539 bone hashes.** 73 verified across eight roots
   and three families (`skel_`, `mh_`, `rb_`), with a constant per-root `l`/`r`
   index offset (+25, +17, +12). Grow the anatomy/rig vocabulary, use the mirror
   offset to annotate unknown mirrors, and validate against the ordered families.

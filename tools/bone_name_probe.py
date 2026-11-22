@@ -37,11 +37,15 @@ scalp scapula scrotum shin shoulder shinpad skin sole spine sterno sternum
 stirrup stomach tail teeth temple tendon testicle thigh throat thumb toe
 tongue tooth torso waist wrist horn rein
 bracer boot glove hood jack sleeve bodysuit fat belly
+penis nipple navel kneecap collarbone cheekbone jawline eyelid pupil iris
+appendix groin thighbone shinbone knuckle fingertip toenail molar incisor
 """.split()
 
 PREFIXES = ("skel_", "mh_", "rb_", "ph_", "ik_", "mover_", "pack_", "veh_", "")
 SIDES = ("", "l_", "r_", "c_", "m_", "lf_", "rf_", "lr_", "rr_")
-SUFFIXES = ("", "0", "1", "2", "3", "01", "02", "03", "04")
+# Ragdoll rings and finger chains number into the high teens, so the suffix
+# range has to cover 0..20 and the zero-padded forms.
+SUFFIXES = ("",) + tuple(str(i) for i in range(10)) + tuple(f"{i:02d}" for i in range(1, 21))
 
 
 def joaat(text, seed=0):
