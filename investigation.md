@@ -4508,3 +4508,25 @@ hashes specifically:
 So the remaining 330 are a namespace whose vocabulary is not English anatomy and
 not the obvious vehicle-part set. The ped universe, by contrast, is 35 % named
 and has one fully decoded skeleton.
+
+## Journal: `levels.rpf` extraction complete — the last index-only archive (2026-11-21)
+
+`levels.rpf` finished: **1,117,857 streams, 174,941,755,029 decoded bytes**,
+elapsed 26,570 s with 16 workers (7.4 h, running alongside analysis the whole
+time). Manifest rows 1,117,857. Verification started against the source archive.
+
+With that, every indexed archive now has an extraction on disk:
+
+| Archive | Streams | Decoded |
+| --- | ---: | ---: |
+| `levels` | 1,117,857 | 174.9 GB |
+| `core_bvh4` | 565,596 | 122 GB (extracted tree) |
+| `packs` | 144,366 | 9.4 GB |
+| `story000` | 141,163 | 14 GB |
+| `anim` | 130,510 | 12 GB |
+| `navmeshes` | 90,305 | 20 GB |
+
+The pipeline milestone that opened this phase — "one general extraction workflow
+across the local RPF9 archives" — now has no index-only archive left. What
+remains is verification, the browser rebuild, and the unified `+0xa0`/struct
+harvest that was queued behind this extraction.

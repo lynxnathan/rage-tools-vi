@@ -9,9 +9,10 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] **Finish `levels.rpf` extraction, verify, rebuild the browser.** 1,117,857
-  streams / 174.9 GB, at 89 GB on Mammoth (16 workers, `--resume`). Then
-  `tools/pipeline.py --source SRC --output output verify` and `pilot`.
+- [ ] **Verify `levels.rpf` and rebuild the browser.** Extraction finished:
+  1,117,857 streams / 174.9 GB. Verification is running; then
+  `tools/pipeline.py --source SRC --output output pilot` so no archive is
+  index-only in the browser.
 - [ ] **Overnight unified pass** once `levels` is done: exact `+0xa0` harvest
   gated to the 208-byte bvh4 table, plus the struct-root/segment harvest across
   all archives. `cache/` on the NVMe is the scratch location.
