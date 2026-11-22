@@ -1,15 +1,40 @@
 # Plan
 
-Live check/todo list only. **No findings, no measurements, no explanations
-here** — those live in [investigation.md](investigation.md) and `handoff/`.
-Completed items leave this file.
+Current state and open work. Narrative, measurements and evidence belong in
+[investigation.md](investigation.md) and `handoff/`. Completed work stays as one
+line of state, not as a log.
 
 Last updated: 2026-11-21.
+
+## Current state
+
+- **Extraction:** all 22 source archives indexed; every indexed stream extracted
+  with a hashed manifest. `levels` (174.9 GB) verified by completeness pass plus
+  a 1,500-file hash sample. `movies` is the only index-only root (no zlib
+  payload).
+- **Entry level:** `core_bvh4` has a payload-derived entry manifest
+  (`handoff/core-bvh4-entries.tsv`) with 1,214 of 1,282 packs matching the
+  declared count exactly, and a full descriptor inventory
+  (`handoff/core-bvh4-descriptors.tsv`).
+- **Pack extents:** zero-padding boundaries proven on every archive tested; leaf
+  extents published in `handoff/pack-extents-leaves.tsv`; parents remain open.
+- **Metadata:** header census complete (`handoff/header-census-full.tsv`), Front
+  A/B/trailer masked, size laws characterised. Metadata decoding is
+  information-blocked.
+- **Naming:** bone-table hashes are JOAAT of `skel_`/`mh_`/`rb_` names; 99 of 612
+  resolved across 13 roots; one rig fully decoded
+  (`handoff/script-skeleton-0x48dcbb01.tsv`). The weight hashes use the same
+  namespace. A second, disjoint 330-hash universe remains unnamed.
+- **Browser:** `output/extraction-index-pilot/index.html` rebuilt with seven
+  verified archives.
+- **Tooling:** `tools/pipeline.py` runs index → extract → audio → pilot → verify;
+  exploration caches live in the untracked `cache/` on the NVMe.
 
 ## Now
 
 - [ ] Finish the `core_bvh4` descriptor inventory: add the basis rows and cover
   `shared_minigame000_bvh4`.
+- [ ] Finish naming the weight hashes.
 - [ ] Name the remaining ped-rig bone hashes.
 - [ ] Open the unnamed hash universe with a new name source.
 - [ ] Repoint `tools/extraction_inventory.py` at the manifests.
@@ -17,7 +42,6 @@ Last updated: 2026-11-21.
 
 ## Next
 
-- [ ] Test the `0x8f18aff0` weight hashes against rig names.
 - [ ] Re-index the eight large archives for `chain_start`.
 - [ ] Validate the skeleton families against the decoded rig.
 - [ ] Map the type/class IDs and transforms.
@@ -33,7 +57,7 @@ Last updated: 2026-11-21.
 
 Each needs a specific input, not more effort.
 
-- [ ] Directory/virtual rows in the entry count — needs Front B key material or a crib.
+- [ ] Directory/virtual rows in the entry count — needs Front B key material.
 - [ ] Multi-chain entry grouping — needs a decoded per-entry marker.
 - [ ] Front B table `S` — same mask problem.
 - [ ] 9→10 byte stride boundary — needs a pack at N = 255 or 256.
