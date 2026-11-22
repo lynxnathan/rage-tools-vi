@@ -4902,3 +4902,41 @@ The inventory also records bulk-extraction coverage honestly: six archives plus
 `levels` have manifests (`2,190,635` zlib ranges); `data`, `shared_minigame000`,
 `shaders`, `textures`, `story000_script`, `shared_minigame000_bvh4` and the
 rest-of-world packs are analysed locally but not bulk-extracted.
+
+## Journal: the unclassified backlog is media (2026-11-21)
+
+Triage of the largest genuinely open span, `story000`'s 12.05 GB of unclassified
+ranges in 838 spans. Two spans are 99 % of it:
+
+| Span | Bytes | Content |
+| --- | ---: | --- |
+| `0x11c1675f1..0x355fefbb0` | 9.56 GB | **AWC audio chain** |
+| `0x3e30eb1d2..0x4a96eb4f0` | 3.33 GB | high-entropy media, contains Bink magics |
+
+**Verified AWC.** `tools/extract_awc.py` over a 16 MiB probe of the first span
+found **4 ADAT containers covering 16,741,873 bytes (99.8 % of the window)**, i.e.
+the span is a contiguous chain of ~4 MB AWC containers — cutscene/dialogue audio.
+
+**Span two.** Four 1 MiB samples read H = 7.03–7.96 with 1–2 % zeros, and Bink
+magics (`BIK`, `KB2`) appear at the span start and at 75 %, so it is compressed
+video rather than named game data. Its head is a small header (`u32 0x3ba5`
+then zeros) followed by a structured table at `+0x1000` of `09 00`-prefixed
+u16 values.
+
+**Reframing the 52.8 GB.** Combining this with the inventory:
+
+| Source | Unclassified | Reading |
+| --- | ---: | --- |
+| `audio.rpf` | 28.5 GB | AWC containers (already decoded by the audio tools) |
+| `story000` | 12.05 GB | 9.56 GB AWC + 3.33 GB Bink video |
+| `movies.rpf` | 8.8 GB | Bink video |
+| `core_restofworld` | 1.24 GB | open |
+| everything else | ~1.2 GB | open |
+
+So ~49.4 GB of the unclassified backlog is media the pipeline does not decode
+(AWC is handled elsewhere; Bink is out of scope), and the genuinely unclassified
+game data is ~2.4 GB (`core_restofworld` 1.24 GB plus the remainder).
+
+New opportunity, not a blocker: the 9.56 GB of `story000` AWC is cutscene audio
+that the existing XMA2/Opus/ACE1 decoders could handle with `extract_awc.py` in
+the same way `audio.rpf` was done.

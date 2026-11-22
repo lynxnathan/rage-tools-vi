@@ -44,12 +44,14 @@ Last updated: 2026-11-21.
 
 ## Next
 
+- [ ] Extract the `story000` AWC chain (9.56 GB of cutscene audio) with the
+  existing AWC decoders.
+
 - [ ] Re-index the eight large archives for `chain_start`.
 - [ ] Map the type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.
-- [ ] Triage the unclassified backlog by archive (52.8 GB total: 37.3 GB is
-  audio AWC and movies video already handled elsewhere; the open share is
-  `story000` 12.9 GB and `core_restofworld` 1.24 GB).
+- [ ] Triage the last open unclassified share (`core_restofworld` 1.24 GB plus
+  ~1.2 GB elsewhere); AWC and Bink media are accounted for.
 - [ ] Packs active-learning queue.
 - [ ] ACE1 trailer pairs.
 - [ ] Locate compiled shader bytecode.
