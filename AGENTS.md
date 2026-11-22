@@ -34,8 +34,9 @@ are appended here.
   cost minutes; never commit them.
 - 2026-11-22: The operator has licensed, NDA-approved access to Microsoft
   (Dev Center / Partner) material, including GDK headers. Any such material is
-  local-only: keep it outside git (`.gitignore` covers `private/` and
-  `rdna2-spirv/private/`), never commit it, never paste it into docs, journals,
+  local-only: keep it outside git (`.gitignore` covers `private/`; the
+  `rdna2-spirv` submodule ignores its own `private/`), never commit it, never
+  paste it into docs, journals,
   or bus messages, and never push it. Record only the independently verifiable
   fact (a symbol name, a layout decision) and mark it as "GDK-confirmed" without
   quoting the source. Public documentation and the AMD machine-readable ISA
@@ -44,11 +45,12 @@ are appended here.
   criterion of any project here, and in particular not of `rdna2-spirv`. That
   project must stay reproducible from public sources (AMD machine-readable ISA,
   LLVM, SPIR-V specifications) with nothing else installed.
-- 2026-11-22: `rdna2-spirv/` is a **separate project** that happens to live in
-  this repository. It keeps its own `PLAN.md` and `JOURNAL.md`; do not journal
-  its work in `investigation.md` or track it in the root `plan.md` beyond a
-  one-line pointer. The Rage Tools VI journals and plan describe only the
-  archive/script work.
+- 2026-11-22: `rdna2-spirv/` is a **git submodule** — a separate repository
+  (`lynxnathan/rdna2-spirv`), not part of this history. It keeps its own
+  `plan.md` and `investigation.md`. Never journal its work in this
+  repository's `investigation.md`, never list it in the root `plan.md`, and
+  never copy its files into this tree. Commit it there first, then bump the
+  submodule pointer here.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling
