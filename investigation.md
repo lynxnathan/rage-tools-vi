@@ -4721,3 +4721,30 @@ and "Verified archive" appears 7 times — the seven extracted archives — with
 `movies` the only index-only root.
 
 So the view and the manifests agree: no archive is index-only except `movies`.
+
+## Journal: the weight hashes are bone names too (2026-11-21)
+
+The `0x8f18aff0` arrays were the last unexplained hash namespace: 252 distinct
+keys over 7,630 `(hash, f32)` pairs, each array summing to 1.0, none matching any
+corpus.
+
+They use the **same JOAAT(bone name)** convention as the class-0 bone tables.
+Generating `<skel_|mh_|rb_><side><part><00–99>` over the curated anatomy
+vocabulary resolves **21 of the 252**:
+
+| Family | Names |
+| --- | ---: |
+| `mh_` | 12 |
+| `skel_` | 5 |
+| `rb_` | 4 |
+
+Examples: `mh_l_pec` (0xe9bf73d3), `mh_l_thigh` (0x2419545a), `mh_l_tricep`
+(0x79e8f763), `mh_r_armpit` (0xb15c0dd8), `mh_diaphragm` (0x5115a342).
+
+17 of the 21 also appear in the bone tables, so the two namespaces are one:
+the arrays are **blend weights over named bones** (muscle helpers and ragdoll
+bones), which is consistent with their arrays summing to 1.0.
+
+Artifact: `handoff/weight-hash-names.tsv`. The run takes 8 s with the curated
+vocabulary; the earlier 40-minute timeout was the 147k-word corpus sweep, which
+is unnecessary for this namespace.

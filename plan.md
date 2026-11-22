@@ -21,10 +21,10 @@ Last updated: 2026-11-21.
 - **Metadata:** header census complete (`handoff/header-census-full.tsv`), Front
   A/B/trailer masked, size laws characterised. Metadata decoding is
   information-blocked.
-- **Naming:** bone-table hashes are JOAAT of `skel_`/`mh_`/`rb_` names; 99 of 612
-  resolved across 13 roots; one rig fully decoded
-  (`handoff/script-skeleton-0x48dcbb01.tsv`). The weight hashes use the same
-  namespace. A second, disjoint 330-hash universe remains unnamed.
+- **Naming:** bone-table and weight hashes share one namespace, JOAAT of
+  `skel_`/`mh_`/`rb_` names: 99 of 612 table hashes and 21 of 252 weight hashes
+  resolved, one rig fully decoded (`handoff/script-skeleton-0x48dcbb01.tsv`).
+  A second, disjoint 330-hash universe remains unnamed.
 - **Browser:** `output/extraction-index-pilot/index.html` rebuilt with seven
   verified archives.
 - **Tooling:** `tools/pipeline.py` runs index → extract → audio → pilot → verify;
@@ -34,7 +34,7 @@ Last updated: 2026-11-21.
 
 - [ ] Finish the `core_bvh4` descriptor inventory: add the basis rows and cover
   `shared_minigame000_bvh4`.
-- [ ] Finish naming the weight hashes.
+- [ ] Name the remaining weight hashes (21 of 252 done).
 - [ ] Name the remaining ped-rig bone hashes.
 - [ ] Open the unnamed hash universe with a new name source.
 - [ ] Repoint `tools/extraction_inventory.py` at the manifests.
