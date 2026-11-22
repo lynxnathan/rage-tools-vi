@@ -6259,3 +6259,37 @@ uniform; `levels` stays at 39 % because they are not.
 
 Recorded so that the next attempt starts from the entry-type distribution rather
 than from another global count.
+
+## Journal: the audio remainder is 260 streams, counted (2026-11-22)
+
+"210 containers of other variants remain undecoded" was an estimate. Joining the
+framing tables against the three decode tables — on basename plus stream index,
+because the tables mix absolute and relative paths — gives the exact remainder
+(`tools/audio_gap.py`):
+
+| | Streams |
+| --- | ---: |
+| in the framing tables | 2,565 |
+| decoded | 2,305 |
+| **undecoded** | **260** in 212 files |
+
+By codec and variant:
+
+| Codec | `0xff21` | `0xff61` | Total |
+| --- | ---: | ---: | ---: |
+| Opus (`0x0b`) | 128 | 117 | 245 |
+| XMA2 (`0x05`) | 15 | 0 | 15 |
+
+ACE1 (`0x02`) is complete: 73 of 73.
+
+That reframes the remaining work as two concrete jobs rather than "other
+variants": 245 Opus streams in the two ADAT layouts the `0xff02` extractor does not
+handle, and 15 XMA2 streams in `0xff21`. Both live in the older container, whose
+chunk table sits at `0x50` rather than after a `4 × streams` table, and whose
+streams do not follow the seven-chunk rule — `data_offset` is `0x176` for a
+9-stream file, which is `16 + 358` and not `16 + 60n`.
+
+The join also explains a false alarm: joining on full paths reported 411 missing,
+because the same files appear as `output/extracted/...` in one table and
+`/home/.../output/extracted/...` in another. Basename matching removes 151 phantom
+gaps, which is exactly the number of XMA2 streams that had been "missing".
