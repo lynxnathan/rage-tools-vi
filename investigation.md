@@ -4969,3 +4969,25 @@ version 1, and carries a plausible 5-stream header.
 Disk note: the extraction added 8.9 GB and the volume is now at 94 % (245 GB
 free), so decoding 63k containers should be planned with the output budget in
 mind.
+
+## Journal: entry manifests now cover four archives (2026-11-21)
+
+`tools/pair_entry_manifest.py` gained a `--unit chains` mode (index-only, no
+decode) alongside the struct-pair mode. Verified packs and emitted entries:
+
+| Archive | Unit | Packs verified | Entries | Artifact |
+| --- | --- | ---: | ---: | --- |
+| `core_bvh4` | pairs | 1,214 / 1,282 | 294,614 | `handoff/core-bvh4-entries.tsv` |
+| `navmeshes` | chains | 13 / 29 | 25,981 | `handoff/navmeshes-entries-chains.tsv` |
+| `data` | chains | 19 / 42 | 6,537 | `handoff/data-entries-chains.tsv` |
+| `textures` | pairs | 19 / 21 | 1,349 | `handoff/textures-entries.tsv` |
+| `navmeshes` | pairs | 1 / 29 | 2,447 | `handoff/navmeshes-entries.tsv` |
+
+So **328,481 entries across four archives** now have payload-derived boundaries
+with an independent declared-count check, and each archive uses whichever unit
+matches its entry shape (pairs for `core_bvh4`/`textures`, chains for
+`data`/`navmeshes`).
+
+The unresolved share is exactly the packs whose entries mix shapes: 68 packs in
+`core_bvh4`, 16 in `navmeshes`, 23 in `data`, 2 in `textures`. Those are the
+multi-chain and mixed packs already on the plan's blocked list.

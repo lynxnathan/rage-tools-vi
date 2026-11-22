@@ -48,6 +48,8 @@ def main():
     parser.add_argument("--index", type=Path, required=True)
     parser.add_argument("--census", type=Path, default=Path("handoff/header-census-full.tsv"))
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--unit", choices=("pairs", "chains"), default="pairs",
+                        help="pairs = struct stream + data stream; chains = 64 KiB chain groups")
     parser.add_argument("--tolerance", type=int, default=2,
                         help="accept packs whose pair count differs from N by this much")
     args = parser.parse_args()
@@ -60,14 +62,26 @@ def main():
                      if row["kind"] == "zlib")
     starts = [stream[0] for stream in streams]
 
-    with args.archive.open("rb") as handle:
-        mm = mmap.mmap(handle.fileno(), 0, access=mmap.ACCESS_READ)
+    if args.unit == "chains":
+        # Chain unit needs no decode: a stream continues its predecessor when the
+        # predecessor decoded exactly 65,536 bytes and starts on the align16 end.
         kinds = []
+        previous = None
         for stream in streams:
-            try:
-                kinds.append(is_struct(zlib.decompress(mm[stream[0]:stream[1]])))
-            except zlib.error:
-                kinds.append(False)
+            continues = (previous is not None and previous[0] == 65536
+                         and stream[0] == ((previous[1] + 15) // 16 * 16))
+            kinds.append(not continues)
+            previous = (stream[2], stream[1])
+    else:
+        with args.archive.open("rb") as handle:
+            mm = mmap.mmap(handle.fileno(), 0, access=mmap.ACCESS_READ)
+            kinds = []
+            for stream in streams:
+                try:
+                    kinds.append(is_struct(zlib.decompress(mm[stream[0]:stream[1]])))
+                except zlib.error:
+                    kinds.append(False)
+            mm.close()
 
     rows = []
     verified = 0
@@ -77,15 +91,21 @@ def main():
         high = bisect.bisect_left(starts, limit)
         window = list(range(low, high))
         pairs = []
-        index = 0
-        while index < len(window):
-            stream_index = window[index]
-            if kinds[stream_index] and index + 1 < len(window):
-                data_index = window[index + 1]
-                pairs.append((stream_index, data_index))
-                index += 2
-            else:
-                index += 1
+        if args.unit == "chains":
+            # One entry per chain start; attached continuations belong to it.
+            for stream_index in window:
+                if kinds[stream_index]:
+                    pairs.append((stream_index, None))
+        else:
+            index = 0
+            while index < len(window):
+                stream_index = window[index]
+                if kinds[stream_index] and index + 1 < len(window):
+                    data_index = window[index + 1]
+                    pairs.append((stream_index, data_index))
+                    index += 2
+                else:
+                    index += 1
         if abs(len(pairs) - count) > args.tolerance:
             continue
         verified += 1
@@ -97,8 +117,8 @@ def main():
                 "delta": len(pairs) - count,
                 "struct_stream": f"0x{streams[head][0]:x}",
                 "struct_bytes": streams[head][2],
-                "data_stream": f"0x{streams[data][0]:x}",
-                "data_decoded": streams[data][2],
+                "data_stream": "" if data is None else f"0x{streams[data][0]:x}",
+                "data_decoded": "" if data is None else streams[data][2],
             })
 
     print(f"{args.archive.name}: {verified} of {len(packs)} packs verified, "
