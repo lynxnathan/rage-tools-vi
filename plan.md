@@ -75,6 +75,10 @@ Last updated: 2026-11-21.
   no weak structure, no cipher tables in the shipped binaries). Reopen when a key
   or a second sample appears; the crib is the content-dependent first block.
 
+- [x] Rejected: naming bones by geometry. `tools/bone_geometry_names.py`
+  leave-one-out scores 0 % — the stored geometry is bone-local, so mirrored bones
+  are identical and neighbours are always the opposite side. Needs rig-space
+  transforms, not more vocabulary.
 - [ ] Name the remaining ped-rig bone hashes. A corpus sweep
   (`tools/rig_name_corpus_probe.py`) adds 4 candidates, but they need an
   independent predictor (mirror offset, table position) before promotion; the

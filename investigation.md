@@ -6084,3 +6084,42 @@ did not fit.
 Practical consequence: for `shaders.rpf` the unit is the archive, not the entry.
 Anything that needs per-entry shader attribution has to come from the masked front
 region or from the payload's own structure, not from the stream layout.
+
+## Journal: geometry cannot name bones — 0 % in leave-one-out (2026-11-22)
+
+Vocabulary naming stalled at 99 of 612, so the next idea was independent of
+strings: a bone's position inside its rig should identify it. Rigs in a family are
+the same skeleton at different scales, so a named bone in one member should predict
+the bone at the same normalised position in another.
+
+`tools/bone_geometry_names.py` implements it and includes `--leave-one-out`, which
+hides each named bone, predicts it from the rest, and scores the answer. The score
+is decisive:
+
+```
+leave-one-out: 0 correct, 78 wrong (0 % precision)
+  wanted skel_l_calf        predicted skel_r_calf        d=0.000
+  wanted mh_l_testicle      predicted mh_r_testicle      d=0.019
+  wanted skel_l_finger00    predicted skel_r_finger00    d=0.006
+```
+
+The nearest neighbour is *always the opposite side at distance 0*, which is the
+tell: the coordinates in `script-bone-geometry.tsv` are **bone-local** — the
+centroid and extents of each bone's own point cloud (`cx`, `cy`, `cz` around
+±0.004), not the bone's place in the rig. Mirrored bones have mirrored local
+shapes and therefore identical centroids, so the method cannot distinguish left
+from right, let alone tell a calf from a forearm.
+
+Two consequences.
+
+1. The 57 "candidates" the tool produced before validation are discarded and the
+   file is not published. A method that scores 0 % must not emit names, and the
+   earlier draft — which used *untrusted* templates — had produced 89 copies of
+   `capitolo28` and 65 of `vmg4`, the two candidates known to be JOAAT collisions.
+   Garbage seeding garbage is exactly what the confidence ladder exists to prevent.
+2. Naming by geometry needs **rig-space** positions. Those would have to come from
+   the skeleton's parent/child transform chain, which the flat bone table does not
+   carry; the point arrays store edge pairs in bone space as well.
+
+The method is kept in the repository with its validation, because the negative is
+the result: no candidate list, and a clear statement of what data would be needed.
