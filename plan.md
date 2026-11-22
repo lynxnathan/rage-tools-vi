@@ -67,8 +67,12 @@ Last updated: 2026-11-21.
 - [ ] **Multi-mip texture tail.** No descriptor with `+0x3e >= 2` exists in the
   corpus, so tail placement, mip order, and multi-mip pitch stay open. Reopen
   with a multi-mip dictionary. See `handoff/texture-mip-tail-blocker.md`.
-- [ ] **Name the remaining 513 bone hashes.** 99 verified; root `0x48dcbb01`
-  is now **fully decoded (34/34)**, see `handoff/script-skeleton-0x48dcbb01.tsv`
+- [ ] **Name the remaining 183 ped-rig hashes** (99 of 282 done; root
+  `0x48dcbb01` fully decoded at 34/34). Mirror offsets (+25/+17/+12) plus
+  neighbouring-muscle vocabulary at exact indices is the sharpest query left.
+- [ ] **Crack the 330-hash unnamed universe** (31 roots). It is disjoint from the
+  ped namespace and resists prefix sweeps, `part_position` forms and numeric
+  patterns; needs a different vocabulary source.
   and three families (`skel_`, `mh_`, `rb_`), with a constant per-root `l`/`r`
   index offset (+25, +17, +12). Grow the anatomy/rig vocabulary, use the mirror
   offset to annotate unknown mirrors, and validate against the ordered families.

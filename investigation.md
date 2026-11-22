@@ -4480,3 +4480,31 @@ foot + forearm + hand. Artifact:
 Totals now: **99 of 612 hashes**, families `mh_` 43 / `skel_` 36 / `rb_` 20,
 and 13 roots carry names (285+ bone slots). `00` was missing from the suffix set;
 with it, `skel_` gained the finger-chain roots.
+
+### Two disjoint hash universes; 99 of 282 ped hashes named
+
+Splitting the 612 table hashes by whether their root carries any named bone:
+
+| Universe | Roots | Hashes | Named |
+| --- | ---: | ---: | ---: |
+| ped / rig (`skel_`, `mh_`, `rb_`) | 13 | 282 | **99 (35 %)** |
+| unnamed | 31 | 330 | 0 |
+
+The two sets are **completely disjoint** — zero shared hashes — and both have
+uniform low/high nibble distributions, so both are name hashes rather than
+index-derived values.
+
+The unnamed universe resists every convention tried so far, all against the 330
+hashes specifically:
+
+- a prefix sweep over ~150 body, clothing, vehicle and weapon prefixes
+  (`face_`, `tail_`, `hoof_`, `chassis_`, `door_`, `wheel_`, `turret_`, …) with
+  side and suffix combinations: **0 new names**;
+- the vehicle word-order form `part_position` (`door_lf`, `wheel_rr`,
+  `bonnet_f`, with `.`/`-`/` `/`/` separators and the position first or last):
+  **0**;
+- numeric and simple patterns (`0…19999`, `bone123`, `idx12`, `n7`): **0**.
+
+So the remaining 330 are a namespace whose vocabulary is not English anatomy and
+not the obvious vehicle-part set. The ped universe, by contrast, is 35 % named
+and has one fully decoded skeleton.
