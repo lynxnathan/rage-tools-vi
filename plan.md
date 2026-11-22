@@ -38,15 +38,13 @@ Last updated: 2026-11-21.
   the unnamed small-prop families.
 - **Browser:** `output/extraction-index-pilot/index.html` rebuilt with seven
   verified archives.
-- **Disk:** Mammoth at 94 % (245 GB free) after the cutscene extraction.
+- **Disk:** Mammoth at 95 % (188 GB free) after the 47.7 GB cutscene decode.
 
 ## Now
 
 - [ ] Name the remaining ped-rig bone hashes (99 of 282 done).
 - [ ] Name the remaining weight hashes (21 of 252 done).
 - [ ] Open the 330-hash universe with a new vocabulary source.
-- [ ] Emit entry manifests for the mixed packs (68 `core_bvh4`, 16 `navmeshes`,
-  23 `data`, 2 `textures`).
 - [ ] Rehash all of `levels`.
 
 ## Next
