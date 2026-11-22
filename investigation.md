@@ -5860,3 +5860,55 @@ words.
 Recorded so the next attempt does not re-run the sweep: the corpus route is
 exhausted for types, and the same negative applies to the 14,138 unresolved PSIN
 keys with the same vocabulary.
+
+## Journal: the engine's own name table, and what it validates (2026-11-22)
+
+The corpus vocabulary was exhausted for types, so the next step was a different
+namespace rather than more words. CodeWalker publishes the game's metadata name
+table — 20,300 structure, member and enum names as a C# enum — and
+`tools/fetch_vocab.py` reduces it to one name per line in `cache/vocab/`
+(untracked). Those names are hashed exact-case *and* lowercase, because metadata
+names keep their case while archive identifiers are lowercase.
+
+The registry is now 36,952 names: 36,305 `meta`, 543 `corpus`, 64 `curated`,
+39 `grammar`, 1 `candidate`.
+
+### Direct hits
+
+Against 49,919 type-ish, property and PSIN hashes the table returns **57** hits
+where chance predicts 0.47: `ammo`, `back`, `blendduration`, `bonename`,
+`bonnet`, `bumper_f`, `bumper_r`, `camera`, `campos`, `category`, `cost`,
+`decay`, `default`, `exhaust`, `face`, `faction`, `false`, `female`, `flags` —
+car-part and character-attribute vocabulary, which is what the script schema
+turned out to be.
+
+Annotated values across the handoff tables moved from 31,896 to 32,005. Small in
+bulk, but the registry now answers 36,952 hashes instead of 690.
+
+### The validation that matters
+
+267 hashes are named by both the engine table and our corpus sweep. **261 of them
+agree (98 %)**, and the agreement is exact apart from case (`Position` /
+`position`, `CamPos` / `campos`). That is independent confirmation of the corpus
+method from a source that shares no code and no vocabulary with it.
+
+The remaining 6 are not errors in either direction — they are **JOAAT
+collisions** between two real strings:
+
+| hash | name A | name B |
+| --- | --- | --- |
+| `0xbbb029a6` | `ABON_YEA` | `CVA_WHEEL_REAR_LEFT` |
+| `0x68060fba` | `PowerForMaxAdjustmentNetwork` | `destroySuppressor` |
+| `0x0a9c7d61` | `CSituationalClipSetStreamer__Tunables__FleeReactions` | `iVectorDefault` |
+
+Nine hashes are ambiguous this way. The registry now carries an `ambiguous`
+column and `--lookup` says so, instead of presenting the higher-ranked spelling
+as the answer. A 32-bit hash cannot distinguish them; only context can.
+
+### Type hashes are still unnamed
+
+The engine table resolves 4 of the 234,720 `id1` values in the `bvh4`
+descriptors, and all four look like collisions (`MenuItems`,
+`VFXGROUP_SAND_UNDERWATER`). So the `root_type`/`type_tag` namespace is neither
+metadata names nor model strings — it is a third vocabulary, most likely the
+script/engine class names that only appear in decompiled code.

@@ -71,6 +71,19 @@ python3 tools/psin_dump.py --record 110
 python3 tools/psin_dump.py --property position
 ```
 
+The registry also carries the engine's own metadata names (20,300 of them, from
+CodeWalker's public `MetaNames` table) as a `meta` confidence level above
+`corpus`:
+
+```bash
+python3 tools/fetch_vocab.py     # downloads it into cache/vocab/ (untracked)
+python3 tools/name_registry.py --build
+```
+
+261 of the 267 hashes named by both that table and our corpus sweep agree
+(98 %). Where two real strings share a 32-bit JOAAT the row is marked
+`ambiguous` and `--lookup` says so, rather than picking one.
+
 To annotate every handoff table at once (hash columns are detected by their
 values, not their names):
 

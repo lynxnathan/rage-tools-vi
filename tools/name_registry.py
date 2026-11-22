@@ -39,7 +39,24 @@ SOURCES = [
     ("handoff/script-bone-template-families.tsv", "roots", "family_id", "rig", "corpus", None),
 ]
 
-RANK = {"curated": 3, "grammar": 2, "corpus": 1, "candidate": 0}
+RANK = {"curated": 4, "meta": 3, "grammar": 2, "corpus": 1, "candidate": 0}
+
+# Plain name lists, hashed rather than looked up. The engine's metadata table is
+# exact case; the archive's identifier convention is lowercase, so both forms
+# are registered.
+NAME_LISTS = [("cache/vocab/codewalker-names.txt", "meta", "meta")]
+
+
+def joaat(text):
+    value = 0
+    for byte in text.encode():
+        value = (value + byte) & 0xFFFFFFFF
+        value = (value + (value << 10)) & 0xFFFFFFFF
+        value ^= value >> 6
+    value = (value + (value << 3)) & 0xFFFFFFFF
+    value ^= value >> 11
+    value = (value + (value << 15)) & 0xFFFFFFFF
+    return value
 
 
 def build(path=REGISTRY):
@@ -63,20 +80,42 @@ def build(path=REGISTRY):
                 entry["seen"].append((confidence, name, Path(source).name))
                 if entry["best"] is None or RANK[confidence] > RANK[entry["best"][0]]:
                     entry["best"] = (confidence, name, Path(source).name)
+    for source, kind, confidence in NAME_LISTS:
+        handle = Path(source)
+        if not handle.is_file():
+            continue
+        for line in handle.read_text(errors="ignore").splitlines():
+            name = line.strip()
+            if not name or name.startswith("#"):
+                continue
+            for form in {name, name.lower()}:
+                value = joaat(form)
+                entry = entries.setdefault(value, {"kind": kind, "best": None, "seen": []})
+                entry["seen"].append((confidence, name, handle.name))
+                if entry["best"] is None or RANK[confidence] > RANK[entry["best"][0]]:
+                    entry["best"] = (confidence, name, handle.name)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w") as out:
-        out.write("hash\tname\tkind\tconfidence\tsource\talso_known_as\n")
+        out.write("hash\tname\tkind\tconfidence\tsource\talso_known_as\tambiguous\n")
         for value in sorted(entries):
             entry = entries[value]
             confidence, name, source = entry["best"]
-            others = sorted({other for _, other, _ in entry["seen"] if other != name})
+            spellings = {other.lower() for _, other, _ in entry["seen"]}
+            others = sorted({other for _, other, _ in entry["seen"]
+                             if other.lower() != name.lower()})
+            # Two different real strings can share a 32-bit JOAAT. Say so instead
+            # of presenting the higher-ranked one as the answer.
+            ambiguous = 1 if len(spellings) > 1 else 0
             out.write(f"0x{value:08x}\t{name}\t{entry['kind']}\t{confidence}\t"
-                      f"{source}\t{','.join(others)}\n")
+                      f"{source}\t{','.join(others)}\t{ambiguous}\n")
     counts = {}
     for entry in entries.values():
         counts[entry["best"][0]] = counts.get(entry["best"][0], 0) + 1
+    ambiguous = sum(1 for entry in entries.values()
+                    if len({other.lower() for _, other, _ in entry["seen"]}) > 1)
     print(f"registry: {len(entries)} names -> {path}")
     print("by confidence:", dict(sorted(counts.items(), key=lambda kv: -kv[1])))
+    print(f"ambiguous (two real names, one JOAAT): {ambiguous}")
     return 0
 
 
@@ -96,6 +135,8 @@ def lookup(values, path=REGISTRY):
         if row:
             found += 1
             extra = f"  (also {row['also_known_as']})" if row["also_known_as"] else ""
+            if row.get("ambiguous") == "1":
+                extra += "  [ambiguous: JOAAT collision]"
             print(f"0x{key:08x}  {row['name']:32s} {row['kind']:12s} "
                   f"{row['confidence']:9s} {row['source']}{extra}")
         else:

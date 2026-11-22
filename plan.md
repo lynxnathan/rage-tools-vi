@@ -78,7 +78,9 @@ Last updated: 2026-11-21.
   false positives); the cheap vocabulary is now exhausted — needs another source.
 - [ ] Open the 330-hash universe with a new vocabulary source. The corpus route
   is exhausted for *types*: 174k tokens against 35,106 type hashes returns 0 hits
-  (1.42 expected by chance), so a RAGE type-name list is needed, not more words.
+  (1.42 expected by chance). The engine metadata table (CodeWalker, 20,300
+  names) resolves 57 properties but only 4 of 234,720 `id1` values, so types are
+  a third vocabulary — most likely script class names.
 - [ ] Rehash all of `levels`.
 
 ## Next
