@@ -5387,3 +5387,42 @@ the hash test. The remaining blocker is the same wall: the value/string store
 (LSNS) and the 331 KB blob are genuinely encrypted, and no cipher tables ship in
 the local binaries. Decompilation stays gated; the schema is fully recoverable
 today.
+
+## Journal: corpus-driven rig naming, and what corroborates a hit (2026-11-22)
+
+`tools/rig_name_corpus_probe.py` inverts the earlier approach. Instead of
+searching a curated anatomy list through a fixed grammar, it walks every token
+in the harvested corpus (173,999 tokens from `cache/name-corpus-all.txt`,
+`bone_names.txt`, `vehicle_bone_names.txt`) and tries the engine's naming shapes
+around it, cheapest first: the bare token, then `prefix+token`, `side+token`,
+`token+suffix` for suffixes 0..32 in both plain and zero-padded form.
+
+Against 616 targets (612 bone hashes, 4 weight hashes) it returns **12 hits**,
+of which 8 were already known and **4 are new**:
+
+| hash | name | shape | roots / indices |
+| --- | --- | --- | --- |
+| `0xba986368` | `veh_deadicated` | prefix+token | 3 roots, indices 44/53/127 |
+| `0x6686685c` | `skel_root` | prefix+token | weight table only |
+| `0x5f36eb8b` | `vmg4` | token+suffix | 9 roots, indices 33–57 |
+| `0x8183951c` | `capitolo28` | token+suffix | 8 roots, indices 16–52 |
+
+**The method is corroborated, the new hits are not yet names.** The eight
+already-known results include `skel_l_calf`/`skel_r_calf` and
+`skel_l_foot`/`skel_r_foot`, and each pair sits at a **mirror offset of +17** in
+the one root that carries both — the same law (±25/±17/±12) that the rig work
+already established from geometry. That is an independent prediction, so those
+names are confirmed twice over.
+
+The four new ones have no such corroboration. The collision budget explains why
+they need one: 9.1 M generated hashes against 616 targets is
+`9.1e6 × 616 / 2^32 ≈ 1.3` expected false positives, so finding one or two
+accidental matches is the expected outcome, not a surprise. `skel_root` landing
+in the *weight* table rather than a skeleton root, and `capitolo28` spread over
+eight unrelated rigs, both look like that noise. They are recorded as
+candidates in `handoff/rig-names-corpus.tsv` and are **not** merged into
+`handoff/bone-hash-names.tsv`.
+
+This is the same standard the archive work uses: a name is confirmed when
+something independent of the hash predicts it — a mirror offset, a table
+position, a parent-child relation — not when a dictionary happens to contain it.

@@ -57,7 +57,10 @@ Last updated: 2026-11-21.
   no weak structure, no cipher tables in the shipped binaries). Reopen when a key
   or a second sample appears; the crib is the content-dependent first block.
 
-- [ ] Name the remaining ped-rig bone hashes (99 of 282 done).
+- [ ] Name the remaining ped-rig bone hashes. A corpus sweep
+  (`tools/rig_name_corpus_probe.py`) adds 4 candidates, but they need an
+  independent predictor (mirror offset, table position) before promotion; the
+  collision budget allows ~1.3 false hits per sweep of this size.
 - [ ] Name the remaining weight hashes (21 of 252 done).
 - [ ] Open the 330-hash universe with a new vocabulary source.
 - [ ] Rehash all of `levels`.
