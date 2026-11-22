@@ -13062,7 +13062,7 @@ hash	name	kind	confidence	source	also_known_as	ambiguous
 0x59f716bf	bApplyVehicleSlowdown	meta	meta	codewalker-names.txt		0
 0x59fc00ec	MaxVelocityToEnterBike	meta	meta	codewalker-names.txt		0
 0x59fd4591	ExplosionTime	meta	meta	codewalker-names.txt		0
-0x59fe04e9	WeaponGroup	meta	meta	codewalker-names.txt		0
+0x59fe04e9	WeaponGroup	property/key	meta	codewalker-names.txt		0
 0x5a0474f1	WeightIndex	meta	meta	codewalker-names.txt		0
 0x5a055497	set_int_mod_trophy_score	meta	meta	codewalker-names.txt		0
 0x5a06121d	VehicleKeyholeShapeOuterRadius_Base	meta	meta	codewalker-names.txt		0
