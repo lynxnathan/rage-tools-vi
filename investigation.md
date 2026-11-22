@@ -4776,3 +4776,32 @@ Two process notes worth keeping:
 - **Slices in parallel.** 20 slices at `-P 6` finish in **7–8 s per slice batch**
   (8.5 min total) versus 60 s per serial slice; the idle drive rewards queue
   depth.
+
+## Journal: payload-derived entry manifests spread to textures (2026-11-21)
+
+`tools/pair_entry_manifest.py` walks each pack's payload, pairs a struct half
+with its data half, and emits entries **only** for packs whose pair count is
+within tolerance of the declared N. New artifacts:
+
+| Archive | Packs verified | Entries | Delta |
+| --- | ---: | ---: | --- |
+| `textures` | **19 of 21** | **1,349** | 0 (all) |
+| `navmeshes` | 1 of 29 | 2,447 | −2 |
+
+`textures` is the second archive with a payload-derived entry manifest
+(`handoff/textures-entries.tsv`), covering 1,349 of its 1,367 declared entries.
+Struct sizes in that archive: 400 B (1,313 entries), 256 (7), 704 (2), 1,184 (1).
+
+### The struct test had to drop the in-body rule
+
+`navmeshes` structs use tag-5 pointers whose targets lie **outside** the decoded
+stream: a 1,840-byte example starts `0x53149a19` (tag 5, target 0x3149a19, far
+beyond 1,840) and another holds `0x5001f130` (target 0x1f130). Requiring
+`target < len(body)` — which is right for the `core_bvh4` descriptor, whose
+pointers land inside the 208 bytes — rejected 2,446 of 2,447 navmeshes structs
+and produced 0 verified packs. With alignment alone as the filter, the pack at
+`0x2ed5b000` verifies with 2,447 entries against N = 2,449.
+
+Consequence: the corpus-wide struct-share table measured the stricter rule, so
+its shares are **lower bounds** for archives whose pointers leave their stream
+(`navmeshes` especially). A re-sweep with the relaxed rule is a separate pass.

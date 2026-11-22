@@ -33,6 +33,8 @@ Last updated: 2026-11-21.
 ## Now
 
 - [ ] Cover `shared_minigame000_bvh4` with the same descriptor harvest.
+- [ ] Re-sweep the corpus struct map with the relaxed pointer test (current
+  shares are lower bounds for archives whose pointers leave their stream).
 - [ ] Name the remaining weight hashes (21 of 252 done).
 - [ ] Name the remaining ped-rig bone hashes.
 - [ ] Open the unnamed hash universe with a new name source.
