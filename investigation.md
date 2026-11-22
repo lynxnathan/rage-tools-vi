@@ -4663,3 +4663,25 @@ Two results:
   start `0x100`, and only the high half varies. That matches the decoded
   768-byte entry (`{0x100, 0x200}`) and supports "two payload offsets, second
   section start" over any span or workspace reading.
+
+### The descriptor ids behave as content identity
+
+From the inventory:
+
+| Measurement | Value |
+| --- | --- |
+| Distinct `(id0, id1)` pairs | 235,533 of 269,106 descriptors |
+| Duplicate groups | 2,873 |
+| Descriptors in duplicate groups | 36,446 |
+| Largest group | **3,198 copies** of `0xf84f3644 / 0x002effba` |
+| Duplicate groups whose allocated sizes differ | **0** |
+
+Every duplicate group has one allocated size, so the pair identifies *content*,
+and that content repeats up to 3,198 times inside one archive.
+
+The pair is not two hashes of one name: testing 310,756 plausible corpus names
+under `joaat/crc32`, `crc32/joaat`, `joaat(name)/joaat(upper)` and
+`joaat(name)/joaat(lower)` against all 235,533 pairs gave **zero** hits. Combined
+with the earlier single-hash results, the ids are content identifiers whose
+generator is still unknown — they are not JOAAT of any name in the corpus, in
+either element.
