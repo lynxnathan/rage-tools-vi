@@ -77,6 +77,7 @@ extra_javascript:
 nav:
   - Home: index.md
   - Living project: living.md
+  - What we found: findings.md
   - Architecture:
       - System overview: architecture/overview.md
       - Rust CLI: architecture/cli.md
@@ -92,6 +93,7 @@ nav:
       - Large archives: extraction/large-archives.md
       - Full pipeline: extraction/pipeline.md
       - Audio (AWC/XMA2): extraction/audio.md
+      - Entry manifests: extraction/entries.md
       - Packs signatures: extraction/packs-signatures.md
       - BVH4 entries: extraction/bvh4-entries.md
       - Serialized structs: extraction/structs.md

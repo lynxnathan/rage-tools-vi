@@ -3,20 +3,41 @@
 `audio.rpf` contains **6,625 `ADAT` AWC containers / 23.51 GB**. The GTA VI
 container is a new layout, not the GTA V AWC format parsed by vgmstream.
 
-## Container
+## Container variants
 
-| Offset | Field |
-| --- | --- |
-| `0x00` | `ADAT` magic |
-| `0x04` | `u16` version = 1 |
-| `0x06` | `u16` flags = `0xff21` |
-| `0x08` | `u16` stream count |
-| `0x0c` | `u32` data offset |
-| `0x10` | `u16[streams]` stream chunk indexes |
-| `0x50` | `u64` chunk table, ending at `data_offset` |
+Three flag families are known, and the payload layout differs between them:
 
-Chunk packing is `type:8 / size:28 / offset:28`. Data chunks are multiples of
-2,048 bytes.
+| Flags | `data_offset` | Per-stream header | Chunk table | Status |
+| --- | --- | ---: | --- | --- |
+| `0xff21` | `20 + 42·n` | 42 B | at `0x50`, 8-byte records | decoded |
+| `0xff02` | `16 + 60·n` | 60 B | at `0x10 + 4·n` | **decoded** |
+| `0xff25` | compact | — | ends at `data_offset` | open |
+| `0xff61` | — | — | — | decoded (rare) |
+
+A chunk record is a little-endian `u64` packing `offset:28 | size:28 | type:8`,
+so the type byte is the record's high byte. `0xff02` streams own exactly seven
+chunks, in order `0x36 0x55 0x5c 0x76 0xa3 0xb2 0xbd`.
+
+| Field | `0xff21` | `0xff02` |
+| --- | --- | --- |
+| stream index at `+0x10` | `u16[n]`, monotonic | none; `4·n` bytes of per-stream data |
+| `data_offset` (6 streams) | `0x110` | `0x82` |
+| `0x76` rate | low `u16` at `+0x08` (`0xBB80` = 48 kHz) | same |
+
+The `0x76` descriptor is 32 bytes: sample count at `+0x00`/`+0x0c`, rate as the
+low `u16` at `+0x08`, codec at `+0x1c`, codec sub-ID at `+0x1d`. Reading the rate
+as a `u32` yields nonsense on both variants.
+
+## `story000` cutscene audio
+
+`story000`'s 9.56 GB unclassified span is a second audio archive: 63,853 AWC
+containers, 98.4 % `0xff02`, all codec `0x0b` (Opus) at 48 kHz. Decoding it
+produced **196,350 streams / 148.3 hours / 47.7 GB of WAV** in
+`output/extracted/story000-opus/`. Opus packets are framed `[u16 size][packet]`
+inside `0x800`-byte blocks, the same as `audio.rpf`.
+
+Tools: `tools/awc_framing_ff02.py` (variant census) and
+`tools/extract_awc_ff02.py` (WAV export with manifest and SHA-256).
 
 The `0x76` descriptor is 32 bytes: sample count at `+0x00`/`+0x0c`, sample rate
 at `+0x08`, codec at `+0x1c`, and codec sub-ID at `+0x1d`.

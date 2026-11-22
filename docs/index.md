@@ -9,14 +9,19 @@ goal of enumerating every stored entry and decoding the bytes behind it.
     the repository root. The diagrams below are the UML/system view that ties those
     files together.
 
-## First milestone
+## First milestone — met
 
 > One decoded record independently predicts the exact byte range of a payload
 > that has already been checksum-verified.
 
-The project is not there yet. The current verified blocks are the RPF9 byte
-partitioning, the 42-stream script object, the typed array header, and the
-class-0 bone table.
+The `core_bvh4` descriptor is that record. A decoded 208-byte descriptor carries
+the entry's exact payload size at `+0xa0`, pairs with the immediately following
+stream, and that stream's decoded bytes beyond the declared size are zero —
+verified on 260 re-decoded samples. Applied across the archive, it yields
+**294,614 entries** whose boundaries are payload-derived and whose count matches
+the declared index in 1,214 of 1,282 packs.
+
+The full write-up is [What we found](findings.md).
 
 ## System at a glance
 
@@ -66,18 +71,21 @@ flowchart LR
 
 | Area | Value | State |
 | --- | ---: | --- |
+| Corpus index | 22 archives · 4,415,850 ranges · 365.0 GB decoded | tiles exactly |
+| Bulk extraction | 2,190,635 zlib ranges | SHA-256 verified |
+| Entry manifests | 328,481 entries · 4 archives | self-consistency PASS |
+| `core_bvh4` descriptors | 269,106 rows | sizes + orthonormal basis |
+| Unclassified layer | 38.1 GB audio · 13.4 GB video | closed: all media |
+| Cutscene audio | 196,350 Opus streams · 148.3 hours | decoded, sampled clean |
 | Script object | 2,702,384 bytes, 42 zlib streams | checksum verified |
 | Object records | 30,683 records, 483 roots | graph enumerated |
-| Named roots | 306 / 483 | JOAAT matched |
-| Data streams | 28,509 verified streams | manifest complete |
-| Typed arrays | 7,960 arrays | complete inventory; weights sum to 1.0 |
-| Class-0 bones | 3,043 bones / 44 tables | flattened |
-| Skeleton families | 16 | near-identical hash sets |
-| Vehicle roots | 385 / 306 named | 244 with mover curves |
-| Vehicle mover curves | 1,935 / 244 roots | 36 channels; 6 named; units open |
-| Bone points/edges | 15,732 entries | exported |
+| Named script roots | 306 / 483 | JOAAT matched |
+| Bone-table hashes | 99 / 612 named | JOAAT of `skel_`/`mh_`/`rb_` |
+| Weight hashes | 21 / 252 named | same namespace |
+| Decoded rig | 34 / 34 bones | `handoff/script-skeleton-0x48dcbb01.tsv` |
+| Skeleton families | 16 | readings: hand, genital, large animal, props |
 | Textures | 788 textures / 306,008,064 bytes | descriptor-valid |
-| Front A | size model only | metadata cipher open |
+| Front A / Front B / trailer | size laws only | masked; cipher open |
 
 ## Two object families
 
@@ -132,8 +140,12 @@ classDiagram
   Report structs, command dispatch, and extraction sequence.
 - :material-graph: **[Object graph](architecture/object-graph.md)**
   Records, pointers, typed arrays, and the class-0 bone hierarchy.
+- :material-magnify: **[What we found](findings.md)**
+  The verified results in one page, with proof pointers.
 - :material-archive: **[RPF9 format](rpf9/format.md)**
   Header words, spans, zlib chains, and the metadata wall.
+- :material-format-list-bulleted: **[Entry manifests](extraction/entries.md)**
+  Payload-derived entries, units, coverage, and verification.
 - :material-database: **[data.rpf](data/data-rpf.md)**
   Corpus layout, localization, textures, and named resources.
 - :material-account-group: **[Collaboration](workstreams/collaboration.md)**
