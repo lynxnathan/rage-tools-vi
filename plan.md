@@ -61,7 +61,9 @@ Last updated: 2026-11-21.
   (`tools/rig_name_corpus_probe.py`) adds 4 candidates, but they need an
   independent predictor (mirror offset, table position) before promotion; the
   collision budget allows ~1.3 false hits per sweep of this size.
-- [ ] Name the remaining weight hashes (21 of 252 done).
+- [ ] Name the remaining weight hashes (21 of 252 done). A 174k-token corpus
+  sweep over the 231 unnamed hashes yields one candidate (`ph_hat`, 0.22 expected
+  false positives); the cheap vocabulary is now exhausted — needs another source.
 - [ ] Open the 330-hash universe with a new vocabulary source.
 - [ ] Rehash all of `levels`.
 

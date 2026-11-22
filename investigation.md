@@ -5547,3 +5547,37 @@ hashes. No table hash matches JOAAT, CRC32, FNV-1a, FNV-1, djb2, or sdbm over
 `tools/bone_table.py` flattens the hierarchy and writes
 `handoff/script-bones.tsv` with root, table, bone hash, target, point count, and
 first point.
+
+## Journal: corpus sweep of the 231 unnamed weight hashes (2026-11-22)
+
+The `0x8f18aff0` pair arrays are `(u32 hash, f32)` per entry — skinning
+influences — and their namespace holds 252 distinct hashes, 21 of which already
+carry names. The remaining 231 were run through the same corpus probe as the rig
+hashes (`tools/rig_name_corpus_probe.py`), over 173,999 tokens and 24 naming
+shapes each:
+
+| Result | Count |
+| --- | ---: |
+| hashes tested | 231 |
+| hits | **1** |
+| expected false positives | 0.22 |
+
+The hit is `0x2875f912` = `ph_hat` (shape `prefix+token`). Its structure is
+independent of the hash: it appears in exactly two roots, and in both of them it
+sits at **pair index 0 for every one of its 210 pairs**, with no other named
+weight present in those roots. That is the signature of a mesh whose vertices
+are primarily weighted to a single bone, which is what a dedicated prop mesh
+looks like, and it agrees with the `ph_` prefix already present in the probe's
+namespace list.
+
+It is still a **candidate**, not a curated name. One hit against a 0.22
+false-positive budget is a ratio of roughly 5:1, which is good evidence and not
+proof; a second, independent prediction would settle it — for example the same
+hash appearing as a bone-table entry, or a `ph_` family growing beyond one
+member. Recorded in `handoff/weight-hash-candidates.tsv` with its evidence, and
+kept out of `handoff/weight-hash-names.tsv` for the same reason the four rig
+candidates were kept out.
+
+The cheap sweep is now exhausted: 174k tokens × 24 shapes covers the plausible
+single-word names, and it produced one hit in 231 targets. Further weight naming
+needs a different vocabulary source, not a wider search.
