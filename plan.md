@@ -31,6 +31,10 @@ Last updated: 2026-11-21.
   archive tested; leaf extents published; parents still need a row model.
 - **Metadata:** header census complete (4,373 headers); Front A/Front B/trailer
   remain masked; size laws characterised.
+- **Script:** `script.rpf` records are a section sequence
+  (`PSIN`/`LSCH`/`LENM`/`LSNS`/`LGID`/`LRSC`/`CHKS`), not YSC; PSIN carries a
+  four-block `(hash, offset)` directory. Decompilation research done, pipeline
+  designed.
 - **Naming:** all identifiers are `JOAAT(lowercase name)`. 99 of 612 bone-table
   hashes and 21 of 252 weight hashes resolved across `skel_`/`mh_`/`rb_`
   families; one rig fully decoded (34/34); the 16 skeleton families carry
@@ -41,6 +45,11 @@ Last updated: 2026-11-21.
 - **Disk:** Mammoth at 95 % (188 GB free) after the 47.7 GB cutscene decode.
 
 ## Now
+
+- [ ] Build the script decomp pipeline: decode the PSIN `(hash, offset)`
+  directory across all 1,012 records, identify the code block, then test the YSC
+  stack-machine model (131 public opcodes) on it. Decompilation only — no
+  recompiler; the IR must keep offsets so edits can be reinjected later.
 
 - [ ] Name the remaining ped-rig bone hashes (99 of 282 done).
 - [ ] Name the remaining weight hashes (21 of 252 done).

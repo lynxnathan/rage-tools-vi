@@ -5132,3 +5132,77 @@ with `declared_ok = 0` for exactly that reason.
 Also verified the audio output: 250 randomly chosen WAVs (64,085,240 bytes)
 re-hashed against `output/extracted/story000-opus/manifest.tsv` — **0 missing, 0
 mismatches**.
+
+## Journal: script decompilation research and the GTA VI hook (2026-11-21)
+
+Research pass on how RAGE script decompilation was done for the previous titles,
+to design a decomp pipeline for GTA VI's `script.rpf`. **Decompilation only** —
+no recompilation; the goal is a source-like IR that can later be modified and
+injected back.
+
+### How GTA V / RDR2 did it
+
+- **Container.** YSC: `0x80`-byte header, then code and string *pages* of at most
+  `0x4000` bytes (`pageCount = (size + 0x3FFF) >> 14`). Header fields include
+  `CodeSize` (`+0x1c`), `ParameterCount`/`StaticCount`/`GlobalCount`/
+  `NativesCount` (`+0x20..+0x2c`), statics/globals/natives pointers (`+0x30`,
+  `+0x38`, `+0x40`), `ScriptNameHash` (`+0x58`), `StringSize` (`+0x70`).
+- **Pointer convention.** Every pointer is stored as `0x50XXXXXX` and masked with
+  `0xFFFFFF` to get a file offset — the *same* tagged-pointer scheme decoded in
+  the RPF9 struct headers.
+- **Code model.** A 131-opcode **stack machine** with a native table: `NATIVE`
+  encodes argument count in 6 bits and return count in 2 bits plus a `u16` native
+  index; `ENTER`/`LEAVE` delimit internal functions; `PUSH_CONST_*`, `LOAD`/
+  `STORE`, `ARRAY_*`, `GET_LOCAL`/`GET_STATIC`/`GET_GLOBAL`, `JUMP*`, `SWITCH`.
+- **RDR2** is an adaptation of the same container, and its tools accept it.
+- **Tools of record:** `maybegreat48/GTA-V-Script-Decompiler` (C#, GTA V PC and
+  RDR2), `NativeFunction/RASM` (assembler *and* disassembler: GTA IV SCO, RDR
+  SCO/XSC/CSC, GTA V XSC/CSC/YSC, RDR2 XSC/CSC/YSC), `yubie-re/ysc-ida` and
+  `ysc-binja` (disassembler loaders), plus public decompiled-script repos used as
+  reference corpora.
+
+### What GTA VI actually ships
+
+`script.rpf` does **not** contain YSC. Its records are a section sequence parsed
+by `src/main.rs`: `[4-byte ASCII tag][u32 BE size][payload]`, concatenated —
+`PSIN`, `LSCH`, `LENM`, `LSNS`, `LGID`, `LRSC`, `CHKS`. For the record at
+`0xe7000`: PSIN 86,016 bytes, LSCH 552, LENM 128, LSNS 12,724 (encrypted), LGID 8,
+LRSC 88, CHKS 20.
+
+The PSIN body starts with its own directory:
+
+```
++0x00 'PSIN'                 +0x04 0x00015000  (section size, BE)
++0x08 0x16      +0x0c 0x548  (u32 LE)
++0x10 0xAAAAAAAA ..          (filler)
++0x18 0xaeb623d8  +0x1c 0xba0
++0x28 0x85b4c631  +0x2c 0x12120
++0x38 0xde396fe2  +0x3c 0x50
++0x48 0x01393259  +0x4c 0x1d40
++0x58 0x70707070  (filler)  +0x60..0x7f hash-like block
+```
+
+So PSIN carries a **hash → offset** directory of four blocks, `0xAA`-padded, plus
+a 32-byte hash block. That is the analogue of YSC's statics/globals/natives
+pointers: four internal tables at offsets `0x50`, `0xba0`, `0x1d40`, `0x12120`
+inside an 86,016-byte section.
+
+### Pipeline design (to build)
+
+1. **Section split** — already implemented (`sections`), record-level.
+2. **PSIN directory** — decode the `(hash, offset)` pairs and the `0xAA` padding
+   across all 1,012 records; identify the four blocks by content and size
+   (candidates: code, statics, natives, name/hash table).
+3. **Code block** — test the YSC stack-machine model on the largest block: page
+   layout, pointer tags, `NATIVE`/`ENTER`/`LEAVE` byte patterns, and whether an
+   opcode histogram is plausible (no unknown values, jumps land on boundaries).
+4. **Disassembler** — reuse the public 131-opcode table (RASM/GTADecompiler) for
+   the common subset, extend for GTA VI's differences.
+5. **IR + decompiler** — lift to a structured IR, then emit pseudo-C shaped like
+   the public decompiled scripts so the output is reviewable.
+6. **Modification path** — keep byte offsets and page boundaries in the IR so an
+   edited script can be reassembled and injected; `LSNS` (encrypted strings) stays
+   a blocker for string-level edits.
+
+Step 3 is the gate: if the PSIN code block is a YSC-style stack machine, the
+public opcode tables and decompiler structure transfer directly.
