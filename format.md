@@ -435,3 +435,28 @@ pub enum ExtractionReport {
 `Psin` corresponds to `extract`, `Zlib` to `extract-zlib`, and `Raw` to
 `extract-raw`. The output path is a command argument, not report data, so it is
 not part of the struct.
+
+## Annoyed Tools CLI
+
+The separate `explorer/` crate provides bounded-memory tools. Offsets are
+archive-relative and ends are exclusive. `annoyed-index [--resume] ARCHIVE
+OUTPUT.tsv` creates a TSV with columns `kind`, `start`, `end`, `stored_bytes`,
+`decoded_bytes`, `chain_start`, and `text_prefix`. Gaps remain unclassified;
+this is a carved range index, not a decoded archive-entry table. `--resume`
+uses adjacent checkpoint files and requires hard-link support for publication.
+
+`annoyed-headers ARCHIVE` emits TSV columns `offset`, `front_bytes`,
+`trailer_bytes`, and `declared_entries` for plausible page-aligned headers;
+those observations do not establish pack boundaries. `annoyed-search ARCHIVE
+INDEX.tsv TEXT` emits `start`, `end`, and `decoded_bytes` for zlib streams
+containing exact case-sensitive UTF-8 bytes, followed by `kind` to distinguish
+checksummed zlib from raw DEFLATE. `annoyed-extract raw|zlib|deflate ARCHIVE
+START END OUTPUT` writes one range to a new file and reports its byte count.
+
+`annoyed-verify [--progress] [--expect BASELINE.tsv] ARCHIVE INDEX.tsv` emits tab-separated key/value lines:
+`ranges`, `zlib_streams`, `raw_deflate_streams`, `archive_bytes`, `unclassified_bytes`,
+`unchecked_bytes`, `archive_sha256`, and `index_sha256`. Coverage, zlib
+checksums and decoded sizes, raw-DEFLATE termination and decoded sizes, and
+zero-run contents are checked. Raw DEFLATE carries no checksum. The hashes are
+baselines; they do not prove entry identity, and unchecked bytes have no
+zlib/zero content check. `--expect` requires both hashes to match a prior report.

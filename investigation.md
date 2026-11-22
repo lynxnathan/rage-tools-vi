@@ -5387,8 +5387,3 @@ the hash test. The remaining blocker is the same wall: the value/string store
 (LSNS) and the 331 KB blob are genuinely encrypted, and no cipher tables ship in
 the local binaries. Decompilation stays gated; the schema is fully recoverable
 today.
-
-## Pointer: rdna2-spirv
-`rdna2-spirv/` is a separate project in this repository (generic GFX10.x to
-SPIR-V). Its research record lives in `rdna2-spirv/JOURNAL.md` and its live
-check list in `rdna2-spirv/PLAN.md`; nothing from it is journaled here.

@@ -90,9 +90,3 @@ Each needs a specific input, not more effort.
 ## Not mine
 
 - [ ] `explorer/` — owned by another session.
-
-## Separate project
-
-- `rdna2-spirv/` is its own project: plan in `rdna2-spirv/PLAN.md`, journal in
-  `rdna2-spirv/JOURNAL.md`. Only its blockers that affect *this* repository's
-  work are listed here.
