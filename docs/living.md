@@ -11,7 +11,6 @@ flowchart LR
     INV[investigation.md] --> SITE
     FMT[format.md] --> SITE
     AG[AGENTS.md] --> SITE
-    SJ[investigation-script.md] --> SITE
     ST[handoff/script-status.md] --> SITE
     DIAG[docs/*.md<br/>UML · Mermaid] --> SITE
     SITE --> HTML[site/ · untracked]

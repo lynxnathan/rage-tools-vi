@@ -116,7 +116,6 @@ nav:
       - Investigation: reference/source-investigation.md
       - Format contract: reference/source-format.md
       - AGENTS: reference/source-agents.md
-      - Script journal: reference/source-script-journal.md
       - Script status: reference/source-script-status.md
 
 strict: false

@@ -101,10 +101,10 @@ are appended here.
 | `DATA_WORKTREE` | `investigate/data-rpf` | data workstream | `data.rpf`, localization, model/bone/layout semantics |
 
 - `main` owns `plan.md`, `AGENTS.md`, `investigation.md`, and merges.
-- Script owns `tools/script_*`, `plan-script.md`, `investigation-script.md`, and
-  `handoff/script-*`.
-- Data owns `output/data.rpf/`, `tools/data_*`, `plan-data.md`,
-  `investigation-data.md`, and `handoff/data-*`.
+- There is a single `investigation.md`. The old per-workstream journals
+  (`investigation-script.md`, `investigation-data.md`) are gone; their evidence
+  is folded into the main journal. Owners keep their own `tools/` and `handoff/`
+  prefixes.
 - The samples (`*.rpf`) and `output/` are local and untracked. Never commit them.
 - Do not edit another workstream's files. Add a new file instead of changing a
   shared tool in place.
@@ -116,9 +116,8 @@ are appended here.
 - Workstream commits use `script:` or `data:` prefixes; docs use `docs:`.
 - On a conflict in `plan.md` or `AGENTS.md`, keep `main`'s version and move the
   workstream detail into its own plan/journal.
-- Append-only journals are per workstream. `investigation.md` is the integrated
-  main journal; workstream evidence goes to `investigation-script.md` or
-  `investigation-data.md`, and the integrator summarizes it in `plan.md`.
+- `investigation.md` is the one journal, append-only. There are no
+  per-workstream journals any more; new evidence is appended at the end.
 - Commit early and often; uncommitted work is not shared.
 
 ### Handoff contract
