@@ -4685,3 +4685,21 @@ under `joaat/crc32`, `crc32/joaat`, `joaat(name)/joaat(upper)` and
 with the earlier single-hash results, the ids are content identifiers whose
 generator is still unknown — they are not JOAAT of any name in the corpus, in
 either element.
+
+### Directory packs are detectable; their row split is not
+
+Packs whose payload holds **zero chains** are directory-only containers, and the
+`data.rpf` census has exactly two: the root (N = 699) and `0x964000` (N = 156).
+Their N is a genuine Front B row count (root: `align16(10 × 699) = 6,992`), so
+those rows are directory/virtual entries.
+
+Front A per row separates them from file packs only weakly — the thirteen
+localization packs sit at **58.5 B/row** and ordinary file packs at 59–61, while
+the root is 89.6 and `0x964000` is 41.8. The trailer per row is no better. So
+"no chains" is the reliable detector, and Front A size is not a row-type
+discriminator.
+
+For the root the split can be stated: 699 rows = 41 child packs + **658
+virtual rows**; `0x964000` (156 rows, 6 child headers in its window) leaves
+~150. Decomposing *which* rows are virtual still needs pack extents, which is
+why this stays a boundary-model item rather than a solved one.
