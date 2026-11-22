@@ -4703,3 +4703,21 @@ For the root the split can be stated: 699 rows = 41 child packs + **658
 virtual rows**; `0x964000` (156 rows, 6 child headers in its window) leaves
 ~150. Decomposing *which* rows are virtual still needs pack extents, which is
 why this stays a boundary-model item rather than a solved one.
+
+## Journal: browser rebuilt with every archive verified (2026-11-21)
+
+`tools/pipeline.py pilot` rebuilt `output/extraction-index-pilot/index.html`
+(809,654 bytes) after the `levels` verification row landed. Build log:
+
+- `levels.rpf`: 96 of 2,199,213 index ranges shown, **47 verified rows**, and its
+  control hash matched (`0x1d000–0x1d701` → `821b59b1…`).
+- every other archive shows verified rows too; `movies.rpf` remains index-only
+  (3 ranges, no zlib payload — video, not extractable by this pipeline).
+
+Static verification of the page (Playwright is not installed, so the headless
+checker could not run): all eight archive roots are present (`levels` 97
+mentions, `movies` 4), the `levels` and `navmeshes` control hashes are embedded,
+and "Verified archive" appears 7 times — the seven extracted archives — with
+`movies` the only index-only root.
+
+So the view and the manifests agree: no archive is index-only except `movies`.

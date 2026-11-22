@@ -9,10 +9,12 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] **Verify `levels.rpf` and rebuild the browser.** Extraction finished:
-  1,117,857 streams / 174.9 GB. Verification is running; then
-  `tools/pipeline.py --source SRC --output output pilot` so no archive is
-  index-only in the browser.
+- [x] ~~Verify `levels.rpf` and rebuild the browser~~ — PASS (completeness +
+  1,500-file hash sample) and the pilot is rebuilt with 7 verified archives;
+  `movies` is the only index-only root. Static checks pass; the Playwright
+  headless checker needs Playwright installed to run.
+- [ ] **Rehash all of `levels` overnight** (175 GB) for a full verification
+  rather than the completeness pass plus sample.
 - [ ] **Run the unified pass now that `levels` is extracted**: exact `+0xa0`
   harvest gated to the 208-byte bvh4 table, plus the struct-root/segment harvest
   across all archives. `cache/` on the NVMe is the scratch location. Note
