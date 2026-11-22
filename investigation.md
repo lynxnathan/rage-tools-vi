@@ -5231,3 +5231,54 @@ opcode stream.** The code is either inside one of these blocks after its header,
 inside `LSCH`/`LENM`/`LRSC`, or compressed again inside PSIN. The next step is to
 parse the `[hash][count][kind]` headers and follow their payload layout, rather
 than disassembling PSIN as a flat bytecode.
+
+## Journal: cipher battery on LSNS and the script blob (2026-11-21)
+
+`tools/crypt_battery.py` runs one battery on any masked region and is now the
+reusable entry point. Results over the 1,012 LSNS bodies (939,152 bytes) and the
+331,728-byte blob:
+
+| Test | LSNS | Blob | Reading |
+| --- | --- | --- | --- |
+| byte entropy | mean **7.52** (4.94–7.99) | **7.996** | uniform; not plaintext code/text |
+| distinct bodies | 869 of 1,012 | 1 | duplicates exist |
+| duplicate groups | **120×160 B**, 18×32 B, 8×448 B | — | deterministic: equal plaintext ⇒ equal ciphertext |
+| same-length XOR | mean 7.31 (min 0.00) | — | min 0 is the identical group; otherwise random |
+| repeating-key sweep | flat **7.71** for p = 1..24 | flat 7.998 | no repeating-key XOR |
+| first block per length | unique for 80 of 161 lengths | — | first block tracks content, so no fixed IV |
+| cipher tables in shipped binaries | — | — | no AES S-box/Te0, no ChaCha/Salsa sigma in the 16 DLLs or `gameos.xvd` |
+
+**Conclusion: LSNS is genuinely encrypted.** Uniform entropy, deterministic
+mapping, 16-byte blocking, chained, no weak structure. The key is not in the
+shipped support DLLs, and the main executable is not in this tree.
+
+**A crib exists.** The identical 120-body group proves determinism, and the first
+block varies with content (unique for 80 of 161 length classes), so block 0
+encodes message data — most plausibly a header containing the length. That is the
+best known-plaintext candidate for a future key or cipher test; the 12-byte
+plaintext `LSNS` header `(1, 257, len)` sits outside the ciphertext.
+
+### The PSIN blocks are not opcode streams
+
+Walking each PSIN block with the public 131-opcode YSC length table:
+
+| Block | Ops | Invalid | Invalid % |
+| --- | ---: | ---: | ---: |
+| `0x50..0xba0` | 1,701 | 1,044 | 38.0 |
+| `0xba0..0x1d40` | 3,226 | 1,140 | 26.1 |
+| `0x1d40..0x12120` | 49,950 | 14,429 | 22.4 |
+| `0x12120..0x15000` | 7,567 | 3,873 | 33.9 |
+| random control | 23,529 | 22,479 | 48.9 |
+| ASCII control | 34,401 | 0 | 0.0 |
+
+Code should be near 0 % invalid and random near 49 %. PSIN sits at 22–38 %, so it
+is neither code nor noise: it is the typed table content the block headers
+already suggested.
+
+### Consequence for the decomp pipeline
+
+The compiled script bytecode is **not** in a plaintext PSIN block. The two
+remaining candidates are both masked: the LSNS bodies (needs key material) and
+the 331,728-byte blob (entropy 7.996, no zlib/raw-DEFLATE stream at its start).
+Decompilation of GTA VI scripts is therefore gated on key material or a second
+sample, exactly like the RPF9 metadata wall — not on more format work.

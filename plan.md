@@ -32,9 +32,10 @@ Last updated: 2026-11-21.
 - **Metadata:** header census complete (4,373 headers); Front A/Front B/trailer
   remain masked; size laws characterised.
 - **Script:** `script.rpf` records are a section sequence
-  (`PSIN`/`LSCH`/`LENM`/`LSNS`/`LGID`/`LRSC`/`CHKS`), not YSC; PSIN carries a
-  four-block `(hash, offset)` directory. Decompilation research done, pipeline
-  designed.
+  (`PSIN`/`LSCH`/`LENM`/`LSNS`/`LGID`/`LRSC`/`CHKS`), not YSC. PSIN holds typed
+  tables, LSNS (939 KB total) and the 331 KB blob are genuinely encrypted, and no
+  cipher tables ship in the local binaries. Decomp research and pipeline design
+  are recorded; decoding is key-blocked.
 - **Naming:** all identifiers are `JOAAT(lowercase name)`. 99 of 612 bone-table
   hashes and 21 of 252 weight hashes resolved across `skel_`/`mh_`/`rb_`
   families; one rig fully decoded (34/34); the 16 skeleton families carry
@@ -46,11 +47,11 @@ Last updated: 2026-11-21.
 
 ## Now
 
-- [ ] Build the script decomp pipeline. Done: section split and PSIN directory.
-  PSIN's four blocks are two float blocks and two `[hash][count][kind]` tables,
-  not a flat opcode stream. Next: parse those headers and their payloads, then
-  locate the code (inside a block, in LSCH/LENM/LRSC, or nested-compressed).
-  Decompilation only — no recompiler; the IR must keep offsets for later edits.
+- [ ] Script decomp pipeline is gated on key material. Section split and PSIN
+  directory are done; PSIN blocks are typed tables (22–38 % invalid opcodes vs
+  49 % random), and LSNS is genuinely encrypted (uniform entropy, deterministic,
+  no weak structure, no cipher tables in the shipped binaries). Reopen when a key
+  or a second sample appears; the crib is the content-dependent first block.
 
 - [ ] Name the remaining ped-rig bone hashes (99 of 282 done).
 - [ ] Name the remaining weight hashes (21 of 252 done).
