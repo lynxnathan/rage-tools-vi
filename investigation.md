@@ -7334,3 +7334,93 @@ the archive object receives a pre-mapped buffer), the remaining possibilities ar
 a masking transform *below* the archive class, or a table that stores no name
 hash at all (payload-derived identification, which is what our extraction
 already relies on).
+
+## Script metadata format recovered from the executable's writer (2026-11-23)
+
+This closes the `PSIN`/`LSNS` layout question. The writer is `FUN_144083410`
+(found by scanning `.text` for the six chunk magics as immediates; each occurs
+exactly once, all inside this one function). It is authoritative: the on-disk
+layout below is what the code emits, not an inference from our corpus.
+
+### Chain framing
+
+Every chunk is `[4-byte ASCII magic][big-endian u32: distance to the next chunk]`.
+Nothing else is stored — no sizes, no counts, no terminators. The chain is always
+
+```
+PSIN → LSCH → LENM → LSNS → LGID → LRSC
+```
+
+The big-endian header word is why `sections()` in `tools/psin_extract.py` worked
+while reading a big-endian size: the "size" it read *is* the distance to the next
+chunk. The earlier "`u32 count N | 4 flags | per-table u32 length`" description of
+`LSNS` framing was that same distance field under another name.
+
+Note `0x4d4e454c` is **`LENM`**, not `LMEN`. The old magic scan looked for the
+wrong spelling and reported zero occurrences.
+
+### Per-chunk payloads
+
+| Chunk | Payload |
+| --- | --- |
+| `PSIN` | `count` × 16-byte descriptors `{u32 tag, u32 length, u64 prefix}`, then each descriptor's bytes appended in order, each rounded **up** to 16 |
+| `LSCH` | `count` rows of 32 bytes; row holds a `u64` at `+0x10` and a `u16 subcount` at `+0x1e`; `subcount` records of 16 bytes appended after the rows |
+| `LENM` | `count` rows of 24 bytes; `u64` at `+0x08`, `u16 subcount` at `+0x10`; 16-byte sub-records appended |
+| `LSNS` | opaque block of `distance - 8` bytes |
+| `LGID` | `u32 count` then `count × 16` bytes; empty when `distance == 8` |
+| `LRSC` | fixed 0x50-byte header block |
+
+Two details make the parse exact rather than approximate:
+
+1. The first `PSIN` payload starts at `16*count + 0x10`. The writer computes
+   `(16*count + 0x17) & ~15`, which rounds **down** — not the round-up an
+   alignment helper would give. Using `align16()` here puts every payload 16
+   bytes late.
+2. The descriptor `pointer` field (`+0x08`) is poisoned on disk: `0xAA…AA` in
+   `PSIN`, `0xEE…EE` in `LENM`, `0xBB…BB` in `LRSC`. The `0xAA` runs the earlier
+   scans saw and read as a terminator are these poisoned pointers.
+
+Because `count` is not stored, it is recovered by asking which value makes the
+arithmetic close exactly:
+
+```
+16*count + 0x10 + Σ align16(length_i) == distance_to_next_chunk
+```
+
+That equation has a single solution in practice, so a parse either fits exactly
+or is wrong — there is no tolerance parameter anywhere.
+
+### Validation
+
+`tools/script_meta.py` walks the chain over all 1,057 zlib streams of
+`script.rpf` with `output/index/script.tsv`:
+
+- **1,012 / 1,012 records produce the complete six-chunk chain**, in order.
+- 4,901 `PSIN` descriptors, 1,622,300 payload bytes, 0 failures.
+- The type-word count (`0x101`–`0x105`) inside the payloads is **63,290**,
+  against **62,910** from the earlier independent heuristic scan — agreement to
+  0.6 %, and the residual is the heuristic's minimum-run filter dropping short
+  runs at block boundaries.
+
+### What `PSIN` actually is
+
+The descriptor tags are nearly constant across the whole corpus:
+
+| tag | records |
+| --- | --- |
+| `0x85b4c631` | 1,012 |
+| `0xde396fe2` | 1,012 |
+| `0x01393259` | 1,012 |
+| `0x16` | 1,010 |
+| `0xaeb623d8` | 855 |
+
+Five tags for 1,012 records means `PSIN` does **not** hold one descriptor per
+schema property. It holds about five *blocks* per script, each with a fixed
+role, and the typed `(value, type, property, key)` rows live inside one of them
+(`0x85b4c631`: 99 rows of 16 bytes in record 42). Other blocks are different
+shapes — `0xde396fe2` begins `99, 99, 2, 0`, a table header, matching the
+"204 rows × 32 B with `(count, count, 2, 0)` header" block inspected by hand in
+the `levels` archive.
+
+So the earlier picture — "62,910 typed rows over 1,012 records" — describes one
+block type inside `PSIN`, not the whole of it.

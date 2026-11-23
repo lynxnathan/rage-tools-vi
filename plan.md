@@ -35,6 +35,13 @@ Last updated: 2026-11-23 (executable acquired).
 
 ## Now
 
+- [x] Script metadata format recovered from the writer `FUN_144083410`: chain
+  `PSIN→LSCH→LENM→LSNS→LGID→LRSC`, each `[magic][BE distance]`, payloads found by
+  exact-fit count solving. 1,012/1,012 records parse; typed words agree with the
+  heuristic scan to 0.6 %. `tools/script_meta.py`.
+- [ ] Decode the five `PSIN` blocks separately (`0x85b4c631`, `0xde396fe2`,
+  `0x01393259`, `0x16`, `0xaeb623d8`) — they have different shapes and only the
+  first is the typed row list.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or
   decrypted above the archive layer. The full read→mount→entry-walk path
   (`0x140fc2540` → `0x141fb2600` → `0x1408ec210` → `0x1406bd160`) contains **no
