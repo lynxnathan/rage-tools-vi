@@ -6793,3 +6793,31 @@ unexplained surplus.
 Also caught in the process: the tag is the **top nibble** of the pointer word
 (`0x50xxxxxx` → tag 5), not the top byte. Reading it as a byte gave 11 matches where
 the correct reading gives 157,777.
+
+## Journal: the levels descriptor covers 97 % of declared entries (2026-11-23)
+
+Following the descriptor unit, the deficit was measured rather than guessed. For
+packs of 100 or more entries the descriptor count divided by the declared count has
+a **median of 0.974** (10th percentile 0.713, 90th 1.000).
+
+That reframes the earlier "36 % exact": exact equality is a strict test, and most
+large packs are within a few entries of the declared count rather than wrong by a
+structural margin. Exactness by pack size:
+
+| Declared entries | Packs exact |
+| --- | ---: |
+| 1 | 15 / 30 (50 %) |
+| 2–9 | 87 / 154 (56 %) |
+| 10–99 | 71 / 137 (52 %) |
+| 100+ | 54 / 272 (20 %) |
+
+Two checks ruled out the obvious explanations for the shortfall. Looking at the six
+streams immediately after each pack's window finds two to four descriptors there —
+more than the deficit — so it is not a boundary shift. And the zero-prefixed streams
+that fall outside tags 4–6 are all-zero or small-integer headers, not descriptor
+variants. So the missing entries have no descriptor in the pack's stream range, and
+they are few: a median shortfall of 2.6 % of the declared count.
+
+Recorded as the current best statement: the descriptor is the unit, it covers
+~97 % of declared entries in large packs, and the residual is a small, localised
+absence rather than a counting model that fails.
