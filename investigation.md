@@ -6848,3 +6848,33 @@ of even one record**: the property array is simply not there.
 So the two archives share the container and the section vocabulary, not the contents.
 What a `levels` PSIN record carries is a new question, and the extractor that works
 for `script.rpf` does not apply to it.
+
+### What a `levels` PSIN block looks like
+
+The five records sampled share one shape, and their single block parses cleanly as
+**32-byte rows**:
+
+```
+65538? no — body 6,928 B
+tag 0x9c834886, block 6,528 B -> 204 rows of 32 B
+row 0:  204  204  2  0 | -10  -3  0 | <hash>
+row 1:    0    0  0  0 | -10  -4  0 | <hash>
+row 2:    0    0  0  0 | -11  -3  0 | <hash>
+row 3:    0    0  0  0 | -11  -4  0 | <hash>
+row 4:    0    0  0  0 |  -1  -4  0 | <hash>
+```
+
+The first row is a header — `(count, count, 2, 0)` with count equal to the row
+count — and every row carries two small signed values and a trailing 32-bit word.
+The two negatives step in a pattern (`-10/-3`, `-10/-4`, `-11/-3`, `-11/-4`,
+`-1/-4`), which reads like a sparse two-coordinate key rather than an index.
+
+Two caveats recorded rather than smoothed over. Sampling 40 blocks with a fixed
+32-byte stride shows the shape is not universal — the coordinates spread across
+0…37 once misaligned blocks are included — so the stride has to be derived per block
+from its own header, not assumed. And none of 3,815 sampled trailing words resolves
+against the 240k-token vocabulary, so those words are not names in any list we hold.
+
+The block tag `0x9c834886` is constant across the sampled records and does not match
+JOAAT of any word in the corpus, the prior-art vocabulary or CodeWalker's metadata
+table.
