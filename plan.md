@@ -40,9 +40,10 @@ Last updated: 2026-11-23 (executable acquired).
   (`0x140fc2540` → `0x141fb2600` → `0x1408ec210` → `0x1406bd160`) contains **no
   cipher call**, and the earlier "CBC" evidence was retracted — identical plaintext
   prefixes explain the predecessor statistic without a cipher.
-- [ ] Decompile the remaining archive vtable methods (`0x1428cd270`,
-  `0x1428cd2a0`, `0x1428cd2e0`) and find the caller that constructs the archive
-  object (reached only through the vtable at `0x1462fd480`).
+- [ ] Decompile the second constructor (`0x1411a89c0`) fully, and follow
+  `vtbl+0x3f8` / the `0xc26722d233648ae7` request into the file layer that supplies
+  `[file+0x10]`, `[file+0x18]`, `[file+0x20]` — that layer is where a transform, if
+  any, must live.
 - [x] `LSNS` table structure: `[path of ≤10 × 128-bit levels][per-script records]`.
   The path nests — 853 tables share level 1, 381 share all ten, 120 share the full
   path — so it encodes a hierarchy of script kinds, not a flat type id. Records are

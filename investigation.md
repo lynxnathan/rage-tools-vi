@@ -7228,3 +7228,37 @@ Next probes, in order: decompile the remaining vtable methods
 (`0x1428cd270`, `0x1428cd2a0`, `0x1428cd2e0`), then find the *caller* that constructs the
 archive object, since the constructor is reached only through the vtable at
 `0x1462fd480` and therefore from code that already holds the file.
+
+### Executable: tooling that works, and where the trace stands (2026-11-23)
+
+Harness that finally works (after two dead ends: PyGhidra is required for `.py`
+scripts, and a 20 GB heap gets the process OOM-killed at ~17 GB RSS):
+
+- `cache/ghidra/Target.java` — disassemble around an address, decompile the function
+- `cache/ghidra/Refs.java` — references *to* an address via Ghidra's reference manager
+- both run with `-noanalysis`, `GHIDRA_MAXMEM=8G`, `-process/-import` + `-scriptPath`
+
+Findings from the reference manager, which byte scans could not produce:
+
+| Target | References |
+| --- | --- |
+| archive vtable `0x1462fd480` | `0x140fc2572`, `0x140fc2581` (the constructor) and `0x1411a89d5`, `0x1411a89e0` (a second constructor) |
+| `PTR_FUN_1467a0ff4` (class metadata) | 20+ in `0x14abcfaf4..0x14abdbea8` — a type registry |
+
+The second constructor (`0x1411a89c0`) has two paths: a plain `memcpy` of
+`[file+0x18]` into a fresh buffer of size `[param_3+4]`, and a path that asks a
+virtual method (`vtbl+0x3f8`) for a buffer with the constant
+`0xc26722d233648ae7` — a request/type id, not a key. No cipher call either.
+
+The class table is **RVA-based**: entries are 4-byte RVAs (`0xfc2540` for the
+constructor) in a block at `0x6e7e5a0`, interleaved with `0x1467a....` metadata
+pointers, and there is no MSVC RTTI name to read at those metadata addresses.
+
+Front B was also re-tested with the code's own layout in mind: under both the
+10-byte on-disk stride and a 16-byte in-memory stride, the u16 at `+4` is never below
+8 (0 % of rows), so the region is not the entry table in either form.
+
+State: the archive path (open, read, mount, entry walk, both constructors) contains no
+decryption. Either the front region is stored as a hash table, or the transform sits
+above the archive layer — in the code that opens the file and hands over
+`[file+0x10]`, `[file+0x18]`, `[file+0x20]`.
