@@ -112,6 +112,7 @@ nav:
       - Roadmap: roadmap.md
   - Reference:
       - Recovered structures: reference/structures.md
+      - Tool index: reference/tools.md
       - Report formats: reference/report-formats.md
       - Hash names: reference/names.md
       - Glossary: reference/glossary.md

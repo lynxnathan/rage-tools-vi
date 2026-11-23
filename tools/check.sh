@@ -43,6 +43,12 @@ else
     note "tracked symlinks" "PASS (none)"
 fi
 
+if $PY tools/tool_index.py --check >/tmp/check-toolsindex.log 2>&1; then
+    note "tool index" "PASS ($(head -1 /tmp/check-toolsindex.log | sed 's/.*current (//;s/ tools)//'))"
+else
+    note "tool index" "FAIL"; tail -3 /tmp/check-toolsindex.log | sed 's/^/    /'; fail=1
+fi
+
 if compgen -G "output/index/*.tsv" >/dev/null; then
     if $PY tools/chain_start_verify.py output/index/*.tsv >/tmp/check-index.log 2>&1; then
         note "index invariants" "PASS ($(grep -c '\.tsv' /tmp/check-index.log) indexes)"
