@@ -96,9 +96,13 @@ the property array is a single-file feature: scanning every body at every byte o
 finds rows only in `script.rpf` (plus 28 rows in two `packs.rpf` records). Three
 layouts carry the envelope, and the other two hold different payloads.
 
-The same container appears in `levels.rpf`, where **5,116** streams carry the
-identical section sequence but a different payload (the unversioned layout, with
-32-byte rows rather than the 16-byte property array).
+The same container appears in `levels.rpf`, where streams carry the identical
+section sequence but a different payload: a bag of tagged sections rather than one
+typed table. Over the first 400 records there are **209 distinct section tags** and
+the descriptor count varies from 2 to 17+, because a level only carries the
+sections it needs. Two of those sections hold NUL-padded ASCII resource paths —
+**3,697 distinct paths** harvested from 6,982 records, e.g.
+`acaidreams_protectedarea/all.pso.meta`.
 
 `LSNS` is a table container, not a cipher: framing validates on **1,012 of 1,012**
 records, 58,697 sixteen-byte records. Each table is `[path of ≤10 × 128-bit
@@ -109,7 +113,12 @@ opaque.
 ## What is not solved
 
 - Front A, Front B and the trailer are masked. The size laws are known; the
-  contents are not. Four metadata questions are blocked on key material or a
+  contents are not, and that is now measured rather than assumed: 36,952 known
+  names hashed with seven functions in twenty path normalizations produce a flat
+  ~560 matches per function against 7.4 million front-region words, which is
+  exactly the chance rate — no hash function, including the game's own joaat,
+  shows any excess. The read→mount→entry-walk path contains no cipher call.
+  Four metadata questions are blocked on key material or a
   crib, not on effort.
 - The remaining 330-hash universe is a vocabulary problem: the names are not in
   the corpora harvested so far.
