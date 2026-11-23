@@ -1,8 +1,14 @@
 # Metadata regions
 
 The metadata wall is the boundary between “the archive can be partitioned” and
-“the archive index can be decoded.” The bytes are bounded, the region sizes are
-now modelled from the entry count, and every metadata region is masked.
+“the archive index can be decoded.”
+
+The region sizes are modelled from the entry count, and the *reading* model is now
+taken from the executable rather than inferred: the loader copies the region
+verbatim and then interprets it through a 0x40-byte header that declares four
+sections. That changed the question from "what is the cipher" to "what are the
+four sections", and the census numbers below are retained because they still
+describe the bytes on disk.
 
 The sizes and invariants below come from a census of **4,373 RPF9 headers**
 across the 22-archive source tree (`handoff/header-census-full.tsv`,
@@ -48,9 +54,54 @@ classDiagram
 
 | Region | Bounds | Observed property | Status |
 | --- | --- | --- | --- |
-| Front A | `0x60 .. word_08` | variable; grows with N and name length | masked |
-| Front B | `word_08 .. word_04` | `align16(9N)` or `align16(10N)` for mode family 1 | masked |
-| Trailer | `end - word_0c .. end` | `word_0c` equals the trailer length in all 4,373 headers | masked |
+| Buffer A | `0x00 .. word_04` | copied verbatim into `malloc(word_04)`; first 16 bytes are the header | read straight from the stream |
+| Buffer B | `word_08 .. word_04` | copied verbatim into `malloc(word_04 - word_08)` | read straight from the stream |
+| Trailer | `end - word_0c .. end` | `word_0c` equals the trailer length in all 4,373 headers | unidentified |
+
+## What the binary does
+
+Two functions settle the reading model (`FUN_141fb2600`, `FUN_14087aff0` in the
+analysed database):
+
+```
+read(stream, 0, .., buf16, 0x10)
+if u32(buf16) == '9FPR':
+    size = header[+4]                      ; or header[+8] in the second mode
+    buf  = malloc(size)
+    *buf = buf16 ; buf[1] = buf16[1]       ; the 16 header bytes are copied in
+    read(stream, 0x10, buf + 0x10, size - 0x10)
+    if mode == 1:
+        size_b = header[+4] - header[+8]
+        buf2   = malloc(size_b)
+        read(stream, header[+8], buf2, size_b)
+```
+
+So both metadata buffers are **plain copies of stream bytes**. There is no
+decryption call on this path, and the second buffer is exactly
+`file[word_08 .. word_04)`.
+
+Buffer A then starts with a 0x40-byte header whose fields drive an arena layout of
+four sections:
+
+```
+p3 = u16 @ 0x1a     p6 = u16 @ 0x22
+p4 = u32 @ 0x1c     p7 = u32 @ 0x24   (the entry count N)
+p5 = u16 @ 0x20     p8 = u8  @ 0x2c   (1 or 2)
+
+out[1] = align(base + 0x40)
+out[2] = align(out[1] + p3*8)                 ; p3 records of 8 bytes
+out[3] = align(out[2] + p4)                   ; p4 bytes
+out[4] = align(out[3] + p5*0x18)              ; p5 records of 24 bytes
+out[5] = align8(out[4] + (p5-p6)*p7*p8)       ; (p5-p6) * N * p8 bytes
+```
+
+For `data.rpf+0`: `p3=4, p4=336, p5=7, p6=1, p7=699, p8=2` — sections at
+`0x40..0x60`, `0x60..0x1b0`, `0x1b0..0x260`, `0x260..0x2328`. Everything from
+`0x2328` to the end of the buffer is *not* covered by the formula, so a fifth,
+variable region exists that the traced functions do not size.
+
+This also explains a coincidence that misled the earlier write-up: "Front A starts
+at `0x60`" is true only for packs whose first section happens to be 32 bytes.
 
 ## Front B size model
 
@@ -90,7 +141,7 @@ flowchart TD
     SX --> S["S: 16-aligned, 0 .. 36,064 B"]
 ```
 
-## Masking evidence
+## Entropy census (what the bytes look like)
 
 For each header, the plug-in byte entropy of Front B was compared with the
 expected entropy of a uniform random sample of the same length (Monte Carlo
@@ -99,8 +150,12 @@ of 4,373 regions exceed 0.15, and all are 16–80-byte samples where the
 statistic is coarse. All 4,373 first and all 4,373 last 16-byte blocks are
 distinct.
 
-No pack in the corpus has a plaintext Front B table. The remaining route is key
-material or a known-plaintext crib, not more scanning.
+No pack in the corpus has a Front B table whose bytes look structured. That is a
+statement about *appearance*: the loader copies these bytes verbatim, so if a
+transform exists it is inside the stream's `Read` (`+0x60`), which is the one link
+in the chain not yet read. Uniform bytes are equally consistent with a dense pool
+of 64/128-bit hashes, which is why the entropy test alone cannot decide it — the
+64-bit name-hash test in `investigation.md` is the sharper negative.
 
 Cross-pack comparison is unavailable: across the thirteen `data.rpf`
 localization packs, which share N = 1,115 and a byte-identical 29,856-byte
@@ -113,16 +168,19 @@ the Front B chain is not, or its plaintext is pack-specific in every record.
 | Offset | Role | Evidence |
 | --- | --- | --- |
 | `+0x00` | magic `9FPR` | constant |
-| `+0x04` | `front_end` | 16-aligned, equals Front B end |
-| `+0x08` | Front A/B boundary | 16-aligned |
+| `+0x04` | size of buffer A | the loader passes it to `malloc` |
+| `+0x08` | start offset of buffer B | the loader reads `word_04 - word_08` bytes there |
 | `+0x0c` | trailer byte length | equals the trailer length in 4,373/4,373 |
 | `+0x10`, `+0x14` | per-pack id or salt | unique per header |
 | `+0x18` | `(k << 16) \| 0x7a00` | `k` in {4,5,6,7,8}, tracks the mode family |
-| `+0x1c` | small aligned size, e.g. 336 | unidentified |
-| `+0x20` | mode: `[u16 family][u16 format]` | 19 values |
-| `+0x24` | entry count N | the Front B law uses it |
+| `+0x1a` | arena `p3`: count of 8-byte records | from `FUN_14087aff0` |
+| `+0x1c` | arena `p4`: byte length of section 2 | from `FUN_14087aff0` |
+| `+0x20` | arena `p5`: count of 24-byte records; also `[u16 family][u16 format]` | 19 values |
+| `+0x22` | arena `p6`: subtracted from `p5` | from `FUN_14087aff0` |
+| `+0x24` | entry count N (`p7`) | the Front B law and the arena both use it |
 | `+0x28` | type hash | 10 values, concentrated by mode |
-| `+0x2c` | format tag | 2 values, split exactly at N = 255/256 |
+| `+0x2c` | `p8`: 1 or 2, the per-entry multiplier | 2 values, split exactly at N = 255/256 |
+| `+0x2d` | flags, bit 0 selects 16-byte instead of 4-byte section alignment | from `FUN_14087aff0` |
 | `+0x30` | `+0x1c − 0x140` | 4,306/4,373, exceptions are the `k = 6` group |
 | `+0x34`, `+0x38`, `+0x3c` | zero | always zero |
 | `+0x40..+0x4c` | constant 16-byte block | one value across all headers |
@@ -147,10 +205,10 @@ stateDiagram-v2
 ```
 
 !!! warning "Do not scan blindly"
-    The size model is closed for mode family 1 and every Front B in the corpus
-    is masked. Reopen only with key material, a decoded field, or a
-    known-plaintext crib. The open size question is the identity of the extra
-    table `S` in families 2–8.
+    The size model is closed for mode family 1, and the layout of buffer A is now
+    code-derived. What remains is to name the four sections and the fifth,
+    unsized region, and to read the stream's `Read` at `+0x60` — the only place a
+    transform could still live.
 
 ## Reproduce
 
