@@ -7055,3 +7055,33 @@ Ghidra headless analysis is running in the background over the whole image
 (`cache/ghidra`, log `/tmp/ghidra.log`). The queries to run on it are prepared: the
 three magic sites, the front-buffer allocation at `0x141fb2600`, and the
 entry-table builder reached from `0x1408ec360`.
+
+### The front regions resist every key and vocabulary test so far (2026-11-23)
+
+`data.rpf` pack 0 gives a clean specimen: header `0x00..0x60`, Front A
+`0x60..0xf4b0` (62,544 B), a 96-byte gap, Front B `0xf510..0x11060` (6,992 B =
+**699 rows of 10 bytes**, matching the declared count of 699).
+
+Tests run and their results:
+
+| Test | Result |
+| --- | --- |
+| AES-256/128, CBC/ECB, keys `+0x10`,`+0x20`,`+0x28`,`+0x40`(32 B) and their MD5/SHA-256 derivations, IVs zero/`+0x10`/key | 72 combinations, best entropy **7.49** vs 7.56 baseline — no |
+| XOR with any single header word (`+0x10`,`+0x14`,`+0x18`,`+0x1c`) | entropy stays 7.90–7.91 — no |
+| Front A (15,636 dwords) against the 36,952-name registry | **0 hits** |
+| Front B (699 rows × 10 B, all seven 4-byte windows) against the same registry | **0 hits** |
+| Front B fields as archive offsets | values `< 481,544,304` in 10.0–12.6 % of rows against 11.2 % chance — uniform |
+| Function pointers to the ctor/loader/header-read (`0x140fc21c0`, `0x140fc2540`, `0x141fb2600`) | 0 absolute, each RVA appears once — in `.pdata`, not a vtable |
+| ChaCha/Salsa constants in the image | 0 |
+
+So the mask is neither AES under header-derived material, nor a name-hash table, nor
+a field-structured table, and the loader code is reached by direct calls only.
+
+What is left is to read the code that consumes the buffer. Ghidra headless is
+analysing the whole image for that purpose (`cache/ghidra`, running at ~115 % CPU,
+1.6 GB RSS); `xref_magic.py` and `decomp_at.py` are ready to query it for the magic
+sites, the read at `0x141fb2600`, and the entry builder behind `0x1408ec360`.
+
+Two structural facts worth keeping from this pass: Front B's size divides exactly
+into `count × 10`, and the front block sits exactly between `[hdr+0x08]` and
+`[hdr+0x04]`, so the geometry is certain even though the content is not.
