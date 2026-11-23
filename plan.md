@@ -33,8 +33,10 @@ Last updated: 2026-11-23.
   The path nests — 853 tables share level 1, 381 share all ten, 120 share the full
   path — so it encodes a hierarchy of script kinds, not a flat type id. Records are
   not sorted in any interpretation.
-- [ ] What the ten header records and the per-script records contain. 210,522
-  distinct words, none matching names or PSIN keys, no small-integer slot.
+- [ ] What the per-script `LSNS` records contain. Within a kind the tail length is
+  fixed (22–23, 19–20, 20–21) while every tail differs, so they are per-script
+  values; contents remain opaque 128-bit words, and no word matches a name or a
+  PSIN key.
 - [x] `PSIN` tree segmented: `tools/psin_segments.py` splits a record where the
   table period changes. The four clean records come out as one leaf each (width
   4×3, 6×1); record `1054` decomposes into widths 2/4/4/6/2 plus flat spans.

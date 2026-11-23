@@ -6716,3 +6716,26 @@ opaque values, so the hierarchy is visible while its labels are not.
 One negative from the same check: the records are not sorted in any interpretation
 (0 of 994 tables ascending as u128, as two u64, or as four u32), so the ordering
 carries no key-like structure.
+
+### Inside a group, the tail is per-script data with a kind-dependent length
+
+The nested path gives a controlled sample: scripts sharing the same ten-level path
+have the same kind, so their tails can be compared directly.
+
+| Group | Members | Tail record counts | Distinct tails |
+| ---: | ---: | --- | ---: |
+| 1 | 30 | 22 (×14), 23 (×12), 24, 28 | 30 |
+| 2 | 14 | 19 (×12), 20 (×2) | 14 |
+| 3 | 11 | 21 (×7), 20 (×4) | 11 |
+
+Two things follow. Every tail is different — these are per-script values, not a
+shared schema. But the *length* is nearly constant within a kind, off by one for a
+minority of members, which is what an optional trailing record looks like.
+
+That closes the accounting cleanly: a table is `10 path records + N tail records`,
+`N` fixed per kind (22–23, 19–20, 20–21 here), which is why the earlier
+"records minus PSIN rows" had a median of twelve — ten path records plus a couple of
+tail records that have no PSIN counterpart.
+
+The tail contents remain opaque 128-bit values, but they are now known to be
+per-script, kind-sized, and independent of the path.
