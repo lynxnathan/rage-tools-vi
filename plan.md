@@ -32,8 +32,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   120,181,760 B, PE32+ x86-64, timestamp 2026-11-13). Authentic, not a launcher:
   `.xbld`/`.retplne`/`.voltbl` sections and imports of `d3d12_xs`, `xg_xs`,
   `xmem`, `xapu`, `AcpHal`, `XCRDAPI`, `XboxBvhBuilder`, `Bink2Scarlett`.
-  Analysis harness: `tools/pe_audit.py`, Ghidra headless (`cache/ghidra/Target.java`,
-  `-noanalysis`, 8 GB heap — 20 GB gets OOM-killed).
+  Harness: `tools/pe_audit.py`, `tools/pe_scan.py` (correct PE section mapping),
+  and Ghidra headless with `cache/ghidra/Target.java` (decompile) and
+  `Refs.java` (references). Two analysed databases exist: the fast `-noanalysis`
+  project and a full-analysis project in `cache/ghidra_full`. Never pass
+  `-deleteProject` when the point is to keep the result.
 
 ## Now
 
@@ -97,10 +100,10 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   normalizations × 7.4 M words → flat ~560 hits per algorithm, i.e. chance.
   Excluded (`tools/front_hash_probe.py`).
 - [ ] Find the layer that produces the mapped buffer at `[stream+0x18]` /
-  `[stream+0x20]` (the file object handed to the archive ctor). That is the only
-  remaining place a transform can live. Needs Ghidra **with** analysis enabled
-  (filtered to the RPF subsystem) so indirect calls resolve; byte scans are
-  noise.
+  `[stream+0x20]` (the file object handed to the archive ctor). Full analysis is
+  now available (`cache/ghidra_full`), so this is unblocked: start from
+  `0x1428ce530` (mount-time, archive-only) and `0x140daed80` (codec dispatcher
+  with three vtables, `0x1462fe720`/`740`/`760`).
 - [x] `LSNS` table structure: `[path of ≤10 × 128-bit levels][per-script records]`.
   The path nests — 853 tables share level 1, 381 share all ten, 120 share the full
   path — so it encodes a hierarchy of script kinds, not a flat type id. Records are
@@ -136,17 +139,21 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 
 Each needs a specific input, not more effort.
 
-- [ ] RPF9 table of contents — content unidentified: `Front A`/`Front B` are
-  uniform random, hold no known name hashes at any 4/8-byte field, and the reader
-  does not decrypt them, so either they are the table as stored or the transform is
-  above the archive layer. Every entry here is payload-derived.
+- [ ] RPF9 table of contents — content unidentified. `Front B` *is* a per-entry
+  table for 206 of 654 packs (`size_b == align16(count * w)`, w in 8/10/12/16) and
+  composite for the other 448; no 32-bit hash of 36,952 names appears in either
+  region; the traced read→mount→entry-walk path holds no cipher. Wide (64/128-bit)
+  hash layouts stay open because they are statistically indistinguishable from
+  random bytes. Every entry here is payload-derived.
 - [ ] Cipher identity for the front region: not AES (forward S-box absent, the one
   inverse S-box is CNG library code), not CNG (no `BCryptEncrypt`/`Decrypt`
   imports), no Blowfish; ARX constants present (Murmur ×17, TEA delta ×11).
 - [ ] Front A milestone on `story000_bvh4.rpf` — needs independent table framing.
 - [ ] Exact end of the last `data.rpf` child — needs an independent trailer start.
 - [ ] Multi-mip texture tail — needs a multi-mip dictionary.
-- [ ] The 331,728-byte `script.rpf` blob — needs a PC launch or a new sample.
+- [ ] The 331,728-byte `script.rpf` blob — its size is not any single range in the
+  index (largest is 0x52da0), so it needs locating before it can be parked or
+  attacked.
 - [ ] Script bytecode itself: not in a plaintext section. The executable is now in
   hand, so this is a code-tracing task, not a waiting task.
 - [ ] Type-name vocabulary (`root_type`, `type_tag`): three vocabularies return
