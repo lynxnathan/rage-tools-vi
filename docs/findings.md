@@ -88,6 +88,11 @@ array of 16-byte rows `(value, type, property, key)`: **62,910 rows** across 1,0
 records, of which 25 of 301 property names and 515 of 14,653 object keys are
 recovered.
 
+`PSIN` itself is a general envelope — **≈18,637 records across ten archives** — but
+the property array is a single-file feature: scanning every body at every byte offset
+finds rows only in `script.rpf` (plus 28 rows in two `packs.rpf` records). Three
+layouts carry the envelope, and the other two hold different payloads.
+
 The same container appears in `levels.rpf`, where **5,116** streams carry the
 identical section sequence but a different payload (the unversioned layout, with
 32-byte rows rather than the 16-byte property array).

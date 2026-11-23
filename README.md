@@ -30,7 +30,7 @@ Full walkthrough: **[From first principles](docs/explained.md)**.
 | `core_bvh4` | **1,253 of 1,261 packs** whose declared count is reproduced exactly; 109,301 entries |
 | Audio | **93,344 Opus + 1,818 XMA2 + 73 ACE1** streams, zero failures; every stream reaches its declared length |
 | Names | one registry of **36,952** hash→name pairs, with a flag for JOAAT collisions |
-| Script schema | `PSIN` decoded: 62,910 typed rows, 25 properties + 515 object keys named; `LSNS` is a table of 16-byte records |
+| Script schema | `PSIN` decoded in `script.rpf` (62,910 typed rows, 25 properties + 515 keys named); `LSNS` is a table of 16-byte records. `PSIN` is a general envelope — ≈18,637 records in ten archives — but the property array exists in one file |
 | GPU | shader decompilation lives in its own repository, [`rdna2-spirv`](rdna2-spirv/) |
 
 ## What is solved, and what is not

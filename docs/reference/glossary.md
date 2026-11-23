@@ -9,7 +9,7 @@
 | **trailer** | Last metadata region, `end-word_0c..end`. |
 | **span** | Byte range classified as front, zlib, zero run, unclassified, or trailer. |
 | **chain** | Consecutive zlib streams joined by 64 KiB continuation and zero padding. |
-| **PSIN** | Plaintext section container; starts with the ASCII magic `PSIN`. |
+| **PSIN** | Plaintext section container (≈18,637 records in ten archives, three layouts); only `script.rpf` carries the 16-byte property array. |
 | **LSCH / LENM / LSNS / LRSC** | PSIN sections; LSNS holds tables of 16-byte records. |
 | **JOAAT** | Jenkins one-at-a-time 32-bit hash used for many names. |
 | **root** | Object record with no incoming tagged pointer. |
