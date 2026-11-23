@@ -7124,3 +7124,38 @@ masked span, not ciphertext.
 
 So the remaining question is exactly one thing: **what key the CBC uses**. That is a
 code question, and Ghidra is on it.
+
+### The cipher is not AES, and not CNG (2026-11-23)
+
+Four checks settle what the game itself contains:
+
+| Check | Result |
+| --- | --- |
+| AES forward S-box (`637c777b…`) | **0 occurrences** |
+| AES inverse S-box (`52096ad5…`) | 1, at `0x145fc3b50`, referenced once — from `0x14215f06c`, the CNG context routine |
+| Te0/Td0 tables | 0 |
+| `bcrypt.dll` imports | only `BCryptOpenAlgorithmProvider`, `BCryptGenRandom`, `BCryptCloseAlgorithmProvider` — **no `BCryptEncrypt`/`BCryptDecrypt`** |
+
+So the AES code in the image belongs to a statically linked library and is not used
+for game data; the archive cipher is the game's own. Supporting evidence from
+primitive constants:
+
+| Constant | Occurrences |
+| --- | ---: |
+| MurmurHash2 `0xCC9E2D51` | 17 |
+| TEA/XTEA delta `0x9E3779B9` | 11 |
+| SHA-256 K0 `0x428A2F98` | 3 |
+| MD5 T0 `0xD76AA478` | 1 |
+| Blowfish P0 `0x243F6A88` | 0 |
+
+No S-boxes, no Blowfish, plenty of ARX-style constants and hash seeds: the picture is
+a **custom ARX / hash-based 16-byte construction** in CBC mode with a fixed IV, not a
+standard cipher.
+
+One more candidate key location tested and rejected: the 96-byte gap between Front A
+and Front B (`0xf4b0..0xf510`) is itself high-entropy, and using it (or slices of it)
+as an AES key/IV across 20 combinations leaves entropy at 7.78 against a 7.79
+baseline.
+
+Ghidra is at 17 minutes, 141 % CPU, 5.8 GB, decompiling. When it completes, the
+question is one loop: 16-byte strides, one round function, one key argument.
