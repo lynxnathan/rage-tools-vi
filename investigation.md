@@ -7299,3 +7299,38 @@ mapped buffer at `[stream+0x18]`.
 Byte-level scans for indirect calls (`call [reg+0x418]`, `call [reg+0x60]`) are
 useless here: they match thousands of non-instruction byte sequences. Use
 Ghidra analysis (not `-noanalysis`) for the next step.
+
+### Front regions as a hash table: decisively excluded (2026-11-23)
+
+`tools/front_hash_probe.py` takes every known name (36,952), expands it into ~20
+path normalizations (case, leaf vs full path, separator, prefix, extension
+stripping) and two encodings (bare and NUL-terminated), hashes each with seven
+functions (joaat, fnv1a, fnv1, djb2, djb2-xor, sdbm, crc32), and looks the values
+up in every 4-byte-aligned word of Front A and Front B of **all 654 archive
+headers** in the mirrored source (7,443,708 words, 7,425,717 distinct).
+
+Result — hits per algorithm:
+
+| joaat | fnv1a | fnv1 | djb2 | djb2-x | sdbm | crc32 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 560 | 578 | 559 | 555 | 600 | 586 | 562 |
+
+The counts are flat across all seven. That is the signature of chance: about
+1.5 M candidate hashes per algorithm against 7.4 M words predicts ~560 random
+collisions, and every algorithm lands there. **joaat shows no excess**, so
+RAGE's own hash function does not appear in the front region any more often than
+CRC32 does.
+
+Two things follow, and both tighten the problem:
+
+1. The front region is not a plain hash table of any name we know under any
+   common hash, with any usual path normalization.
+2. The uniform hit rate also rules out the weaker idea that the region is
+   *partly* readable with only its container framing obscured — an unmasked
+   table would put thousands of joaat hits in the same corpus.
+
+Combined with the code trace (no cipher between `Read` and the entry walk, and
+the archive object receives a pre-mapped buffer), the remaining possibilities are
+a masking transform *below* the archive class, or a table that stores no name
+hash at all (payload-derived identification, which is what our extraction
+already relies on).

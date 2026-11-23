@@ -40,6 +40,9 @@ Last updated: 2026-11-23 (executable acquired).
   (`0x140fc2540` → `0x141fb2600` → `0x1408ec210` → `0x1406bd160`) contains **no
   cipher call**, and the earlier "CBC" evidence was retracted — identical plaintext
   prefixes explain the predecessor statistic without a cipher.
+- [x] Test the front region as a hash table: 7 hash functions × 20 name
+  normalizations × 7.4 M words → flat ~560 hits per algorithm, i.e. chance.
+  Excluded (`tools/front_hash_probe.py`).
 - [ ] Find the layer that produces the mapped buffer at `[stream+0x18]` /
   `[stream+0x20]` (the file object handed to the archive ctor). That is the only
   remaining place a transform can live. Needs Ghidra **with** analysis enabled
