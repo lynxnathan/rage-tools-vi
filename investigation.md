@@ -6950,3 +6950,26 @@ That is the sharpest statement the corpus supports about the script container: i
 a general envelope (≈18,600 records in ten archives) wrapping at least three
 different payloads, and the typed property array — the one that yields readable
 schema — is used in a single file.
+
+## Journal: the descriptor signature is not a better classifier everywhere (2026-11-23)
+
+The tagged-pointer signature (eight zero bytes, tag 4–6) found the right unit in
+`levels`, so it was tried on `core_bvh4`, where the generic `is_struct` heuristic is
+used. On the same 300 packs:
+
+| Classifier | Exact count |
+| --- | ---: |
+| any model over `is_struct` | **293 / 300 (98 %)** |
+| descriptor signature alone | 285 / 300 (95 %) |
+
+So the signature is worse there and the existing classifier stays. The lesson is
+narrow and worth writing down: a classifier that wins on one archive's stream shapes
+does not transfer to another's.
+
+`levels` PSIN remains unparsed. Three layout attempts failed: a fixed `+0x08` word
+(`0x2c1e6fd5` in the first sample) is not constant — the first 5,000 bodies carry
+`0x78ba5fa7` (867), `0x100` (651), `0x71ab3a01` (531) and more; `+0x0c` is not a
+descriptor offset (320, 16, 24, 48…), and the `0xAA` runs inside the body are not a
+reliable marker (the first 5,000 bodies yield 39,596 spurious descriptors with
+varying tags). One block was parsed by hand — tag `0x9c834886`, 204 rows of 32 bytes
+with a `(count, count, 2, 0)` header — and that remains the only confirmed structure.
