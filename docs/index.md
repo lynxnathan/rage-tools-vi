@@ -89,7 +89,7 @@ flowchart LR
 | Skeleton families | 16 | readings: hand, genital, large animal, props |
 | Textures | 788 textures / 306,008,064 bytes | descriptor-valid |
 | Script schema | `PSIN` ≈18,637 records in 10 archives; **property array only in `script.rpf`** (63,288 typed rows); `LSNS` 58,697 records | parsed; names partly recovered |
-| Front A / Front B / trailer | size laws only | masked; cipher open |
+| Front A / Front B / trailer | size laws + buffer A arena layout | read verbatim by the loader; section roles open |
 
 ## Two object families
 
