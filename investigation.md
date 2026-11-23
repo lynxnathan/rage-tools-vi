@@ -7197,3 +7197,34 @@ the statistic never distinguished the two, and the code says there is no cipher.
 The remaining task is therefore a **layout** task: use the parser's field offsets
 (`+0x04`/`+0x08` sizes, 16-byte entries with `+8` and `+0x0c`, u16 type at `+4`) to
 decode Front B, with the pack's declared count as the oracle.
+
+### What the trace actually shows, and a retraction (2026-11-23)
+
+Following the archive class through Ghidra's decompiler:
+
+| Function | What it does |
+| --- | --- |
+| `0x140fc2540` | constructor: sets the vtable, calls the header read, then mount |
+| `0x141fb2600` | header read: 0x10 bytes, magic check, `malloc([+0x04] or [+0x08])`, read the front region, optionally a second region of `[+0x04] − [+0x08]` bytes |
+| `0x1408ec210` | mount: validate → get front buffer → two parse passes |
+| `0x1406bd160` | entry walker: `count` × 16-byte entries, u32 at `+8`, u32 at `+0x0c`, u16 type at `+4`, dispatch by type < 6 |
+| `0x1428ce530`, `0x1428ce230` | mount bookkeeping, no data transform |
+| `0x1406bd090`, `0x1406bd110` | pointer arithmetic inside an in-memory descriptor |
+
+**No cipher call anywhere in that chain.** So I have to retract the previous entry's
+"CBC, confirmed": the test was "repeated block ⇒ identical predecessor", and
+*identical plaintext prefixes* satisfy that just as well as a chained cipher. It never
+distinguished the two, and the code says there is no decryptor on this path.
+
+That leaves exactly two readings, and they are separable:
+
+1. **The front region is the table as stored** — a list of hashes (hence entropy ~8),
+   read and used directly, with the on-disk 10-byte rows unpacked into the in-memory
+   16-byte entries somewhere we have not yet read.
+2. **The region is encrypted before this code sees it**, by a layer above the archive
+   object (the caller that opens the file), which we have not traced.
+
+Next probes, in order: decompile the remaining vtable methods
+(`0x1428cd270`, `0x1428cd2a0`, `0x1428cd2e0`), then find the *caller* that constructs the
+archive object, since the constructor is reached only through the vtable at
+`0x1462fd480` and therefore from code that already holds the file.
