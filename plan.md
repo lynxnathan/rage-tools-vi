@@ -59,8 +59,12 @@ Last updated: 2026-11-23 (executable acquired).
 - [x] `levels` PSIN decoded as a tagged section bag: 209 tags over 400 records,
   descriptor count data-dependent (2..17+), `0xd56f1e2c` is its directory,
   `0x78ba5fa7` carries ASCII resource paths (`tools/levels_sections.py`).
-- [ ] Harvest the `0x78ba5fa7` ASCII path lists and check them against the entry
-  index — a new name source that does not depend on the name registry.
+- [x] Harvested 3,697 literal asset paths from levels sections `0x78ba5fa7`
+  (2,965) and `0xec610df1` (732); joaat in 7 normalizations matches none of the
+  name registry, the 14,530 PSIN keys or the 164 property hashes.
+- [ ] Establish how levels paths are keyed: the strings exist but do not match
+  any 32-bit table we hold, so either they are used literally or hashed by a
+  function outside our set.
 - [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`, and use the
   directory block as an independent count oracle.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or

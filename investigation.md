@@ -7599,3 +7599,33 @@ Three details worth recording:
 The earlier "three layout attempts failed" outcome is explained: those attempts
 assumed one fixed PSIN schema. There are two, and the levels one is keyed by
 section tag, so the descriptor count is data-dependent.
+
+## `levels` carries 3,697 literal asset paths — and they hash to nothing we hold (2026-11-23)
+
+`tools/levels_paths.py` harvests NUL-padded ASCII paths from every `levels` PSIN
+section across all 6,982 parsed records: **3,697 distinct paths**, one occurrence
+each. They come from exactly two sections: `0x78ba5fa7` (2,965) and `0xec610df1`
+(732) — the second tag is new.
+
+Examples:
+
+```
+acaidreams_protectedarea/all.pso.meta
+platform:/levels/americas/gameshapes/americascommon/americascommon/air_truck_heli_path/all.pso.meta
+ambrosia_raceway_mission_pedresponse/all.pso.meta
+andremansion_controlzone_friendly/all.pso.meta
+```
+
+Every path was hashed with joaat in seven forms (full, stem, lower, lower stem,
+ `platform:/levels/`-prefixed, `levels/`-prefixed, stem + `.meta`) and tested
+against three tables: the 36,952-name registry, the 14,530 PSIN object keys and
+the 164 PSIN property hashes. **Zero hits in all three.**
+
+That is a useful negative. These strings are not entry identifiers that are
+hashed into the tables we have; they are either looked up as literal text or
+hashed by a function outside our set (a 64-bit variant, or a hash over a
+different normalization). It also means the path corpus cannot be used to name
+existing hashes by assumption — the mapping would have to be established from
+the executable, not from coincidence.
+
+The harvest itself is reproducible and is kept at `cache/levels-paths.txt`.
