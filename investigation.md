@@ -6821,3 +6821,30 @@ they are few: a median shortfall of 2.6 % of the declared count.
 Recorded as the current best statement: the descriptor is the unit, it covers
 ~97 % of declared entries in large packs, and the residual is a small, localised
 absence rather than a counting model that fails.
+
+## Journal: the script container also lives in level tiles — with a different payload (2026-11-23)
+
+While chasing the `levels` descriptor deficit, one pack's streams turned out to start
+with `PSIN`. Sweeping the archive for the magic (`tools/psin_sweep.py`, mmap, 3 min
+over 1.1 M streams):
+
+| Result | Count |
+| --- | ---: |
+| `levels.rpf` streams starting with `PSIN` | 6,982 |
+| …carrying the full seven-section sequence (`PSIN`/`LSCH`/`LENM`/`LSNS`/`LGID`/`LRSC`/`CHKS`) | **5,116** |
+| property rows extracted from them | **28** |
+
+So the script container is **not script-only**: `levels.rpf` holds five times as many
+seven-section records as `script.rpf` does. That also explains the packs with no
+descriptor streams — 81 of 793 sampled packs contain PSIN records instead.
+
+But the payload is not the same. These records use the *unversioned* layout — a
+constant `0x2c1e6fd5` at `+0x08`, a `0x10` word, then eight `0xAA` bytes before each
+descriptor, a single block tag `0x9c834886`, and an `0xAA`/`0x70` terminator — not
+`script.rpf`'s v22 directory. Scanning every byte offset of five of them for the
+16-byte `(value, type, property, key)` pattern that `script.rpf` uses finds **no run
+of even one record**: the property array is simply not there.
+
+So the two archives share the container and the section vocabulary, not the contents.
+What a `levels` PSIN record carries is a new question, and the extractor that works
+for `script.rpf` does not apply to it.
