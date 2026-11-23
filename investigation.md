@@ -7262,3 +7262,40 @@ State: the archive path (open, read, mount, entry walk, both constructors) conta
 decryption. Either the front region is stored as a hash table, or the transform sits
 above the archive layer — in the code that opens the file and hands over
 `[file+0x10]`, `[file+0x18]`, `[file+0x20]`.
+
+### Archive object layout from the constructors (2026-11-23)
+
+Ghidra's reference manager on the archive vtable `0x1462fd480` (vtable is
+**RVA-based**, entries are 4-byte RVAs in the block at file offset `0x6e7e5a0`):
+
+| Target | References |
+| --- | --- |
+| vtable `0x1462fd480` | `0x140fc2572`, `0x140fc2581` (ctor 1); `0x1411a89d5`, `0x1411a89e0` (ctor 2) |
+| ctor 1 `0x140fc2540` | call from `0x140fc24e1`; data ref `0x14ac49bf8` |
+| ctor 2 `0x1411a89c0` | call from `0x1411a89a2`; data ref `0x14ac570f8` |
+| factory `0x140fc2490` | **vtable slot `0x1462fd898`** (slot 131) |
+
+The factory (`FUN_140fc2490`) is the whole "open an archive" API:
+
+1. `malloc(0x80)` for the archive object — so the object is 128 bytes
+2. ctor `FUN_140fc2540(obj, file, mode, a4, a5, a7)`
+3. `(*vtbl[0x3a0])(obj)` — validity check; on failure the object is destroyed
+4. optionally store it at `[owner+0x58]`
+
+No key, no IV, no key-derivation parameter anywhere in the signature.
+
+Constructor 2 (`FUN_1411a89c0`) shows what the "file" argument is: a stream object
+whose `+0x18` is a mapped buffer and `+0x20` its length. The plain path is
+`memcpy(buf, [file+0x18], [param_3+4])` — a straight copy. The other path reads
+a string at `[file+0x38]`/`[file+0x47]`, hashes it (`FUN_145305880`), gets a name
+from `[vtbl+0x3d0]`, and looks something up with `[vtbl+0x3f8](stream, 0xc26722d233648ae7, ...)`.
+That constant is a request/type id, not a cipher key: the same path passes a
+`u32` size and a `u16|u16<<16` pair, i.e. an offset/length request.
+
+So the file argument is **already a memory-mapped view**. Whatever decryption
+happens, happens before this object exists, in the layer that produces the
+mapped buffer at `[stream+0x18]`.
+
+Byte-level scans for indirect calls (`call [reg+0x418]`, `call [reg+0x60]`) are
+useless here: they match thousands of non-instruction byte sequences. Use
+Ghidra analysis (not `-noanalysis`) for the next step.
