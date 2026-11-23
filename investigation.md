@@ -6412,3 +6412,61 @@ What survives from that entry:
 What does not survive is the claim about what follows the eight zeros. The honest
 state of the `0xff21` payload is: block-aligned, high-entropy, with framing not yet
 identified. The length-block walker stays withdrawn.
+
+## Journal: LSNS is a table container, not an encrypted blob (2026-11-22)
+
+The public GTA VI format notes document `LSNS` as a table container:
+
+```
+u32 table count N | 4 flag bytes | per table: u32 length (then u32 id, except last)
+header = 8 + 4N + 4(N-1) | tables contiguous | every length multiple of 16
+header + sum(lengths) == payload size
+```
+
+That framing holds on **every record we have**: 1,012 of 1,012, zero failures,
+`N = 1` in all of them, 58,697 sixteen-byte records in total (`tools/lsns_tables.py`).
+
+| Result | Value |
+| --- | ---: |
+| records with an LSNS section | 1,012 |
+| framing failures | **0** |
+| tables per record | 1 (all) |
+| 16-byte records | 58,697 |
+| records per table | 10 (×120), 29 (×92), 35 (×71), 30 (×44), … |
+
+### Correction to this journal
+
+Two earlier entries concluded that `LSNS` is *genuinely encrypted*: uniform
+entropy 7.52, deterministic (120 identical 160-byte bodies), no repeating-key
+structure, 16-byte blocked. Every one of those measurements was correct and every
+one of them described a **table**, not a cipher:
+
+- the "120 identical 160-byte bodies" are the 120 tables of exactly **10 records**
+  — 10 × 16 = 160;
+- the "16-byte blocking" is the record size;
+- the uniform entropy is what four hash-like words per record look like;
+- the determinism is a table that does not depend on the message.
+
+So the section is readable, and the earlier "key-blocked" framing for it was wrong.
+What remains genuinely opaque in `script.rpf` is the 331,728-byte blob, not LSNS.
+
+### What the records are not
+
+Across 234,788 words (4 per record):
+
+| Test | Result |
+| --- | --- |
+| distinct u32 values | 210,522 (so nearly all unique) |
+| words that are known names in the registry | 1 (`HasRunStarts`, chance) |
+| words that are PSIN keys | 0 |
+| any slot holding a small integer (length, index) | none: every slot is uniform |
+
+So the records are four hash-like words each — most plausibly 128-bit
+identifiers or four independent hashes — and their meaning is open, which matches
+the public state of the art. The difference is that the *container* is now parsed
+and the record count is known, so the next question is what a 16-byte opaque value
+in a per-script table identifies.
+
+Source: the `structure/04-pso-objectgraph.md` and `structure/03-audio-awc.md` notes
+of `TrinitronClient/GTA6-Asset-Info`, applied and re-verified here rather than
+taken on trust.

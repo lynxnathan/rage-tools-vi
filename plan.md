@@ -69,11 +69,12 @@ Last updated: 2026-11-21.
 - [x] Make names usable: `handoff/names.tsv` (646 names, confidence-ordered),
   `tools/name_registry.py` (build/lookup/annotate) and `tools/psin_dump.py`
   (schema in English). New hash sources plug into one `SOURCES` list.
-- [ ] Script decomp pipeline is gated on key material. Section split and PSIN
-  directory are done; PSIN blocks are typed tables (22–38 % invalid opcodes vs
-  49 % random), and LSNS is genuinely encrypted (uniform entropy, deterministic,
-  no weak structure, no cipher tables in the shipped binaries). Reopen when a key
-  or a second sample appears; the crib is the content-dependent first block.
+- [x] LSNS parsed: it is a table container (N tables of 16-byte records), framing
+  valid on 1,012/1,012 records, 58,697 records. The earlier "genuinely encrypted"
+  conclusion is withdrawn — its entropy and determinism were a table's, not a
+  cipher's.
+- [ ] What a 16-byte LSNS record identifies. 210,522 distinct words, none matching
+  names or PSIN keys, no small-integer slot: opaque 128-bit values.
 
 - [x] Rejected: naming bones by geometry. `tools/bone_geometry_names.py`
   leave-one-out scores 0 % — the stored geometry is bone-local, so mirrored bones
