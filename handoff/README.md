@@ -10,8 +10,10 @@ still agree with these files.
 | `archive-inventory-summary.tsv` | 33 | `archive`, `kind`, `ranges`, `stored_bytes`, `decoded_bytes` |
 | `audio-ace1-decode.tsv` | 73 | `path`, `stream`, `rate`, `declared_taps`, `data_offset`, `data_bytes`, … (13 total) |
 | `audio-awc-framing.tsv` | 2,320 | `path`, `version`, `flags`, `streams`, `data_offset`, `stream`, … (18 total) |
+| `audio-full.tsv` | 95,162 | `container`, `stream`, `codec`, `channels`, `frames`, `declared`, … (10 total) |
 | `audio-opus-decode.tsv` | 2,081 | `path`, `stream`, `sub_id`, `source_rate`, `output_rate`, `declared_samples`, … (16 total) |
 | `audio-opus-trim-model.tsv` | 2,081 | `path`, `stream`, `channels`, `source_rate`, `decoded_frames`, `declared_samples`, … (10 total) |
+| `audio-variant-decode.tsv` | 4,704 | `container`, `stream`, `packets`, `channels`, `frames`, `declared`, … (9 total) |
 | `audio-xma2-decode.tsv` | 166 | `path`, `stream`, `codec`, `rate`, `samples`, `channels`, … (10 total) |
 | `bone-hash-names-curated.tsv` | 60 | `bone_hash`, `name`, `root_id`, `bone_index` |
 | `bone-hash-names.tsv` | 99 | `bone_hash`, `name`, `root_id`, `bone_index` |
@@ -35,7 +37,7 @@ still agree with these files.
 | `navmeshes-entries.tsv` | 2,447 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
 | `pack-extents-leaves.tsv` | 45 | `archive`, `offset`, `count`, `units`, `end`, `unit` |
 | `pack-extents-textures.tsv` | 21 | `archive`, `offset`, `count`, `structs`, `children`, `direct`, … (9 total) |
-| `pack-model-fit.tsv` | 3,467 | `archive`, `pack`, `declared`, `streams`, `structs`, `chains`, … (7 total) |
+| `pack-model-fit.tsv` | 4,191 | `archive`, `pack`, `declared`, `streams`, `structs`, `chains`, … (7 total) |
 | `packs-0f000080-probe.tsv` | 62 | `metric`, `value`, `count` |
 | `packs-4042-classes.tsv` | 20 | `size`, `streams`, `entropy`, `zero_fraction`, `adjacent_equal` |
 | `packs-4042-probe.tsv` | 64 | `metric`, `value`, `count` |

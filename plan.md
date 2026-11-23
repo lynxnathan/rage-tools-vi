@@ -47,6 +47,16 @@ Last updated: 2026-11-21.
 
 ## Now
 
+- [ ] Local NVMe mirror of the game directory (`/home/lynxnathan/gta6-source`,
+  224 GB) so a full pass runs without the USB drive; `tools/verify_copy.sh`
+  checks metadata on every path and sha256 on a sample (or all with `--full`).
+- [ ] Corpus pass (`tools/corpus_pass.sh`): index, per-pack entry model and, with
+  `--entries`, a payload-derived manifest for every `*.rpf`. Publish one
+  per-archive table — ranges, stored/decoded bytes, entry-model fit, audio decode
+  state. Twelve archives are covered by `pack_model_fit`; the rest (`anim`,
+  `packs`, `story000`, `shared_minigame000_bvh4`, `core_restofworld001`,
+  `core_licenses_data`, `movies`, `appdata0`) still need a run.
+
 - [x] PSIN names are JOAAT32: 25 of 301 small-vocabulary hashes and 515 of
   14,653 large-vocabulary hashes resolve against the 174k corpus
   (`tools/psin_name_probe.py`, `handoff/psin-names.tsv`; 0.61 expected

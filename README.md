@@ -193,6 +193,27 @@ git clone --recurse-submodules https://github.com/lynxnathan/rage-tools-vi.git
 git submodule update --init --recursive      # in an existing clone
 ```
 
+## Prior art and credits
+
+Two public projects document GTA VI formats in enough detail to check our results
+against, and this repository now follows them where they are ahead:
+
+| Project | What we use |
+| --- | --- |
+| [ItsNotRexed/Leonida](https://github.com/ItsNotRexed/Leonida) | the `ADAT` layout (`id:29 \| tag_count:3`, optional flag tables, 2,048-byte Opus blocks, 312-sample lookahead) — `tools/awc_parse.py` implements it |
+| [TrinitronClient/GTA6-Asset-Info](https://github.com/TrinitronClient/GTA6-Asset-Info) | byte-level notes on `PSIN`/`LSNS` framing, chunk tags, and the object graph |
+| [dexyfex/CodeWalker](https://github.com/dexyfex/CodeWalker) | the metadata name table used as a hash vocabulary (`tools/fetch_vocab.py`) |
+| [GPUOpen isa_spec_manager](https://github.com/GPUOpen-Tools/isa_spec_manager) | the machine-readable RDNA2 ISA behind the `rdna2-spirv` submodule |
+
+Where their documentation contradicted this project's earlier conclusions, the
+journal records the correction rather than quietly changing the number: `LSNS` is
+a table container, not an encrypted blob, and the `0xff21` audio payload was
+already documented.
+
+What this repository has that those notes list as open: decoding RDNA2 shader
+code to SPIR-V, payload-derived entry boundaries without the table of contents,
+and a merged 36,952-entry hash→name registry.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
