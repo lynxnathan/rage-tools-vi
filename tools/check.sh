@@ -20,6 +20,14 @@ fast=0
 fail=0
 note() { printf '%-26s %s\n' "$1" "$2"; }
 
+# Every tool must at least parse: a syntax error in an unexercised script is a
+# silent hole in "you can run this from a fresh clone".
+if $PY -m compileall -q tools >/tmp/check-compile.log 2>&1; then
+    note "tool syntax" "PASS ($(ls tools/*.py | wc -l) modules)"
+else
+    note "tool syntax" "FAIL"; tail -5 /tmp/check-compile.log | sed 's/^/    /'; fail=1
+fi
+
 if $PY tests/test_analysis_tools.py >/tmp/check-tools.log 2>&1; then
     note "analysis tools" "PASS ($(grep -c '  ok' /tmp/check-tools.log) checks)"
 else
