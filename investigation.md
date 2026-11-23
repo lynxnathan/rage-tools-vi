@@ -7564,3 +7564,38 @@ layer emits it.
 `tools/script_meta.py` now also streams with seek/read instead of loading the
 archive, because `levels.rpf` does not fit in memory, and it walks `CHKS` as a
 known chunk.
+
+## `levels` PSIN is a tagged section bag, not a fixed five-block schema (2026-11-23)
+
+Same chunk chain as `script.rpf` (`PSIN LSCH LENM LSNS LGID LRSC`, plus `CHKS`),
+but a different PSIN payload. Over the first 400 parsed `levels` records:
+
+- PSIN descriptor count varies from **2 to 17+** (2 in 119 records, then 7..13).
+- **209 distinct section tags** appear; a tag is present only when the level has
+  that kind of content.
+- The top tags by coverage:
+
+| tag | records | length range | common |
+| --- | --- | --- | --- |
+| `0xb55501c9` | 274 | 224..21,728 | 224 |
+| `0xd52b2d2f` | 274 | 32 | 32 |
+| `0x00000007` | 270 | 8..3,936 | 8 |
+| `0x71ab3a01` | 189 | 16..8,896 | 64 |
+| `0xfc24fa58` | 189 | 48..3,072 | 48 |
+| `0x00000031` | 189 | 128..67,824 | 320 |
+| `0x78ba5fa7` | 111 | 320..131,024 | 320 |
+
+Three details worth recording:
+
+1. `0xd56f1e2c` is the levels counterpart of `script`'s directory block: a 16-byte
+   `(count, count, 2, 0)` table, the "unversioned layout" constant seen earlier.
+2. `0x9c834886` is 32-byte rows whose first two words start as negative sentinels
+   (`0xfffffff6`, `0xfffffffd`, i.e. −10, −3) before ordinary hashes — which is
+   why earlier layout attempts that assumed unsigned counts failed.
+3. `0x78ba5fa7` carries **NUL-padded ASCII resource paths**, for example
+   `acaidreams_protectedarea/all.pso.meta`. That makes `levels` a source of
+   literal level/asset paths, reproducible with `tools/levels_sections.py`.
+
+The earlier "three layout attempts failed" outcome is explained: those attempts
+assumed one fixed PSIN schema. There are two, and the levels one is keyed by
+section tag, so the descriptor count is data-dependent.

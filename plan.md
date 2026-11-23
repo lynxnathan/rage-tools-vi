@@ -56,6 +56,11 @@ Last updated: 2026-11-23 (executable acquired).
   3,000 records recorded.
 - [ ] Identify the `CHKS` tag; candidates joaat32/fnv1a/crc32/adler32 over body,
   prefix and compressed stream are all excluded.
+- [x] `levels` PSIN decoded as a tagged section bag: 209 tags over 400 records,
+  descriptor count data-dependent (2..17+), `0xd56f1e2c` is its directory,
+  `0x78ba5fa7` carries ASCII resource paths (`tools/levels_sections.py`).
+- [ ] Harvest the `0x78ba5fa7` ASCII path lists and check them against the entry
+  index — a new name source that does not depend on the name registry.
 - [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`, and use the
   directory block as an independent count oracle.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or
