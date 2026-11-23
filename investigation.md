@@ -6356,3 +6356,32 @@ declared-count check. If the ratios come out at 1.0 for every stream, the 260
 remaining audio streams are done.
 
 Recorded as a negative with a precise cause, not as a partial success.
+
+### What the `0xff21` payload actually looks like
+
+Dumping a 6,144-byte `0x55` payload at its block boundaries:
+
+```
+    0: a0 00 f8 b4 d1 f7 70 a3 69 d5 05 98 7c fe 44 b9 33 30 db 6d 68 a5 e7 6a
+ 2040: 00 00 00 00 00 00 00 00 4c 00 68 06 34 3f e1 f9 2b f8 91 c7 cf 38 b3 8f
+ 4088: 00 00 00 00 00 00 00 00 3f 00 68 a1 4a f5 a4 a0 41 42 1d f6 28 48 32 58
+```
+
+Three things are visible and none of them is the `0xff02` layout.
+
+1. The payload is a multiple of 2,048, and each block after the first begins with
+   **eight zero bytes followed by a u16 size** (0x4c = 76, 0x3f = 63) and then
+   payload bytes that start with `0x68` — a plausible Opus TOC.
+2. The first block begins with `a0 00 f8`, the marker the original inspector
+   recorded, and there are only **two** markers in 6,144 bytes, 162 apart. So the
+   marker is not a per-packet delimiter; it marks something at block scale.
+3. The chunk is 6,144 bytes while the framing table records `data_size` 2,048 per
+   stream, so **one `0x55` chunk carries several streams' 2,048-byte blocks**. The
+   pairing "i-th `0x55` belongs to the i-th `0x76`" is therefore wrong, which is
+   the second half of why the first decode attempt failed for a fifth of streams.
+
+So the remaining work is precise: split each `0x55` chunk into 2,048-byte blocks,
+read the u16 size at `+8` of each block, and attribute blocks to streams by the
+descriptor order — then decode, and check `frames / declared` against 1.0.
+
+None of that is guesswork any more; it is a layout to implement.
