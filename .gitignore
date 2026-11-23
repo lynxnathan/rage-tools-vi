@@ -1,6 +1,7 @@
 /target/
 /explorer/target/
 /output/
+/output
 /*.rpf
 /bus
 
