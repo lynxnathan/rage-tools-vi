@@ -7085,3 +7085,14 @@ sites, the read at `0x141fb2600`, and the entry builder behind `0x1408ec360`.
 Two structural facts worth keeping from this pass: Front B's size divides exactly
 into `count × 10`, and the front block sits exactly between `[hdr+0x08]` and
 `[hdr+0x04]`, so the geometry is certain even though the content is not.
+
+### Ghidra needs more than the default heap
+
+The first headless run aborted after six minutes:
+`java.lang.OutOfMemoryError: Java heap space` — Ghidra defaults to `MAXMEM=2G` in
+`support/launch.properties`, which is not enough for a 100 MB `.text`. Restarted with
+`GHIDRA_MAXMEM=20G` (machine has 29 GB, 16 cores) and `-analysisTimeoutPerFile 14400`.
+
+Two query scripts live in `cache/ghidra/` for when it finishes:
+`xref_magic.py` (functions referencing the `9FPR` magic, via `findBytes` + function
+containment) and `decomp_at.py <addr>` (decompile any function).
