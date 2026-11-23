@@ -49,7 +49,8 @@ Last updated: 2026-11-23.
   systematic — about five non-entry struct streams and ninety surplus data
   streams per pack, i.e. entries owning several data streams. Needs the
   entry-type distribution.
-- [ ] Rebuild the extraction browser with the new manifests and names.
+- [x] Extraction browser rebuilds for every archive; a missing verification row is
+  shown as "indexed only" instead of failing the build.
 
 ## Next
 

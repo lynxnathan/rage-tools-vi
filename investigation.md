@@ -6739,3 +6739,26 @@ tail records that have no PSIN counterpart.
 
 The tail contents remain opaque 128-bit values, but they are now known to be
 per-script, kind-sized, and independent of the path.
+
+## Journal: the browser builds again, and a missing verification row is not an error (2026-11-23)
+
+`tools/extraction_index_pilot.py` refused to build: it required exactly one PASS
+verification row per archive, and `levels.rpf` has none in the current
+`output/verification.tsv`. That is a data-shape assumption, not a corruption — the
+verification table is rebuilt per archive, so an archive can be absent while a run
+is in progress, or appear twice mid-run.
+
+The browser now treats a missing row as what it is: the archive is shown as
+**indexed only**, with no verified rows. Multiple rows are resolved by preferring a
+PASS row. The build completes for every archive, and the control checks still run
+where a manifest exists:
+
+```
+navmeshes.rpf 0x37010–0x382e6 matched the decoded file and SHA-256 dc0bfa56…
+packs.rpf     0x8010–0x806c  matched the decoded file and SHA-256 5b335c2a…
+story000.rpf  0x12010–0x1474b matched the decoded file and SHA-256 28bfdac0…
+```
+
+The page is `output/extraction-index-pilot/index.html` (untracked, as all generated
+output is). The lesson matches the one from the corpus pass: a tool that fails on a
+legitimately absent row hides the 21 archives that are fine.

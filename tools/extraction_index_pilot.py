@@ -68,9 +68,18 @@ def index_pages(path, full):
 
 
 def verification_record(name, verification):
+    """The PASS verification row for an archive, or None when it has none.
+
+    Verification tables are rebuilt per archive, so an archive can legitimately be
+    missing from one (or appear more than once while a run is in progress). A
+    missing row is not a failure of the browser: the archive is shown as indexed
+    only, which is what the data supports.
+    """
     matches = [row for row in verification if Path(row["archive"]).name == name]
-    if len(matches) != 1:
-        raise ValueError(f"Expected one verification record for {name}")
+    if not matches:
+        return None
+    if len(matches) > 1:
+        matches = [row for row in matches if row.get("status") == "PASS"] or matches[-1:]
     record = matches[0]
     if (record["status"] != "PASS" or int(record["manifest"]) != int(record["index"])
             or any(int(record[field]) for field in ("missing", "extra", "failures"))):
@@ -142,8 +151,11 @@ def archive_root(key, verification):
         source, matched, status = name, {}, "Indexed only"
     else:
         record = verification_record(name, verification)
-        source, status = record["archive"], "Verified archive"
-        matched = match_manifest(manifest, pages, int(record["manifest"]))
+        if record is None:
+            source, status, matched = name, "Indexed only (no verification row)", {}
+        else:
+            source, status = record["archive"], "Verified archive"
+            matched = match_manifest(manifest, pages, int(record["manifest"]))
 
     page_items = [
         (start, [range_item(row, source, manifest, matched.get(extent(row))) for row in page])
