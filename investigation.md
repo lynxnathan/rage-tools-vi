@@ -6385,3 +6385,30 @@ read the u16 size at `+8` of each block, and attribute blocks to streams by the
 descriptor order — then decode, and check `frames / declared` against 1.0.
 
 None of that is guesswork any more; it is a layout to implement.
+
+### Correction: the block header does not generalise (0 of 4,110)
+
+The previous entry read a block header — eight zero bytes then a u16 size — from a
+single 6,144-byte payload. Checking that against every `0x55` block after the first
+in 60 `0xff21` Opus files rejects it outright:
+
+```
+blocks after the first: 4,110
+with 8 zero bytes and a sane u16 size at +8: 0 (0.0 %)
+```
+
+So the sample was not representative. The block boundary at 2,048 is real — the
+framing table records `data_size` 2,048 and the payloads are multiples of it — but
+the header I described is not there in general, and the speculatively recorded
+layout is withdrawn.
+
+What survives from that entry:
+
+- payloads are multiples of 2,048, and `data_size` is 2,048 in the descriptor;
+- one `0x55` chunk can hold several streams' worth of blocks (6,144 = 3 × 2,048
+  for a 6-stream file), so chunk-to-stream pairing by index is unsafe;
+- the marker `a0 00 f8` occurs at block scale, not per packet.
+
+What does not survive is the claim about what follows the eight zeros. The honest
+state of the `0xff21` payload is: block-aligned, high-entropy, with framing not yet
+identified. The length-block walker stays withdrawn.
