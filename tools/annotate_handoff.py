@@ -61,6 +61,10 @@ def main():
             continue
         total = len(rows) * len(columns)
         named = 0
+        # Field names must be fixed before any row is touched: only rows that
+        # actually carry a hash value get a `*_name` key, so deriving the header
+        # from `rows[0]` afterwards fails as soon as the first row has no hash.
+        fields = list(rows[0]) + [f"{column}_name" for column in columns]
         for row in rows:
             for column in columns:
                 raw = (row.get(column) or "").strip()
@@ -69,7 +73,9 @@ def main():
                 hit = registry.get(int(raw, 16))
                 row[f"{column}_name"] = hit["name"] if hit else ""
                 named += 1 if hit else 0
-        fields = list(rows[0])
+        for row in rows:
+            for column in columns:
+                row.setdefault(f"{column}_name", "")
         with (args.out / path.name).open("w") as handle:
             writer = csv.DictWriter(handle, fieldnames=fields, delimiter="\t",
                                     lineterminator="\n")

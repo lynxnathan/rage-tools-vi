@@ -5,6 +5,7 @@ core-bvh4-descriptors.tsv	269106	2	id0,id1	4	538212	0.0000
 navmeshes-entries-chains.tsv	25981	2	pack,struct_stream	0	51962	0.0000
 navmeshes-entries.tsv	2447	3	pack,struct_stream,data_stream	0	7341	0.0000
 psin-names.tsv	544	1	hash	544	544	1.0000
+psin-rows.tsv	63288	3	a,b,c	30508	189864	0.1607
 rig-names-corpus.tsv	12	2	hash,root_id	23	24	0.9583
 script-array-inventory.tsv	7960	3	root_id,root_type,type_tag	3066	23880	0.1284
 script-bone-geometry.tsv	3043	2	root_id,bone_hash	3351	6086	0.5506
@@ -14,6 +15,7 @@ script-bones-named.tsv	3043	4	root_id,root_type,bone_hash,first_id	3351	12172	0.
 script-bones.tsv	3043	4	root_id,root_type,bone_hash,first_id	3351	12172	0.2753
 script-pair-arrays.tsv	7630	3	root_id,root_type,hash	552	22890	0.0241
 script-quadtree-summary.tsv	44	1	root_id	44	44	1.0000
+script-sections.tsv	4901	2	tag,index_hash	0	9802	0.0000
 script-skeleton-0x48dcbb01.tsv	34	1	bone_hash	34	34	1.0000
 script-vehicle-branch-relations.tsv	23	1	key_hash	0	23	0.0000
 script-vehicle-curve-join.tsv	1935	2	root_id,key_hash	27	3870	0.0070
