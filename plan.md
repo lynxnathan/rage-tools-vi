@@ -1,185 +1,73 @@
 # Plan
 
-Current state and open work. Narrative, measurements and evidence belong in
-[investigation.md](investigation.md) and `handoff/`. Completed work stays as one
-line of state, not as a log.
+Live check/todo list. Evidence, measurements and the failures that led here belong
+in [investigation.md](investigation.md) and `handoff/`; completed work is one line
+of state, not a log.
 
-Last updated: 2026-11-21.
+Last updated: 2026-11-23.
 
 ## Current state
 
-- **Extraction:** all 22 source archives indexed — 4,415,850 ranges / 161.3 GB
-  stored / 365.0 GB decoded, every index tiling its archive exactly. Six
-  archives plus `levels` carry bulk manifests (2,190,635 of 2,241,410 zlib
-  ranges); the rest are analysed locally. `levels` verified (completeness pass
-  plus a 1,500-file hash sample).
-- **Unclassified:** closed. Every large span is media — 38.1 GB AWC audio,
-  13.4 GB Bink/Bink2 video, ~1.2 GB fragments. No unexplained game payload.
-- **Cutscene audio:** `story000`'s 9.56 GB AWC chain is extracted and decoded —
-  **196,350 Opus streams / 148.3 hours / 47.7 GB of WAV** in
-  `output/extracted/story000-opus/`. The `0xff02` layout (98.4 % of the chain)
-  is solved; 210 containers of other variants remain undecoded.
-- **Entry level:** payload-derived manifests cover four archives — 328,481
-  entries with exact boundaries: `core_bvh4` (pairs, 1,214/1,282 packs),
-  `navmeshes` (chains, 13/29), `data` (chains, 19/42), `textures` (pairs, 19/21).
-  Unverified packs are exactly those whose entries mix shapes. All four
-  manifests pass a self-consistency check (0 index-missing, 0 duplicates).
-- **Descriptors:** both bvh4 archives inventoried — `core_bvh4` 269,106 rows and
-  `shared_minigame000_bvh4` 1,233, with exact allocated sizes and an orthonormal
-  right-handed basis (269,105/269,106 within 1e-3).
-- **Pack extents:** zero-padding boundaries are exact and 16-aligned on every
-  archive tested; leaf extents published; parents still need a row model.
-- **Metadata:** header census complete (4,373 headers); Front A/Front B/trailer
-  remain masked; size laws characterised.
-- **Script:** `script.rpf` records are a section sequence
-  (`PSIN`/`LSCH`/`LENM`/`LSNS`/`LGID`/`LRSC`/`CHKS`), not YSC. PSIN holds typed
-  tables, LSNS (939 KB total) and the 331 KB blob are genuinely encrypted, and no
-  cipher tables ship in the local binaries. Decomp research and pipeline design
-  are recorded; decoding is key-blocked.
-- **Naming:** all identifiers are `JOAAT(lowercase name)`. 99 of 612 bone-table
-  hashes and 21 of 252 weight hashes resolved across `skel_`/`mh_`/`rb_`
-  families; one rig fully decoded (34/34); the 16 skeleton families carry
-  readings (hand, genital, large animal, small props). The 330-hash universe is
-  the unnamed small-prop families.
-- **Browser:** `output/extraction-index-pilot/index.html` rebuilt with seven
-  verified archives.
-- **Disk:** Mammoth at 95 % (188 GB free) after the 47.7 GB cutscene decode.
-
-## Data layout
-
-Two disks, two jobs, and the split is forced by arithmetic rather than taste.
-
-| Disk | Free | Holds |
-| --- | ---: | --- |
-| Local NVMe (`/home`) | ~157 GB, ~68 GB after the mirror | **source archives** (`/home/lynxnathan/gta6-source`, 224 GB) |
-| Mammoth, USB (`/run/media/.../Mammoth`) | ~201 GB | **extraction output** (`output/`), manifests and chosen artifacts |
-
-The archives are copied to NVMe for one reason: every pass reads them. A full
-`pack_model_fit` decompresses 161 GB, and doing that over USB at 80 MB/s while also
-writing to the same nearly-full disk is both slow and risky. Reading locally makes
-passes repeatable and leaves Mammoth free for output.
-
-Extraction output stays on Mammoth because **365 GB of decoded payload does not fit
-on either disk**: 68 GB local plus 201 GB on Mammoth is 269 GB. So extraction is
-*streaming* by default — decompress, measure, keep the manifest, discard the bytes —
-and only named artifacts are written (`--out`), never a bulk decode of the corpus.
-
-Consequences for tools: a pass may read archives freely, but anything that writes
-payload must take an explicit destination and must be resumable.
+- **Corpus:** 22 archives indexed — 4,415,850 ranges / 161.3 GB stored / 365.0 GB
+  decoded; every index tiles its archive. Source archives mirrored to local NVMe
+  (`/home/lynxnathan/gta6-source`), verified by size/mtime on every path and by
+  hash on a sample.
+- **Entries:** one corpus pass (4 min, parallel) fits an entry model per pack and
+  emits payload-derived manifests for 14 archives — **188,298 entries**, exact
+  count verification (`--tolerance 0`). `core_bvh4` reproduces the declared count
+  for 1,253 of 1,261 packs.
+- **Audio:** complete — 93,344 Opus + 1,818 XMA2 + 73 ACE1 streams, 0 failures;
+  `frames × channels / declared` never below 1.0.
+- **Script schema:** `PSIN` parsed (62,910 typed rows; 25 of 301 properties and
+  515 of 14,653 keys named). `LSNS` is a table container — 1,012/1,012 records
+  parse, 58,697 sixteen-byte records.
+- **Names:** one registry, 36,952 hash→name pairs with confidence and an
+  ambiguity flag for JOAAT collisions; every handoff table annotated (4.3 % of
+  hash values named corpus-wide, concentrated in bones and the script schema).
+- **GPU:** shader decompilation is a separate repository, `rdna2-spirv/`.
+- **Health:** `tools/check.sh` (tests, index invariants, shader suite, docs build).
 
 ## Now
 
-- [ ] Local NVMe mirror of the game directory (`/home/lynxnathan/gta6-source`,
-  224 GB) so a full pass runs without the USB drive; `tools/verify_copy.sh`
-  checks metadata on every path and sha256 on a sample (or all with `--full`).
-- [x] Corpus pass over all 22 archives (`tools/corpus_pass.sh`, parallel, 4 min):
-  index, per-pack model fit, payload-derived manifests for 14 archives totalling
-  188,298 entries. Table in `handoff/corpus-pass.tsv`, page in
-  `docs/extraction/corpus.md` — ranges, stored/decoded bytes, entry-model fit, audio decode
-  state. Twelve archives are covered by `pack_model_fit`; the rest (`anim`,
-  `packs`, `story000`, `shared_minigame000_bvh4`, `core_restofworld001`,
-  `core_licenses_data`, `movies`, `appdata0`) still need a run.
-
-- [x] PSIN names are JOAAT32: 25 of 301 small-vocabulary hashes and 515 of
-  14,653 large-vocabulary hashes resolve against the 174k corpus
-  (`tools/psin_name_probe.py`, `handoff/psin-names.tsv`; 0.61 expected
-  collisions against 540 hits).
-- [x] PSIN record roles settled: small vocabulary = property name, large =
-  object key (`location_*` keys carry two properties; a value cannot).
-  Relabelled in the tool and `handoff/psin-names.tsv`.
-- [x] `tools/psin_extract.py` produces the property dump directly from
-  `script.rpf` (62,910 rows, identical to the earlier dump), so the chain
-  archive -> dump -> lookup -> entries needs no external cache.
-- [x] PSIN records render as entries: `tools/psin_segment.py --describe` pairs
-  local `Id`/`Type` runs and resolves the payload from the key column, so record
-  1054 reads as vehicle parts (bonnet, side, roof, cosmetics) and locations.
-- [ ] Recover the parent/child relation by segmenting on **local table width**:
-  four PSIN records are fixed-width tables (width 4 x3, width 6 x1, ≥99.7 %
-  agreement), while the largest (6,246 rows) has no global period — the tree
-  boundary is a change of period, not a hidden field. Segment the row stream
-  where the local period changes.
-  Widen the corpus to raise 25/301 properties and 515/14,653 keys.
-- [x] Make names usable: `handoff/names.tsv` (646 names, confidence-ordered),
-  `tools/name_registry.py` (build/lookup/annotate) and `tools/psin_dump.py`
-  (schema in English). New hash sources plug into one `SOURCES` list.
-- [x] LSNS parsed: it is a table container (N tables of 16-byte records), framing
-  valid on 1,012/1,012 records, 58,697 records. The earlier "genuinely encrypted"
-  conclusion is withdrawn — its entropy and determinism were a table's, not a
-  cipher's.
-- [ ] What a 16-byte LSNS record identifies. 210,522 distinct words, none matching
-  names or PSIN keys, no small-integer slot: opaque 128-bit values.
-
-- [x] Rejected: naming bones by geometry. `tools/bone_geometry_names.py`
-  leave-one-out scores 0 % — the stored geometry is bone-local, so mirrored bones
-  are identical and neighbours are always the opposite side. Needs rig-space
-  transforms, not more vocabulary.
-- [ ] Name the remaining ped-rig bone hashes. A corpus sweep
-  (`tools/rig_name_corpus_probe.py`) adds 4 candidates, but they need an
-  independent predictor (mirror offset, table position) before promotion; the
-  collision budget allows ~1.3 false hits per sweep of this size.
-- [ ] Name the remaining weight hashes (21 of 252 done). A 174k-token corpus
-  sweep over the 231 unnamed hashes yields one candidate (`ph_hat`, 0.22 expected
-  false positives); the cheap vocabulary is now exhausted — needs another source.
-- [ ] Open the 330-hash universe with a new vocabulary source. The corpus route
-  is exhausted for *types*: 174k tokens against 35,106 type hashes returns 0 hits
-  (1.42 expected by chance). The engine metadata table (CodeWalker, 20,300
-  names) resolves 57 properties but only 4 of 234,720 `id1` values, so types are
-  a third vocabulary. Three attempts (corpus, engine metadata, 40 engine class
-  names) give 0 usable hits against 21 `root_type` + 21 `type_tag` values, so the
-  names are probably not readable strings at all — likely stored in the encrypted
-  LSNS. Do not retry with another dictionary.
-- [ ] Rehash all of `levels`.
+- [ ] What a 16-byte `LSNS` record identifies. 210,522 distinct words, none
+  matching names or PSIN keys, no small-integer slot: opaque 128-bit values.
+- [ ] Recover the `PSIN` parent/child relation by segmenting on **local table
+  width**. Four records are fixed-width tables (width 4 ×3, width 6 ×1, ≥99.7 %
+  agreement); the largest (6,246 rows) has no global period, so the boundary is a
+  change of period rather than a hidden field.
+- [ ] Name the remaining ped-rig bones and weight hashes. The 174k-token corpus
+  sweep is exhausted (4 bone candidates, 1 weight candidate, both unverified);
+  this needs a new vocabulary source, not a wider search.
+- [ ] Entry model for `levels` (728 of 2,044 packs exact). The failures are
+  systematic — about five non-entry struct streams and ninety surplus data
+  streams per pack, i.e. entries owning several data streams. Needs the
+  entry-type distribution.
+- [ ] Rebuild the extraction browser with the new manifests and names.
 
 ## Next
 
-- [x] Re-index all 22 archives for `chain_start`; verified tiling 22/22 and the
-  column is sound. The rule stays conservative by design: enabling the obvious
-  padding fix merges every page archive into one chain (`shaders`: 4,205 pages
-  in 1 chain), so grouping still needs a per-entry marker.
-- [ ] Map the type/class IDs and transforms.
+- [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
+- [ ] Map the script type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.
 - [ ] Packs active-learning queue.
-- [ ] ACE1 trailer pairs.
-- [ ] Locate compiled shader bytecode.
 - [ ] Script object root field roles.
 
 ## Blocked
 
 Each needs a specific input, not more effort.
 
-- [x] ~~Directory/virtual rows in the entry count — needs Front B key material.~~
-  Not blocked: the row shows up in the payload as one extra struct stream per
-  pack. With `structs-1` and positional pairs, `core_bvh4` verifies
-  **1,250/1,261 packs (99 %)**, `textures` 16/20, `navmeshes` 16/28, `data` 21/40,
-  `levels` 800/2,044. The `levels` failures are systematic: about five
-  non-entry struct streams and ninety surplus data streams per pack, i.e. entries
-  that own several data streams (LODs, collision). No count-only model can fit
-  them; the next attempt needs the entry-type distribution.
-- [x] Mixed packs measured per pack: `tools/pack_model_fit.py` fits an exact
-  model for 1,171/1,261 `core_bvh4` packs, 31/44 `shared_minigame000`, 14/28
-  `navmeshes`, 16/40 `data`, but only 686/2,044 `levels` and 0/1 for
-  `shaders`/`common`. Results in `handoff/pack-model-fit.tsv`.
-  `tools/entry_model.py` now measures the model per archive: pairs fit
-  `core_bvh4`/`levels`/`core_restofworld`; `shaders.rpf` is 3 chains of ~1,400
-  pages and the page rule explains 100 % of continuations, so what is missing is
-  the boundary between chains, not the continuation rule.
-- [ ] Front B table `S` — same mask problem.
-- [x] ~~9→10 byte stride boundary — needs a pack at N = 255 or 256.~~ Closed as
-  mis-framed: `tools/frontb_stride.py` solves 3,029 headers and finds a 76-row
-  pack already at 10 bytes while 254-row packs stay at 9, so count is not the
-  discriminator. It depends on the row values themselves (offset width), which
-  needs a decoded Front B, not another pack size.
-- [ ] `+0x50` profiles as cipher parameters — needs a crib or key material.
+- [ ] RPF9 table of contents — Front A, Front B and the trailer are masked, so
+  there are no original names or paths; every entry here is payload-derived.
+- [ ] Front B table `S`, and the `+0x50` profiles as cipher parameters — need a
+  crib or key material.
 - [ ] Front A milestone on `story000_bvh4.rpf` — needs independent table framing.
 - [ ] Exact end of the last `data.rpf` child — needs an independent trailer start.
 - [ ] Multi-mip texture tail — needs a multi-mip dictionary.
 - [ ] The 331,728-byte `script.rpf` blob — needs a PC launch or a new sample.
-- [ ] Full RPF9 metadata key recovery — needs key material or a second build.
-
-## Health
-
-- [x] `tools/check.sh` runs the analysis tests, the index invariants, the
-  `rdna2-spirv` suite and the docs build in one go; all four pass today.
+- [ ] Script bytecode itself: not in a plaintext section — needs the executable or
+  a second build.
+- [ ] Type-name vocabulary (`root_type`, `type_tag`): three vocabularies return
+  nothing usable; most likely stored as text inside the masked data.
 
 ## Not mine
 
