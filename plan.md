@@ -51,6 +51,11 @@ Last updated: 2026-11-23 (executable acquired).
 - [ ] Settle whether the typed row's `c` word is a declaration index or a value:
   `Decay` carries a shared `300000` while byte rows count 0..6. Needs the script
   data section.
+- [x] `levels` records add a seventh chunk `CHKS`: `u32` big-endian record size
+  (matches body length 60/60) plus an unidentified 4-byte tag. Chain census over
+  3,000 records recorded.
+- [ ] Identify the `CHKS` tag; candidates joaat32/fnv1a/crc32/adler32 over body,
+  prefix and compressed stream are all excluded.
 - [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`, and use the
   directory block as an independent count oracle.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or

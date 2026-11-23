@@ -7527,3 +7527,40 @@ object, and the two cases coexist inside one block. `psin_entries.py` treats it
 as a value, which is why `Decay` pairs against `0x000493e0` — that is a
 consequence of the choice, not evidence for it. Resolving this needs the script
 data section, not more schema work.
+
+## `levels` records carry a seventh chunk, `CHKS` (2026-11-23)
+
+`script.rpf` records end at `LRSC`. Records extracted from `levels.rpf` append
+`CHKS`, so the chain has seven chunks there. Walking 3,000 `levels` records:
+
+| chain | records |
+| --- | --- |
+| `PSIN LSCH LENM LSNS LGID LRSC CHKS` | 2,913 |
+| `PSIN` only | 61 |
+| `PSIN LSCH LENM LSNS` | 11 |
+| `PSIN LSCH` | 9 |
+| `PSIN LSCH LENM` | 4 |
+
+The 84 short chains are streams whose decompressed body ends mid-record — the
+same stream-page split that `psin_extract.py` already handles by joining the next
+range.
+
+`CHKS` is a 12-byte payload:
+
+```
+u32 big-endian total record size   ← matches the decompressed body length in 60/60 records
+4 bytes, unidentified tag
+0x7a then 0x70 0x70 0x70           ← 0x70 is the writer's memset fill
+```
+
+The size field is a verified invariant, which makes it a usable integrity check.
+The tag is **not** any of: joaat32, fnv1a, crc32 or adler32 over the decompressed
+body, over the body prefix before `CHKS`, or over the compressed stream — all
+zero matches in 60 records (`tools/chks_probe.py`). Its role is open; the
+`CHKS` literal also occurs exactly once in the executable, as a `.rdata` string
+at `0x14617a420` rather than an immediate in the metadata writer, so a different
+layer emits it.
+
+`tools/script_meta.py` now also streams with seek/read instead of loading the
+archive, because `levels.rpf` does not fit in memory, and it walks `CHKS` as a
+known chunk.

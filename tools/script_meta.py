@@ -21,6 +21,8 @@ Chunks, in the order the writer emits them:
   LSNS  table block, size given by `FUN_144080f60`
   LGID  `u32 count` then `count * 16` bytes
   LRSC  final 0x58-byte header block
+  CHKS  optional trailer seen in `levels`-style records: `u32` big-endian record
+        size, then a 4-byte tag we have not identified
 
 The chunk header sizes are **big-endian** while the payload words are
 little-endian, which is why `sections()` in `psin_extract.py` reading a
@@ -38,7 +40,8 @@ import zlib
 from pathlib import Path
 
 MAGICS = {b"PSIN": "PSIN", b"LSCH": "LSCH", b"LENM": "LENM",
-          b"LSNS": "LSNS", b"LGID": "LGID", b"LRSC": "LRSC"}
+          b"LSNS": "LSNS", b"LGID": "LGID", b"LRSC": "LRSC",
+          b"CHKS": "CHKS"}
 POISON = {0xAAAAAAAAAAAAAAAA, 0xEEEEEEEEEEEEEEEE, 0xBBBBBBBBBBBBBBBB}
 TYPES = {0x101, 0x102, 0x103, 0x104, 0x105}
 
@@ -182,25 +185,35 @@ def walk(body):
     return chunks
 
 
+def _decompress(handle, start, end):
+    handle.seek(start)
+    return zlib.decompress(handle.read(end - start))
+
+
 def streams(archive, index):
-    data = archive.read_bytes()
+    """Yield (record index, body) for every zlib stream whose body starts with PSIN.
+
+    Reads each range with seek/read rather than loading the archive: `levels.rpf`
+    alone is far larger than memory.
+    """
     ranges = sorted((int(row["start"], 16), int(row["end"], 16))
                     for row in csv.DictReader(index.open(), delimiter="\t")
                     if row["kind"] == "zlib")
-    for position, (start, end) in enumerate(ranges):
-        try:
-            body = zlib.decompress(data[start:end])
-        except zlib.error:
-            continue
-        if not body.startswith(b"PSIN"):
-            continue
-        if len(body) == 65536 and position + 1 < len(ranges):
-            next_start, next_end = ranges[position + 1]
+    with archive.open("rb") as handle:
+        for position, (start, end) in enumerate(ranges):
             try:
-                body += zlib.decompress(data[next_start:next_end])
-            except zlib.error:
-                pass
-        yield position, body
+                body = _decompress(handle, start, end)
+            except (zlib.error, MemoryError):
+                continue
+            if not body.startswith(b"PSIN"):
+                continue
+            if len(body) == 65536 and position + 1 < len(ranges):
+                next_start, next_end = ranges[position + 1]
+                try:
+                    body += _decompress(handle, next_start, next_end)
+                except (zlib.error, MemoryError):
+                    pass
+            yield position, body
 
 
 def main():
@@ -230,8 +243,9 @@ def main():
         names = [chunk["magic"] for chunk in chunks]
         for name in names:
             chunk_counts[name] = chunk_counts.get(name, 0) + 1
+        # `script.rpf` stops at LRSC; `levels`-style records append a CHKS trailer
         expected = ["PSIN", "LSCH", "LENM", "LSNS", "LGID", "LRSC"]
-        if names == expected:
+        if names == expected or names == expected + ["CHKS"]:
             complete += 1
         elif len(problem) < 6:
             problem.append((position, names))
