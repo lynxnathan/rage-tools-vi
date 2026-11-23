@@ -7424,3 +7424,61 @@ the `levels` archive.
 
 So the earlier picture — "62,910 typed rows over 1,012 records" — describes one
 block type inside `PSIN`, not the whole of it.
+
+## PSIN field order corrected — the old TSVs paired values with the wrong property (2026-11-23)
+
+Decoding the typed block (`tag 0x85b4c631`) shows the type word at **`+0x0c`**,
+i.e. field 3 of the 16-byte row, in 63,288 of 63,290 occurrences. The row is:
+
+```
+{ u32 property_hash, u32 key_hash, u32 value_or_index, u32 type }
+```
+
+`property_hash` has a **small vocabulary** — 164 distinct values in `script.rpf`
+(`Flags`, `Heading`, `Position`, `Name`, `Id`, `val`, `InteriorPosition`,
+`Type`, `InteriorName`, `HeadingLimits`, `OrbitDistance`, `PitchLimits`,
+`Priority`, `BlendDuration`, `origin`, `aperture`, ...). `key_hash` is large —
+14,530 distinct, against the 14,653 object keys found corpus-wide. This confirms
+the earlier role split (small vocab = properties, large vocab = object keys) and
+now pins which field is which.
+
+### The old extraction was shifted by 8 bytes
+
+`tools/psin_extract.py` slices the record at `offset + 8`, which puts its 16-byte
+grid **8 bytes early**. Every field it reported therefore belongs to a different
+physical row:
+
+| old column | actually |
+| --- | --- |
+| `value` | this row's `value_or_index` (correct) |
+| `type` | this row's `type` (correct, by luck) |
+| `class_hash` | the **next** row's `property_hash` |
+| `field_hash` | the **next** row's `key_hash` |
+
+So the value was paired with the property of the *following* row. That is why
+oddities like an index of `300000` showed up next to unrelated names — and why
+the earlier "25 of 301 properties and 515 of 14,653 keys named" read as a sparse
+vocabulary rather than as a misalignment.
+
+### Consequence: coverage jumps
+
+`tools/psin_blocks.py` re-emits the rows with the writer's own order into
+`handoff/psin-rows.tsv` (63,288 rows, columns `record, offset, a, b, c, type`):
+
+- **26,893 rows (42 %) have a named property** — against 4.3 % named across all
+  handoff tables before the fix.
+- Type distribution: byte 20,005 · float 15,277 · hash 14,739 · int 13,257 ·
+  bool 10.
+
+### The other four blocks, measured over all 1,012 records
+
+| tag | blocks | shape |
+| --- | --- | --- |
+| `0xde396fe2` | 1,012 | exactly 80 B — five `(count, count, kind, 0)` entries, a directory of sub-tables, kinds seen `1`(1012), `2`(1012), `3`(853), `4`(159), `5`(853), plus empty slots |
+| `0x01393259` | 1,012 | 32 B..9,968 B, struct-like words with `0xffffffff` sentinels |
+| `0x16` | 1,010 | 8 B..1,840 B in 16-byte rows, 128-bit-looking material |
+| `0xaeb623d8` | 855 | 12-byte triples `{u32, f32, f32}`; the floats span −6,719..7,938 and −3.1..140.7, i.e. wide enough to be world coordinates, not a hash pair |
+
+The directory block is the useful one: it says how many entries each of the
+other blocks holds (`99`, `70`, ... per record), so it can be used as an
+independent check on the per-block row counts rather than as data.

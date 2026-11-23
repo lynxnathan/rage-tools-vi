@@ -39,9 +39,15 @@ Last updated: 2026-11-23 (executable acquired).
   `PSIN→LSCH→LENM→LSNS→LGID→LRSC`, each `[magic][BE distance]`, payloads found by
   exact-fit count solving. 1,012/1,012 records parse; typed words agree with the
   heuristic scan to 0.6 %. `tools/script_meta.py`.
-- [ ] Decode the five `PSIN` blocks separately (`0x85b4c631`, `0xde396fe2`,
-  `0x01393259`, `0x16`, `0xaeb623d8`) — they have different shapes and only the
-  first is the typed row list.
+- [x] Decode the five `PSIN` blocks: typed rows (63,288, type at `+0x0c`),
+  a 5-entry sub-table directory, a struct block, a 16-byte-row block and
+  12-byte float triples. Field order corrected, `handoff/psin-rows.tsv` written;
+  42 % of rows now have a named property (`tools/psin_blocks.py`).
+- [ ] Regenerate the downstream PSIN artifacts (`entry pairs`, `segments`,
+  `vocabulary`) from `handoff/psin-rows.tsv` — the old ones carry the 8-byte
+  shift.
+- [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`, and use the
+  directory block as an independent count oracle.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or
   decrypted above the archive layer. The full read→mount→entry-walk path
   (`0x140fc2540` → `0x141fb2600` → `0x1408ec210` → `0x1406bd160`) contains **no
