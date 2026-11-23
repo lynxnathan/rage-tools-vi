@@ -76,6 +76,14 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [ ] Explain the 36.7 % partial match on the `LSCH` `+0x18` word — a computed
   length, not the literal block size.
 - [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`.
+- [x] Front region is not compressed (zlib/deflate/lzma/bz2), has no repeated
+  keystream across 654 packs, and all regions ≥1 KB are H ≥ 7.79 (the earlier
+  "174 low-entropy" reading withdrawn as a small-sample artefact).
+- [x] Partial width law: 214/654 packs satisfy `size_b == align16(count * w)`
+  with w in {8,10,12,16}, correlated with the mode word at `+0x20`; the other 440
+  carry more than one table.
+- [ ] Wide-hash layouts are still open: a 64/128-bit hash table is statistically
+  identical to random data, so entropy and the 32-bit name test cannot exclude it.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or
   decrypted above the archive layer. The full read→mount→entry-walk path
   (`0x140fc2540` → `0x141fb2600` → `0x1408ec210` → `0x1406bd160`) contains **no

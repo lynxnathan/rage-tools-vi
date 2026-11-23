@@ -7703,3 +7703,51 @@ do not.
 
 The joined table is still useful — it gives every record's section inventory with
 both views in one place for the next pass.
+
+## Front region: what a fresh pass established and what it corrected (2026-11-23)
+
+Four checks that had not been run before, and one correction to my own earlier
+reasoning.
+
+**Not compressed.** Front A and Front B fail zlib, raw deflate, lzma and bz2 at
+the region start. The uniform byte entropy is not explained by compression.
+
+**No repeated keystream.** All 654 front regions across the mirrored source are
+distinct (sha1 over both regions), so there is no many-time-pad structure to
+exploit: each pack's front region is unique.
+
+**The earlier "174 low-entropy regions" reading was an artefact, and I withdraw
+it.** Sorted per region, every front region of 1 KB or more has entropy ≥ 7.79.
+All 174 regions below 7.0 are smaller than 1 KB, where the entropy estimator is
+dominated by sample size, not by structure.
+
+**A partial width law does hold.** For **214 of 654** packs,
+
+```
+size_b == align16(count * w)     with w in {8, 10, 12, 16}
+```
+
+and the width is correlated with the header mode word at `+0x20`
+(`0x10004`/`0x10005`/`0x10006` → 10, `0x20007` → 12, `0x30009` → 16). Examples:
+`anim.rpf+0xa34000` count 16,384 → 163,840 bytes exactly; `data.rpf+0` count 699
+→ 6,990 rounded to 6,992; `data.rpf+0x5230000` count 1,115 → 13,380 rounded to
+13,392. The remaining **440** packs do not satisfy it for any of those widths,
+which means their front region carries more than one table — the header count
+describes one of them, not the whole region.
+
+So Front B is a per-entry table with a small fixed record, and Front A is
+per-entry too but variable-length: in the large packs `size_a / count` lands at
+58.0–58.6 bytes (`anim.rpf+0xa34000`: 950,672 / 16,384 = 58.02), which is the
+shape of name storage rather than fixed records.
+
+**Correcting an over-claim of mine.** "The front region is not a hash table" was
+argued from 32-bit hashes of 36,952 names. That argument does not cover 64-bit or
+128-bit hashes: a table of wide hashes is *statistically identical to random
+data*, so neither the entropy measurement nor the flat 32-bit hit rate excludes
+it. The honest statement is that no 32-bit name hash appears, and that wide-hash
+layouts remain open.
+
+Structural tests that came out negative on the same regions: no column is
+monotonic under stride 4/8/16 (all 0.49–0.51, i.e. chance), no field is bounded
+by the archive size, and no XOR with a repeating header-derived key turns the
+entry offsets into small numbers.
