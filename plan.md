@@ -68,8 +68,11 @@ Last updated: 2026-11-23 (executable acquired).
 - [x] `LSCH` decoded as an index over `PSIN` sections: each 32-byte row starts
   with one of the record's section tags (200/200 records), and its sub-records
   carry a tag at `+0x0c`. `LENM` rows are the same shape in 24 bytes.
-- [ ] Use the `LSCH` row counts as the count oracle for section widths, replacing
-  the periodicity test.
+- [x] `LSCH` fields tested against both views on 4,901 sections: none is a count
+  (`+0x18` matches block bytes only 36.7 %). The exact-fit solve stays the count
+  oracle. Joined table at `handoff/script-sections.tsv`.
+- [ ] Explain the 36.7 % partial match on the `LSCH` `+0x18` word — a computed
+  length, not the literal block size.
 - [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or
   decrypted above the archive layer. The full read→mount→entry-walk path

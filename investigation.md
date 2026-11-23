@@ -7676,3 +7676,30 @@ instead of inferring widths from periodicity.
 
 Record 42 has a single `LENM` row with 6 sub-records, which is why the earlier
 "non-entry struct streams" count of five to six per pack lines up with it.
+
+## The `LSCH` index fields are not counts of their `PSIN` block (2026-11-23)
+
+`tools/script_sections.py` joins both views for all 1,012 script records and
+writes `handoff/script-sections.tsv` (4,901 sections: 3,891 indexed by `LSCH`,
+1,010 unindexed). The unindexed ones are exactly the `0x16` hashes block, which
+`LSCH` never rows for — an independent confirmation that the tag match is real.
+
+Each candidate field was tested against two measured quantities per section (the
+`PSIN` block's byte length and its 16-byte row count):
+
+| field | matches block bytes | matches block rows |
+| --- | --- | --- |
+| row `+0x18` word | 1,428/3,891 (36.7 %) | 88/3,891 (2.3 %) |
+| row `+0x08` small | 9/3,891 (0.2 %) | 0/3,891 (0.0 %) |
+| sub-record count | — | 103/3,891 (2.6 %) |
+
+So none of them is a count. The 36.7 % on the `+0x18` word is the interesting
+part: it is far above chance but nowhere near an identity, which suggests the
+field is a *computed* length (a size after some transformation) rather than the
+literal block size. That kills the hope of using `LSCH` as the count oracle, and
+it is worth stating plainly: the count oracle remains the exact-fit solve in
+`tools/script_meta.py`, which has an all-or-nothing property that these fields
+do not.
+
+The joined table is still useful — it gives every record's section inventory with
+both views in one place for the next pass.
