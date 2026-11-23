@@ -54,6 +54,8 @@ def main():
     parser.add_argument("--out-dir", type=Path, required=True)
     parser.add_argument("--out-manifest", type=Path)
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--no-wav", action="store_true",
+                        help="measure only; skip writing audio")
     args = parser.parse_args()
 
     rows = [r for r in csv.DictReader(args.manifest.open(), delimiter="\t")
@@ -110,17 +112,19 @@ def main():
                 except Exception:
                     failed += 1
                     continue
-                target = args.out_dir / f"{source.stem}-{stream:03d}.wav"
-                with wave.open(str(target), "wb") as handle:
-                    handle.setnchannels(channels)
-                    handle.setsampwidth(2)
-                    handle.setframerate(rate)
-                    handle.writeframes(pcm)
-                digest = hashlib.sha256(target.read_bytes()).hexdigest()
+                frames = len(pcm) // (2 * channels)
+                target, digest = "", ""
+                if not args.no_wav:
+                    target = args.out_dir / f"{source.stem}-{stream:03d}.wav"
+                    with wave.open(str(target), "wb") as handle:
+                        handle.setnchannels(channels)
+                        handle.setsampwidth(2)
+                        handle.setframerate(rate)
+                        handle.writeframes(pcm)
+                    digest = hashlib.sha256(target.read_bytes()).hexdigest()
                 written += 1
                 writer.writerow([source.name, stream, packets, channels,
-                                 len(pcm) // (2 * channels), declared, rate,
-                                 target, digest])
+                                 frames, declared, rate, target, digest])
     print(f"wrote {written} WAVs, {failed} failures -> {args.out_dir}")
     return 0
 

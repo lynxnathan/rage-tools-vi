@@ -6470,3 +6470,38 @@ in a per-script table identifies.
 Source: the `structure/04-pso-objectgraph.md` and `structure/03-audio-awc.md` notes
 of `TrinitronClient/GTA6-Asset-Info`, applied and re-verified here rather than
 taken on trust.
+
+## Journal: correction — the 0xff21 audio decode was right, the check was wrong (2026-11-22)
+
+Two entries ago I withdrew 93,344 decoded WAVs because 19 % of streams came out at
+"under 80 % of declared". That was my error, and the public ADAT notes name it: the
+format chunk's `+0x00` sample count is **interleaved across channels**, so a stereo
+stream declares twice its frame count. Comparing `frames / declared` therefore
+halves every stereo stream.
+
+The tell is exact. The 503 streams of `000000029e374000.awc` are all stereo and all
+sit at `frames / declared = 0.504`. Multiplying by the channel count puts them at
+1.008.
+
+Re-running the decode with the corrected metric, over the 209 files that held the
+missing Opus streams:
+
+| | |
+| --- | ---: |
+| streams decoded | 4,704 |
+| failures | **0** |
+| median `frames × channels / declared` | 1.045 |
+| 1st percentile | **1.003** |
+| 99th percentile | 1.784 |
+
+So every stream decodes to at least its declared length, the median surplus being
+the encoder's padding. 338 streams (7 %) sit above 1.30 — those are the music and
+multi-channel variants where the descriptor's count is per channel group, the same
+distinction the public notes draw for `0x48` streamed music.
+
+Recorded in `handoff/audio-variant-decode.tsv` with `frames`, `channels` and
+`declared` as separate columns so the ratio can be recomputed rather than trusted.
+
+The lesson is worth keeping: a validation metric that is off by a factor of the
+channel count sends a correct decoder back to the drawing board. The metric now
+carries its own units.
