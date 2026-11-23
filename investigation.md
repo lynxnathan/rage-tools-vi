@@ -7629,3 +7629,50 @@ existing hashes by assumption — the mapping would have to be established from
 the executable, not from coincidence.
 
 The harvest itself is reproducible and is kept at `cache/levels-paths.txt`.
+
+## `LSCH` is an index over the `PSIN` sections (2026-11-23)
+
+Reading the `LSCH` rows with the row solver's counts gives a cross-reference, not
+opaque data. A 32-byte `LSCH` row is:
+
+```
++0x00  u32  section tag          <- one of the record's PSIN descriptor tags
++0x04  u32  hash
++0x08  u32  small count
++0x0c  u32  zero
++0x10  u64  pointer              <- poisoned with 0xAA on disk
++0x18  u32  count
++0x1c  u16  zero
++0x1e  u16  sub-record count     <- the `n` used by the size solver
+```
+
+Its sub-records are 16 bytes and *also* carry a tag, at `+0x0c`:
+
+```
+record 42, LSCH row 0 (= tag 0xde396fe2, subcount 10)
+   sub 0  0x00000100  0x00000000  0x00000005  0x85b4c631
+   sub 1  0x749dbb9e  0x00000000  0x0000005c  0x00000000
+```
+
+Verified over 200 records: **every `LSCH` row's first word is one of that same
+record's `PSIN` section tags** (200/200). In record 42 the `LSCH` rows name
+`0xde396fe2`, `0x85b4c631` and `0x01393259`, and the four `PSIN` descriptors are
+exactly those plus `0x16`; the hashes block `0x16` is simply not indexed there.
+
+So the record is self-describing twice over: `PSIN` carries the sections, and
+`LSCH` carries an index into them with per-section counts. That gives the count
+oracle the earlier width analysis lacked — the `LSCH` row count for a section can
+be compared with the number of rows decoded from the matching `PSIN` block,
+instead of inferring widths from periodicity.
+
+`LENM` rows are 24 bytes and have the same shape but a shorter header:
+
+```
++0x00  u32  tag
++0x04  u32  hash
++0x08  u64  pointer              <- poisoned with 0xEE on disk
++0x10  u16  sub-record count
+```
+
+Record 42 has a single `LENM` row with 6 sub-records, which is why the earlier
+"non-entry struct streams" count of five to six per pack lines up with it.

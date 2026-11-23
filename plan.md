@@ -65,8 +65,12 @@ Last updated: 2026-11-23 (executable acquired).
 - [ ] Establish how levels paths are keyed: the strings exist but do not match
   any 32-bit table we hold, so either they are used literally or hashed by a
   function outside our set.
-- [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`, and use the
-  directory block as an independent count oracle.
+- [x] `LSCH` decoded as an index over `PSIN` sections: each 32-byte row starts
+  with one of the record's section tags (200/200 records), and its sub-records
+  carry a tag at `+0x0c`. `LENM` rows are the same shape in 24 bytes.
+- [ ] Use the `LSCH` row counts as the count oracle for section widths, replacing
+  the periodicity test.
+- [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or
   decrypted above the archive layer. The full read→mount→entry-walk path
   (`0x140fc2540` → `0x141fb2600` → `0x1408ec210` → `0x1406bd160`) contains **no
