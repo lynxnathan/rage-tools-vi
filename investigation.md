@@ -7033,3 +7033,25 @@ the hash→name vocabulary open.
 Static tools added: `tools/pe_audit.py` (sections, entropy, certificate, imports,
 strings) and `tools/watch_for_exe.sh` (inotify on the drop folders, audit on arrival,
 desktop notification) — re-armed after the session restart.
+
+### The loader reads the front region but does not decrypt it
+
+Following the archive path from the magic compare: `0x140fc2540` → `0x141fb2600`
+(reads 0x10 B header, allocates `[hdr+0x04]`, reads the rest) → `0x1408ec200` →
+`0x1406bd040`, `0x1408ec350`, `0x1408ec360` → `0x1406bd160`. None of those
+functions contains `aesenc`, and no call leaving the file-system region
+(`0x140f0000..0x14100000`) lands on a function with a `pxor` or `movdqu` heavy
+body (0 hits). The archive layer therefore treats the front region as data.
+
+The front block is nonetheless masked: for `data.rpf` pack 0 it is
+`0xf510..0x11060` — exactly `[hdr+0x08]` to `[hdr+0x04]` — 6,992 bytes, i.e.
+**699 rows of 10 bytes** (`count` = 699). Entropy 7.973, no repeated 16-byte
+block (437 distinct of 437), and no XOR against any of the header words at
+`+0x10`, `+0x14`, `+0x18`, `+0x1c` reduces it (7.90–7.91 after each attempt).
+
+So the transform is not in the path we found, or the region is not ciphertext but a
+hash table. Resolving that needs full analysis of indirect calls and vtables, so a
+Ghidra headless analysis is running in the background over the whole image
+(`cache/ghidra`, log `/tmp/ghidra.log`). The queries to run on it are prepared: the
+three magic sites, the front-buffer allocation at `0x141fb2600`, and the
+entry-table builder reached from `0x1408ec360`.
