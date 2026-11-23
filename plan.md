@@ -29,8 +29,12 @@ Last updated: 2026-11-23.
 
 ## Now
 
-- [ ] What a 16-byte `LSNS` record identifies. 210,522 distinct words, none
-  matching names or PSIN keys, no small-integer slot: opaque 128-bit values.
+- [x] `LSNS` table structure: each table is `[10-record (160 B) header][per-script
+  records]`. 678 distinct headers over 994 tables, 65 shared; a header group shares
+  its PSIN row count and record count, so the header identifies the script *kind*.
+  120 tables are header only.
+- [ ] What the ten header records and the per-script records contain. 210,522
+  distinct words, none matching names or PSIN keys, no small-integer slot.
 - [x] `PSIN` tree segmented: `tools/psin_segments.py` splits a record where the
   table period changes. The four clean records come out as one leaf each (width
   4×3, 6×1); record `1054` decomposes into widths 2/4/4/6/2 plus flat spans.

@@ -6647,3 +6647,42 @@ period is not a table, and calling it one would be the guessing this project avo
 So the boundary *is* a change of period, and the tree can be segmented without a
 hidden field. What the widths mean — 2 for an `Id`/`Type` pair list, 4 and 6 for
 wider records — is a separate question and stays open.
+
+## Journal: an LSNS table starts with a 160-byte header shared by script kinds (2026-11-23)
+
+The records were opaque, so the next question was whether the *table* has structure.
+It does, at its head.
+
+Counting how often the same record appears at each position across the 1,012 tables:
+
+| Position | Most common record appears |
+| ---: | ---: |
+| 0 | 326× |
+| 1 | 157× |
+| 2–4 | 143×, 124×, 124× |
+| 5–9 | 120× |
+| **10** | **13×** |
+| 11+ | 8× |
+
+A sharp drop after position 9 means the first **ten records (160 bytes)** form a
+prefix that many tables share, and everything after it is per-script. Consistently,
+120 tables are *exactly* 160 bytes — the prefix and nothing else.
+
+The prefix is not global: 994 tables of at least 160 bytes carry **678 distinct
+prefixes**, 65 of which repeat. Those repeats group scripts of the same kind — the
+members of a group share both their PSIN row count and their LSNS record count:
+
+| Group | Members | PSIN rows | LSNS records |
+| ---: | ---: | --- | --- |
+| 1 | 30 | 19 (×14), 24 (×13) | 32 (×14), 33 (×12) |
+| 2 | 14 | 19 (×13) | 29 (×12) |
+| 3 | 11 | 19 (×11) | 31 (×7), 30 (×4) |
+| 4 | 10 | 22 (×7) | 35 (×7) |
+
+So an `LSNS` table is `[10-record header][per-script records]`, and the header
+identifies the script *kind* rather than the script. That also explains the earlier
+median surplus of twelve records over the PSIN row count: ten header records plus
+roughly two.
+
+What the ten header records contain is still open, but they are now separable from
+the per-script records, which is what makes the next question answerable.
