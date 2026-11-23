@@ -1,16 +1,18 @@
 """Parse the PSIN typed property array and test 64-bit name-hash variants.
 
-The large PSIN blocks are flat arrays of 16-byte records
+Rows come from the typed block (section tag `0x85b4c631`) and are read through
+`script_meta`/`psin_blocks`, which follow the writer in the executable. The
+16-byte row is
 
-    u32 value; u32 type; u32 class_hash; u32 field_hash;   type in {0x101..0x105}
+    u32 property; u32 key; u32 value; u32 type;   type in {0x101..0x105}
 
-The value is a union: float when type is 0x102, a byte-sized int for 0x101 and
-0x105, a 32-bit hash for 0x103, bool for 0x104. There are 303 distinct class
-hashes and 14,655 distinct field hashes; the (class, field) pair fixes the type
-for 97.3 % of pairs. Records are recovered by
-scanning every record-aligned position in the PSIN section and keeping maximal
-runs of at least four records whose type word is valid; that is robust to the
-2-byte misalignment seen at the end of the block directory.
+The **type word is last**. An earlier version of this tool sliced the record
+8 bytes early and used `+4` as the type, which paired every value with the next
+row's property; the numbers it printed (303 class hashes, 14,655 fields) were
+that artefact. Corrected: 164 properties, 14,530 keys, 63,288 rows.
+
+What the `value` word means is still open — it is mostly a declaration index, but
+`Decay` carries a shared `300000` in the same block.
 
 Modes:
 
@@ -27,10 +29,15 @@ Modes:
 import argparse
 import csv
 import struct
-import zlib
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import script_meta as sm
+import psin_blocks as pb
+
+TYPED_TAG = 0x85B4C631
 TYPES = {0x101, 0x102, 0x103, 0x104, 0x105}
 TYPE_NAMES = {0x101: "int", 0x102: "float", 0x103: "type103",
               0x104: "type104", 0x105: "type105"}
@@ -49,59 +56,16 @@ def sections(body):
     return out
 
 
-def psin_sections(archive, index):
-    rows = sorted((int(r["start"], 16), int(r["end"], 16))
-                  for r in csv.DictReader(index.open(), delimiter="\t")
-                  if r["kind"] == "zlib")
-    data = archive.read_bytes()
-    out = []
-    position = 0
-    while position < len(rows):
-        start, end = rows[position]
-        try:
-            body = zlib.decompress(data[start:end])
-        except zlib.error:
-            position += 1
-            continue
-        if body.startswith(b"PSIN"):
-            if len(body) == 65536 and position + 1 < len(rows):
-                nxt_start, nxt_end = rows[position + 1]
-                try:
-                    body += zlib.decompress(data[nxt_start:nxt_end])
-                except zlib.error:
-                    pass
-            for tag, offset, size in sections(body):
-                if tag == "PSIN":
-                    out.append((position, body[offset + 8:offset + size]))
-        position += 1
-    return out
-
-
-def runs(psin):
-    """Maximal runs of >=4 valid 16-byte records."""
-    found = []
-    current = None
-    for offset in range(0, (len(psin) // 16) * 16, 16):
-        value, kind, name = struct.unpack_from("<IIQ", psin, offset)
-        if kind in TYPES:
-            if current is None:
-                current = []
-            current.append((offset, value, kind, name))
-        else:
-            if current and len(current) >= 4:
-                found.append(current)
-            current = None
-    if current and len(current) >= 4:
-        found.append(current)
-    return found
-
-
 def collect(archive, index):
+    """Rows from the typed block, in the writer's field order."""
     records = []
-    for position, psin in psin_sections(archive, index):
-        for run in runs(psin):
-            for offset, value, kind, name in run:
-                records.append((position, offset, value, kind, name))
+    for position, body in sm.streams(archive, index):
+        for tag, payload in pb.blocks(body):
+            if tag != TYPED_TAG:
+                continue
+            for offset, prop, key, value, kind in pb.typed_rows(payload):
+                records.append((position, offset, value, kind,
+                                (prop << 32) | key))
     return records
 
 
@@ -199,12 +163,84 @@ def hash_test(records):
         print(f"  {variant:16s} hits {hits:>5}  examples {examples}")
 
 
+def front_words(source, stride=8, limit_per_archive=1 << 24):
+    """Every aligned u64 in the Front A and Front B regions of every archive."""
+    words = {}
+    headers = 0
+    for path in sorted(source.glob("*.rpf")):
+        size = path.stat().st_size
+        with path.open("rb") as handle:
+            for offset in range(0, max(0, size - 0x60), 0x4000):
+                handle.seek(offset)
+                header = handle.read(0x60)
+                if len(header) < 0x60 or header[:4] != b"9FPR":
+                    continue
+                front_end = struct.unpack_from("<I", header, 4)[0]
+                block = struct.unpack_from("<I", header, 8)[0]
+                if not (0x60 < block <= front_end <= size - offset):
+                    continue
+                headers += 1
+                handle.seek(offset + 0x10)
+                for region in (handle.read(block - 0x10),
+                               handle.read(front_end - block)):
+                    for index in range(0, len(region) - 7, stride):
+                        value = struct.unpack_from("<Q", region, index)[0]
+                        words.setdefault(value, 0)
+                        words[value] += 1
+    return words, headers
+
+
+def forms(name):
+    lowered = name.replace("\\", "/").lower()
+    leaf = lowered.rsplit("/", 1)[-1]
+    stem = leaf.rsplit(".", 1)[0]
+    return {name, lowered, leaf, stem, "platform:/" + lowered, lowered + "\0"}
+
+
+def front_hash_test(source, names_path):
+    """Test 64-bit name hashes against front-region u64 words.
+
+    This is the wide-hash hypothesis: a table of 64-bit hashes is statistically
+    identical to random bytes, so entropy cannot exclude it — only a hash
+    function and a name corpus can.
+    """
+    names = []
+    for row in csv.DictReader(names_path.open(), delimiter="\t"):
+        if row.get("name"):
+            names.append(row["name"])
+    print(f"names: {len(names)}")
+    words, headers = front_words(source)
+    print(f"headers: {headers}  distinct u64 words: {len(words):,}")
+    candidates = len(names) * 6 * len(VARIANTS)
+    expected = candidates * len(words) / 2 ** 64
+    hits = Counter()
+    examples = []
+    for name in names:
+        for form in forms(name):
+            encoded = form.encode()
+            for variant, function in VARIANTS.items():
+                value = function(encoded)
+                if value in words:
+                    hits[variant] += 1
+                    if len(examples) < 10:
+                        examples.append((variant, form, hex(value)))
+    print(f"expected chance hits: {expected:.4f}")
+    print("hits:", dict(hits) or "none")
+    for example in examples:
+        print("   ", example)
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, default=Path("script.rpf"))
     parser.add_argument("--index", type=Path, default=Path("output/index/script.tsv"))
     parser.add_argument("--dump", type=Path, help="write records as TSV")
     parser.add_argument("--hash-test", action="store_true")
+    parser.add_argument("--front64", type=Path,
+                        help="source directory of *.rpf to test 64-bit name hashes "
+                             "against front-region u64 words")
+    parser.add_argument("--names", type=Path, default=Path("handoff/names.tsv"))
     args = parser.parse_args()
 
     records = collect(args.archive, args.index)
@@ -214,14 +250,18 @@ def main():
     print("types:", {TYPE_NAMES[k]: n for k, n in kinds.most_common()})
     classes = Counter(record[4] & 0xffffffff for record in records)
     fields = Counter(record[4] >> 32 for record in records)
-    print(f"distinct class hashes: {len(classes):,}; distinct field hashes: "
+    print(f"distinct keys: {len(classes):,}; distinct properties: "
           f"{len(fields):,}")
-    print(f"fields per class: max {max(classes.values()):,}; "
-          f"top class {classes.most_common(1)[0][1]:,} records")
+    print(f"rows per key: max {max(classes.values()):,}; "
+          f"top key {classes.most_common(1)[0][1]:,} rows")
     per = Counter(record[0] for record in records)
     counts = sorted(per.values())
     print(f"per PSIN section: min {counts[0]}, median {counts[len(counts)//2]}, "
           f"max {counts[-1]}")
+
+    if args.front64:
+        front_hash_test(args.front64, args.names)
+        return 0
 
     if args.dump:
         args.dump.parent.mkdir(parents=True, exist_ok=True)

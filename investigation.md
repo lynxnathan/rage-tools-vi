@@ -7773,3 +7773,36 @@ Two consequences for the next attempt:
 - Because `size_b` is composite, "Front B is the entry table" is only true for the
   simple packs. For the composite ones, the A/B boundary at `+0x08` may not even be
   an entry-table boundary.
+
+## 64-bit name hashes are absent from the front regions — a *clean* negative (2026-11-23)
+
+The 32-bit front-region test could never be decisive: 886k candidate hashes against
+7.4 M words predicts ~560 collisions by chance, so a hit would prove nothing. The
+64-bit version has no such floor.
+
+`tools/psin_property_tree.py --front64` builds the set of every 8-byte-aligned
+`u64` in Front A and Front B of all 654 headers — **3,716,607 distinct words** —
+and tests four 64-bit hash functions (joaat64, fnv1a64, murmur64a,
+murmur64a_seed1) over 36,952 names in six path normalizations: 886,848 candidates.
+
+| | value |
+| --- | --- |
+| candidate hashes | 886,848 |
+| distinct front-region u64 words | 3,716,607 |
+| expected chance collisions | 4 × 10⁻⁸ |
+| **observed hits** | **none** |
+
+Because the chance floor is effectively zero, this is a real exclusion: none of
+these 64-bit hashes of any known name appears anywhere in the front regions. It
+rules out the simplest version of the wide-hash hypothesis — 64-bit hashes of
+known paths stored verbatim.
+
+Still open on the same axis: 128-bit hashes, salted or seeded variants, and hash
+functions outside this set.
+
+### Side effect: one more tool brought onto the writer's field order
+
+`tools/psin_property_tree.py` had its own copy of the 8-byte-shifted reader, so it
+reported 62,910 rows, 303 "class" hashes and 14,655 "field" hashes. It now reads
+through `script_meta`/`psin_blocks` and reports 63,288 rows, 164 properties and
+14,530 keys.

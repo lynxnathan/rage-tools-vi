@@ -51,8 +51,10 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] Downstream PSIN artifacts regenerated with the corrected pairing
   (`entries`, `segments`); entry count unchanged at 4,969, pairs now semantic
   (`Heading`+`Position` 2,807).
-- [ ] Rebuild the remaining PSIN derivatives (`vocabulary`, `property tree`,
-  `table width`) on the corrected pairing.
+- [x] Remaining PSIN derivatives on the corrected pairing: `property tree` now
+  reads through `script_meta`/`psin_blocks` (63,288 rows / 164 properties /
+  14,530 keys), `table width` re-run with `--properties`.
+- [ ] Rebuild `vocabulary` (the last derivative still on the old pairing).
 - [ ] Settle whether the typed row's `c` word is a declaration index or a value:
   `Decay` carries a shared `300000` while byte rows count 0..6. Needs the script
   data section.
@@ -89,8 +91,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   a replacement count and `size_b/count` is scattered within a single mode.
 - [ ] Find the second component's size law in composite packs — it is not a
   function of `count`.
-- [ ] Wide-hash layouts are still open: a 64/128-bit hash table is statistically
-  identical to random data, so entropy and the 32-bit name test cannot exclude it.
+- [x] 64-bit name hashes excluded from the front regions: 3,716,607 distinct u64
+  words vs 886,848 candidates gives a chance floor of 4×10⁻⁸, and the observed
+  count is zero — a clean negative, unlike the 32-bit test.
+- [ ] 128-bit hashes, salted/seeded variants, and hash functions outside
+  {joaat64, fnv1a64, murmur64a, murmur64a_seed1} remain open.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or
   decrypted above the archive layer. The full read→mount→entry-walk path
   (`0x140fc2540` → `0x141fb2600` → `0x1408ec210` → `0x1406bd160`) contains **no
