@@ -63,7 +63,7 @@ stateDiagram-v2
 - [x] Map `common.rpf` stored ranges and payload groups.
 - [x] Verify the 42-stream object, PSIN records, XML, and story control.
 - [x] Confirm metadata region sizes and header invariants.
-- [x] Separate encrypted LSNS from plaintext sections.
+- [x] Map the `LSNS` tables: 16-byte records, framing valid on 1,012/1,012 records.
 - [x] Resolve the 64 KiB continuation rule.
 - [x] Name 306 of 483 object roots with JOAAT.
 - [x] Decode typed array headers and the `vector3` type tag.

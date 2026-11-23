@@ -10,7 +10,7 @@
 | **span** | Byte range classified as front, zlib, zero run, unclassified, or trailer. |
 | **chain** | Consecutive zlib streams joined by 64 KiB continuation and zero padding. |
 | **PSIN** | Plaintext section container; starts with the ASCII magic `PSIN`. |
-| **LSCH / LENM / LSNS / LRSC** | PSIN sections; only LSNS is chained-encrypted. |
+| **LSCH / LENM / LSNS / LRSC** | PSIN sections; LSNS holds tables of 16-byte records. |
 | **JOAAT** | Jenkins one-at-a-time 32-bit hash used for many names. |
 | **root** | Object record with no incoming tagged pointer. |
 | **tagged pointer** | `(address, 0x71717171)` pair resolving to a record. |

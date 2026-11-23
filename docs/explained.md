@@ -178,7 +178,7 @@ flowchart TB
       CH["Chain rule<br/>64 KiB continuations"]
     end
     subgraph Results["What we got"]
-      EN["328,481 entries<br/>4 archives, exact"]
+      EN["188,298 entries<br/>14 archives, exact"]
       DS["Descriptor inventory<br/>269,106 + 1,233"]
       NM["99 / 612 bone hashes<br/>21 / 252 weight hashes"]
       AU["196,350 Opus streams<br/>148.3 hours"]

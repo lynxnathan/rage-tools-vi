@@ -58,7 +58,6 @@ agree (98 %); the remaining 6 are collisions.
 - **Type hashes** (`root_type`, `type_tag`): 0 hits from the 174k corpus, 4
   doubtful hits out of 234,720 `id1` values from the metadata table, and 0 from
   40 engine class names. This namespace is neither model strings nor metadata
-  names, so it is most likely stored as *text* in the encrypted LSNS — the same
-  wall as script decoding.
+  names, so it is most likely stored as text inside the `LSNS` tables.
 - **14,138 PSIN object keys** and 276 properties, with the corpus vocabulary
   exhausted.

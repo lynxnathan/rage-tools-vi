@@ -74,7 +74,7 @@ flowchart LR
 | --- | ---: | --- |
 | Corpus index | 22 archives · 4,415,850 ranges · 365.0 GB decoded | tiles exactly |
 | Bulk extraction | 2,190,635 zlib ranges | SHA-256 verified |
-| Entry manifests | 328,481 entries · 4 archives | self-consistency PASS |
+| Entry manifests | 188,298 entries · 14 archives | exact declared-count verification |
 | `core_bvh4` descriptors | 269,106 rows | sizes + orthonormal basis |
 | Unclassified layer | 38.1 GB audio · 13.4 GB video | closed: all media |
 | Cutscene audio | 196,350 Opus streams · 148.3 hours | decoded, sampled clean |

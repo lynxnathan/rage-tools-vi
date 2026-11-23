@@ -39,14 +39,18 @@ The index table is masked, so entries are identified from the payload instead:
 
 | Archive | Unit | Packs verified | Entries |
 | --- | --- | ---: | ---: |
-| `core_bvh4` | descriptor + data pair | 1,214 / 1,282 | 294,614 |
-| `navmeshes` | 64 KiB chains | 13 / 29 | 25,981 |
-| `data` | 64 KiB chains | 19 / 42 | 6,537 |
-| `textures` | struct + data pair | 19 / 21 | 1,349 |
+| `core_bvh4` | pairs | **1,253 / 1,261** | 109,301 |
+| `navmeshes` | chains | 14 / 28 | 23,530 |
+| `packs` | pairs | 20 / 59 | 15,983 |
+| `levels` | pairs | 728 / 2,044 | 29,117 |
+| `anim` | chains | 125 / 235 | 5,826 |
+| `data` | chains | 16 / 40 | 2,063 |
+| `textures` | pairs | 17 / 20 | 1,326 |
 
-**328,481 entries** with exact, payload-derived boundaries and an independent
-check against the declared count. All four manifests pass a self-consistency
-test: no entry points outside its index, no stream is counted twice.
+**188,298 entries** with exact, payload-derived boundaries and an independent
+check against the declared count, across **14 archives**; the table above shows the
+largest. Every pack contributed only when its entry count verified exactly, and the
+full per-archive table is [the corpus pass](extraction/corpus.md).
 
 ## Naming
 

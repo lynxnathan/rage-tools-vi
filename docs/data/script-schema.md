@@ -55,15 +55,30 @@ The type namespace is 21 `root_type` and 21 `type_tag` values. Three vocabularie
 return nothing against it: the 174k corpus (0 hits, 1.42 expected by chance),
 20,300 engine metadata names (4 doubtful hits in 234,720 values), and 40 engine
 class names (0 hits). A namespace that small would fall to any decent word list if
-its names were plain strings, so the names are most likely stored as text in the
-encrypted `LSNS` — the same wall as script decoding.
+its names were plain strings, so the names are most likely stored as text inside
+`LSNS`.
 
-## What is encrypted
+## What LSNS is
 
-`LSNS` (939 KB across the 1,012 records) is genuinely encrypted: uniform entropy,
-deterministic (120 identical bodies of 160 bytes), 16-byte blocked, chained, no
-repeating-key structure, and no cipher tables in the shipped binaries. The 331 KB
-blob in the same archive has entropy 7.996 and no zlib stream at its start.
+`LSNS` is a **table container**, not a cipher. Its payload is
 
-Decoding either needs key material or a second sample. The schema above does not:
-it is plaintext and complete.
+```
+u32 table count N | 4 flag bytes | per table: u32 length (then u32 id, except last)
+```
+
+with every length a multiple of 16 and `header + sum(lengths)` equal to the payload
+size. That framing holds on **1,012 of 1,012** records, giving 58,697 sixteen-byte
+records (`tools/lsns_tables.py`).
+
+An earlier reading of this section as an encrypted blob was wrong, and the
+measurements behind it were right about the bytes and wrong about their meaning:
+the "120 identical 160-byte bodies" are the 120 tables of exactly ten records, the
+16-byte blocking is the record size, and the uniform entropy is what four
+hash-like words per record look like.
+
+The records themselves are still opaque: 210,522 distinct words, none matching a
+known name or a PSIN key, and no slot holding a small integer. What a 16-byte
+record identifies is open.
+
+What remains masked in `script.rpf` is the 331,728-byte blob, which has entropy
+7.996 and no zlib stream at its start.
