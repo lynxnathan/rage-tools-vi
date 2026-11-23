@@ -38,7 +38,7 @@ still agree with these files.
 | `navmeshes-entries.tsv` | 2,447 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
 | `pack-extents-leaves.tsv` | 45 | `archive`, `offset`, `count`, `units`, `end`, `unit` |
 | `pack-extents-textures.tsv` | 21 | `archive`, `offset`, `count`, `structs`, `children`, `direct`, … (9 total) |
-| `pack-model-fit.tsv` | 4,191 | `archive`, `pack`, `declared`, `streams`, `structs`, `chains`, … (7 total) |
+| `pack-model-fit.tsv` | 3,467 | `archive`, `pack`, `declared`, `streams`, `structs`, `chains`, … (7 total) |
 | `packs-0f000080-probe.tsv` | 62 | `metric`, `value`, `count` |
 | `packs-4042-classes.tsv` | 20 | `size`, `streams`, `entropy`, `zero_fraction`, `adjacent_equal` |
 | `packs-4042-probe.tsv` | 64 | `metric`, `value`, `count` |
@@ -47,7 +47,7 @@ still agree with these files.
 | `packs-signature-summary.tsv` | 8 | `kind`, `streams`, `decoded_bytes` |
 | `psin-entries.tsv` | 4,968 | `psin`, `pair`, `field_a`, `value_a`, `field_b`, `value_b` |
 | `psin-names.tsv` | 544 | `kind`, `hash`, `name`, `records`, `types` |
-| `psin-segments.tsv` | 1,785 | `psin`, `segment`, `offset`, `rows`, `width`, `agreement`, … (7 total) |
+| `psin-segments.tsv` | 5,411 | `psin`, `start_row`, `rows`, `width`, `agreement` |
 | `psin-vocabulary.tsv` | 80 | `value`, `group`, `records` |
 | `remaining-archive-index-sha256.tsv` | 8 | `archive`, `index`, `index_bytes`, `sha256` |
 | `remaining-archive-index-summary.tsv` | 8 | `archive`, `stored_bytes`, `spans`, `zlib`, `decoded_bytes`, `unclassified`, … (10 total) |

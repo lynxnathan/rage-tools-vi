@@ -22,10 +22,17 @@ consumer can filter to exact packs.
 
 | Archive | Unit | Packs verified | Entries | Artifact |
 | --- | --- | ---: | ---: | --- |
-| `core_bvh4` | pair | 1,214 / 1,282 | 294,614 | `handoff/core-bvh4-entries.tsv` |
-| `navmeshes` | chain | 13 / 29 | 25,981 | `handoff/navmeshes-entries-chains.tsv` |
-| `data` | chain | 19 / 42 | 6,537 | `handoff/data-entries-chains.tsv` |
-| `textures` | pair | 19 / 21 | 1,349 | `handoff/textures-entries.tsv` |
+| `core_bvh4` | pairs | **1,253 / 1,261** | 109,301 | `handoff/corpus-pass/entries-core_bvh4.tsv` |
+| `levels` | pairs | 728 / 2,044 | 29,117 | `handoff/corpus-pass/entries-levels.tsv` |
+| `navmeshes` | chains | 14 / 28 | 23,530 | `handoff/corpus-pass/entries-navmeshes.tsv` |
+| `packs` | pairs | 20 / 59 | 15,983 | `handoff/corpus-pass/entries-packs.tsv` |
+| `anim` | chains | 125 / 235 | 5,826 | `handoff/corpus-pass/entries-anim.tsv` |
+| `data` | chains | 16 / 40 | 2,063 | `handoff/corpus-pass/entries-data.tsv` |
+| `textures` | pairs | 17 / 20 | 1,326 | `handoff/corpus-pass/entries-textures.tsv` |
+
+Fourteen archives carry a manifest; the table shows the largest. The full list is the
+[corpus pass](corpus.md), and every row was produced with `--tolerance 0`, so only
+packs whose entry count verifies exactly contribute.
 
 ## Verification
 

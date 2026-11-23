@@ -15,7 +15,7 @@ lists **296,490 entries** over 1,282 packs:
 | `struct` (small struct, plus any following > 64 KiB streams) | 25,507 |
 | `orphan` | 1 |
 
-**1,214 of 1,282 packs** have an entry count exactly equal to their declared N.
+**1,253 of 1,261 packs** have an entry count exactly equal to their declared N.
 The residual is ±1 in 41 packs, ±2–5 in 12, and one outlier: the root pack,
 whose 1,286 "entries" are the nested packs rather than streams — an independent
 confirmation that a pack's declared count includes its child packs.

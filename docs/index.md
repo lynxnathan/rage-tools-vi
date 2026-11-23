@@ -18,8 +18,8 @@ The `core_bvh4` descriptor is that record. A decoded 208-byte descriptor carries
 the entry's exact payload size at `+0xa0`, pairs with the immediately following
 stream, and that stream's decoded bytes beyond the declared size are zero —
 verified on 260 re-decoded samples. Applied across the archive, it yields
-**294,614 entries** whose boundaries are payload-derived and whose count matches
-the declared index in 1,214 of 1,282 packs.
+**188,298 entries** across 14 archives, whose boundaries are payload-derived and
+whose count matches the declared index in **1,253 of 1,261** `core_bvh4` packs.
 
 New here? Start with **[From first principles](explained.md)**. The result list
 is in [What we found](findings.md).
