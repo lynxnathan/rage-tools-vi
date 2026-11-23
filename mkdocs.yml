@@ -94,6 +94,7 @@ nav:
       - Large archives: extraction/large-archives.md
       - Full pipeline: extraction/pipeline.md
       - Audio (AWC/XMA2): extraction/audio.md
+      - Corpus pass: extraction/corpus.md
       - Entry manifests: extraction/entries.md
       - Packs signatures: extraction/packs-signatures.md
       - BVH4 entries: extraction/bvh4-entries.md

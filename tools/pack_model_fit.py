@@ -65,7 +65,14 @@ def main():
     kinds = []
     with args.archive.open("rb") as handle:
         mm = mmap.mmap(handle.fileno(), 0, access=mmap.ACCESS_READ)
+        STRUCT_LIMIT = 1 << 16      # a struct stream is a descriptor, not payload
         for offset, end, decoded in streams:
+            # Decompressing every stream just to classify it dominated the runtime
+            # (1.1 M streams in levels). Anything larger than 64 KiB cannot be a
+            # struct stream, so the decode is skipped for it.
+            if decoded > STRUCT_LIMIT:
+                kinds.append(False)
+                continue
             try:
                 kinds.append(is_struct(zlib.decompress(mm[offset:end])))
             except zlib.error:

@@ -174,7 +174,10 @@ python3 tools/pair_entry_manifest.py --archive core_bvh4.rpf --index output/inde
 ## Data policy
 
 `*.rpf`, `output/`, `site/`, `target/`, `cache/`, the bus and extracted corpora
-are local-only and ignored. Source archives and multi-gigabyte extractions never
+are local-only and ignored. The source archives live on `/home/lynxnathan/gta6-source`
+(local NVMe) so passes read them at disk speed; extraction output stays on the
+Mammoth volume through the `output/` symlink, because a full decode (365 GB) fits
+on neither disk — extraction streams and keeps manifests. Source archives and multi-gigabyte extractions never
 enter Git; verified manifests and their hashes do.
 
 ## Sibling project: RDNA2 shaders

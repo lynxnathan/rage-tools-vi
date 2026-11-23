@@ -77,6 +77,11 @@ def main():
             mm = mmap.mmap(handle.fileno(), 0, access=mmap.ACCESS_READ)
             kinds = []
             for stream in streams:
+                # A struct stream is a descriptor; anything larger than 64 KiB
+                # cannot be one, so skip the decode (this dominated the runtime).
+                if stream[2] > (1 << 16):
+                    kinds.append(False)
+                    continue
                 try:
                     kinds.append(is_struct(zlib.decompress(mm[stream[0]:stream[1]])))
                 except zlib.error:

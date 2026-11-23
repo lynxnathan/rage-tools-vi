@@ -32,14 +32,14 @@ for path in $(find "$SRC" -name '*.rpf' | sort); do
     ranges=$(awk 'END{print NR-1}' "$index")
     zlib=$(awk -F'\t' 'NR>1 && $1=="zlib"' "$index" | wc -l)
     stored=$(awk -F'\t' 'NR>1{s+=$4} END{printf "%d", s}' "$index")
-    declared=$(awk -F'\t' -v a="$name.rpf" '$1==a{s+=$3} END{printf "%d", s}' \
+    declared=$(awk -F'\t' -v a="$name.rpf" '$1==a{s+=$5} END{printf "%d", s}' \
         handoff/header-census-full.tsv 2>/dev/null)
     unit=""
     if [ -n "$declared" ] && [ "$declared" -gt 0 ]; then
         ratio=$(python3 -c "print(f'{$zlib/$declared:.2f}')")
         unit=$(python3 -c "
 r=$ratio
-print('pairs' if abs(r-2)<0.15 else 'single' if abs(r-1)<0.05 else 'chains')")
+print('pairs' if 1.6 <= r <= 2.4 else 'single' if abs(r-1) < 0.08 else ('chains' if r > 1 else ''))")
     fi
 
     if [ -f "handoff/pack-model-fit.tsv" ]; then

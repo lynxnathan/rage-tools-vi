@@ -45,14 +45,37 @@ Last updated: 2026-11-21.
   verified archives.
 - **Disk:** Mammoth at 95 % (188 GB free) after the 47.7 GB cutscene decode.
 
+## Data layout
+
+Two disks, two jobs, and the split is forced by arithmetic rather than taste.
+
+| Disk | Free | Holds |
+| --- | ---: | --- |
+| Local NVMe (`/home`) | ~157 GB, ~68 GB after the mirror | **source archives** (`/home/lynxnathan/gta6-source`, 224 GB) |
+| Mammoth, USB (`/run/media/.../Mammoth`) | ~201 GB | **extraction output** (`output/`), manifests and chosen artifacts |
+
+The archives are copied to NVMe for one reason: every pass reads them. A full
+`pack_model_fit` decompresses 161 GB, and doing that over USB at 80 MB/s while also
+writing to the same nearly-full disk is both slow and risky. Reading locally makes
+passes repeatable and leaves Mammoth free for output.
+
+Extraction output stays on Mammoth because **365 GB of decoded payload does not fit
+on either disk**: 68 GB local plus 201 GB on Mammoth is 269 GB. So extraction is
+*streaming* by default — decompress, measure, keep the manifest, discard the bytes —
+and only named artifacts are written (`--out`), never a bulk decode of the corpus.
+
+Consequences for tools: a pass may read archives freely, but anything that writes
+payload must take an explicit destination and must be resumable.
+
 ## Now
 
 - [ ] Local NVMe mirror of the game directory (`/home/lynxnathan/gta6-source`,
   224 GB) so a full pass runs without the USB drive; `tools/verify_copy.sh`
   checks metadata on every path and sha256 on a sample (or all with `--full`).
-- [ ] Corpus pass (`tools/corpus_pass.sh`): index, per-pack entry model and, with
-  `--entries`, a payload-derived manifest for every `*.rpf`. Publish one
-  per-archive table — ranges, stored/decoded bytes, entry-model fit, audio decode
+- [x] Corpus pass over all 22 archives (`tools/corpus_pass.sh`, parallel, 4 min):
+  index, per-pack model fit, payload-derived manifests for 14 archives totalling
+  188,298 entries. Table in `handoff/corpus-pass.tsv`, page in
+  `docs/extraction/corpus.md` — ranges, stored/decoded bytes, entry-model fit, audio decode
   state. Twelve archives are covered by `pack_model_fit`; the rest (`anim`,
   `packs`, `story000`, `shared_minigame000_bvh4`, `core_restofworld001`,
   `core_licenses_data`, `movies`, `appdata0`) still need a run.

@@ -21,6 +21,7 @@ still agree with these files.
 | `bulk-extraction-verification-summary.tsv` | 2 | `archive`, `manifest`, `index`, `missing`, `extra`, `failures`, … (7 total) |
 | `core-bvh4-descriptors.tsv` | 269,106 | `stream`, `allocated`, `pair_lo`, `pair_hi`, `id0`, `id1`, … (15 total) |
 | `core-bvh4-entries.tsv` | 294,614 | `pack`, `entry`, `shape`, `declared_count`, `declared_ok`, `stream`, … (10 total) |
+| `corpus-pass.tsv` | 22 | `archive`, `ranges`, `zlib`, `declared`, `stored_bytes`, `packs`, … (9 total) |
 | `data-entries-chains.tsv` | 6,537 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
 | `data-skeleton-family-links.tsv` | 16 | `family`, `roots`, `core_bones`, `union_bones`, `root_resource_hits`, `core_part_hits`, … (8 total) |
 | `downloads-corpus-inventory.tsv` | 108 | `relative_path`, `stored_bytes`, `rpf_magic_hex`, `extraction_manifest` |

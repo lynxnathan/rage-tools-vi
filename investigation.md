@@ -4866,7 +4866,7 @@ records the join.
 
 ## Journal: inventory rebuilt from the indexes; unclassified is 52.8 GB, not 430 MB (2026-11-21)
 
-`tools/extraction_inventory.py` now reads `output/index/*.tsv` instead of the
+`tools/extraction_inventory.py` now reads `output/index/*.tsvde` instead of the
 pre-rebuild `data.rpf` ranges file, cross-checks each index against the file size
 (every range tiles its archive with no gap or overlap), and marks which zlib
 ranges have an extraction manifest.
@@ -6559,3 +6559,48 @@ before it is written down.
   1,250 of 1,261 `core_bvh4` packs.
 - **Names**: 36,952 hash→name pairs in one registry, with an ambiguity flag for the
   JOAAT collisions.
+
+## Journal: the corpus pass, done over the whole directory (2026-11-23)
+
+The game directory now lives on the local NVMe (`/home/lynxnathan/gta6-source`,
+209 GB on disk) so passes read at disk speed. The copy was verified before use:
+every path matches by size and mtime, 46 files were hashed whole (all under
+100 MB), 62 large files were checked head and tail, **0 differences**.
+
+`tools/corpus_pass.sh` indexes, fits and (optionally) emits entries for all 22
+archives. Its first run was wrong in two ways worth recording.
+
+**It took an hour because of a needless decode.** `pack_model_fit` decompressed
+every stream just to ask whether it is a struct stream — 1.1 M decodes on `levels`
+alone. A struct stream is a descriptor, so anything above 64 KiB cannot be one;
+skipping the decode for those and running the archives in parallel with
+`xargs -P 8` took the whole pass from ~60 minutes to **4 minutes**. The same skip
+in `pair_entry_manifest` brought the entry pass to 74 seconds.
+
+**The unit column was reading the wrong census column** (`mode` instead of
+`count`), so every archive was labelled `chains`. `tools/corpus_table.py` now
+assembles the table from the index and the per-archive products, and derives the
+unit from `zlib / declared`.
+
+Result (`handoff/corpus-pass.tsv`, rendered to `docs/extraction/corpus.md`):
+
+| Archive | Ranges | zlib | Declared | Unit | Packs exact | Entries |
+| --- | ---: | ---: | ---: | --- | ---: | ---: |
+| `core_bvh4.rpf` | 1,113,186 | 565,596 | 295,244 | pairs | 1,253 / 1,261 | **109,301** |
+| `levels.rpf` | 2,199,213 | 1,117,857 | 526,538 | pairs | 728 / 2,044 | 29,117 |
+| `packs.rpf` | 285,069 | 144,366 | 80,470 | pairs | 20 / 59 | 15,983 |
+| `navmeshes.rpf` | 178,941 | 90,305 | 64,779 | chains | 14 / 28 | 23,530 |
+| `story000.rpf` | 279,306 | 141,163 | 160,082 | — | 125 / 419 | — |
+| `anim.rpf` | 258,152 | 130,510 | 84,940 | chains | 125 / 235 | 5,826 |
+| `textures.rpf` | 5,496 | 2,749 | 1,387 | pairs | 17 / 20 | 1,326 |
+| `data.rpf` | 56,583 | 28,509 | 23,075 | chains | 16 / 40 | 2,063 |
+| `shaders.rpf` | 8,180 | 4,205 | 3 | chains | 0 / 1 | 0 |
+| **total** | **4,415,850** | **2,241,410** | — | — | — | **188,298** |
+
+14 archives now carry a payload-derived manifest totalling 188,298 entries, up
+from the four archives' 328,481 rows — the counts differ because these are built
+with `--tolerance 0`, so only packs whose entry count verifies exactly contribute.
+
+Two archives still emit nothing: `shaders.rpf` (one page chain, declared count 3)
+and `story000_script.rpf` (one pack, mixed shapes). Both are already understood;
+neither has an entry model that verifies.
