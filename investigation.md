@@ -6918,3 +6918,35 @@ A useful side effect: `story000_script.rpf` holds 2,309 PSIN records that we had
 been treating as a second script archive. It is not — it has no property array,
 which is why the earlier attempt to use it as a cross-check on `script.rpf` produced
 nothing.
+
+### The property array exists in exactly one archive
+
+Scanning every byte offset of every PSIN body for runs of the 16-byte
+`(value, type, property, key)` shape — the format `script.rpf`'s directory points at —
+settles how special `script.rpf` is:
+
+| Archive | PSIN records | With property rows | Rows found |
+| --- | ---: | ---: | ---: |
+| `script.rpf` | 1,012 | **868** | **58,049** |
+| `packs.rpf` | 586 | 2 | 28 |
+| `levels.rpf` | 6,982 | 0 | 0 |
+| `story000.rpf` | 5,348 | 0 | 0 |
+| `story000_script.rpf` | 2,309 | 0 | 0 |
+| `data.rpf` | 2,281 | 0 | 0 |
+| `shared_minigame000.rpf` | 73 | 0 | 0 |
+| `navmeshes.rpf` | 22 | 0 | 0 |
+| `anim.rpf` | 18 | 0 | 0 |
+| `core_restofworld.rpf` | 6 | 0 | 0 |
+
+The scan finds 58,049 rows against the 62,910 the directory walk extracts, the
+difference being short runs at block edges that the scan's eight-row minimum skips —
+so the two methods agree on the substance.
+
+**`script.rpf` is the only archive with a property schema**, and `packs.rpf`'
+two records are 28 rows, the same count the earlier `levels` sweep produced, which
+suggests a small shared fragment rather than a second consumer.
+
+That is the sharpest statement the corpus supports about the script container: it is
+a general envelope (≈18,600 records in ten archives) wrapping at least three
+different payloads, and the typed property array — the one that yields readable
+schema — is used in a single file.
