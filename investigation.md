@@ -7159,3 +7159,41 @@ baseline.
 
 Ghidra is at 17 minutes, 141 % CPU, 5.8 GB, decompiling. When it completes, the
 question is one loop: 16-byte strides, one round function, one key argument.
+
+### The mount path reads the front region and parses it — it never decrypts (2026-11-23)
+
+With Ghidra working (Java script, `-noanalysis`, targeted disassembly), the archive
+constructor decompiles to:
+
+```c
+FUN_140fc2540(obj, file, ..., param_4, param_5, param_6)
+  *obj = &vtable; obj[1] = file;
+  cVar3 = FUN_141fb2600(obj+3, obj+4, ..., file->vtbl, ..., offset, ...);
+  if (cVar3) { FUN_141fb2780(local, ..., obj[3], obj[4]);
+               if (FUN_1408ec200(local, obj[1])) { FUN_14087aec0(obj+5, ...); FUN_1428ce230(...); } }
+```
+
+and `FUN_141fb2600` is pure I/O:
+
+```c
+read(file, offset, &hdr, 0x10);
+if (hdr.dword0 != 0x52504639) return 0;
+size = *(int*)((char*)&hdr + (param_3 != 0)*4 + 4);      // +0x04 or +0x08
+block = malloc(size); block[0..1] = hdr;
+read(file, offset + 0x10, block + 0x10, size - 0x10);    // the front region
+if (param_3 == 1 && hdr.dword1 != hdr.dword3) { ...read a second region at +0x08... }
+```
+
+No cipher call anywhere in the constructor, the mount (`0x1408ec210` →
+`0x1406bd050`, `0x1408ec360`) or the entry walker (`0x1406bd160`). The walker iterates
+`count` entries of **16 bytes** with a u32 at `+8` and dispatches on a u16 type at
+`+4` of the descriptor.
+
+So the front region is not ciphertext: it is the table itself, and its entropy is the
+entropy of hashes. That also weakens the earlier "CBC proof": repeated blocks sharing a
+predecessor is exactly what *identical plaintext prefixes* produce, cipher or not —
+the statistic never distinguished the two, and the code says there is no cipher.
+
+The remaining task is therefore a **layout** task: use the parser's field offsets
+(`+0x04`/`+0x08` sizes, 16-byte entries with `+8` and `+0x0c`, u16 type at `+4`) to
+decode Front B, with the pack's declared count as the oracle.
