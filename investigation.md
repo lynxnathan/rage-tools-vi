@@ -6973,3 +6973,24 @@ descriptor offset (320, 16, 24, 48…), and the `0xAA` runs inside the body are 
 reliable marker (the first 5,000 bodies yield 39,596 spurious descriptors with
 varying tags). One block was parsed by hand — tag `0x9c834886`, 204 rows of 32 bytes
 with a `(count, count, 2, 0)` header — and that remains the only confirmed structure.
+
+## Journal: the build ships no executable (2026-11-23)
+
+Checked the CYBERLEEK Xbox build on disk for something to analyse:
+
+| Check | Result |
+| --- | ---: |
+| `*.exe` in the build | **0** |
+| PE DLLs | 16 |
+| `gameos.xvd` "MZ" occurrences | 5,371 |
+| `d3d12` / `dxcompiler` / `Oodle` / `oo2core` strings in `gameos.xvd` | 0 / 0 / 0 / 0 |
+| `XMA` / `Bink` strings | 177 / 2 |
+
+So there is no game executable to audit or to use, which matches the public warning
+that the circulating Xbox build omits `game_scarlett_master.exe` and that "GTA VI PC"
+executables in circulation are fake or malware — one public launcher template even
+ships a self-signed `CN=Rockstar Games, Inc.` certificate with its private key.
+
+`gameos.xvd` holds thousands of embedded PE images but no Direct3D, DXC or Oodle
+strings, so it is the console OS rather than a route to the game's compiler or
+archives. The key-gated items in the plan therefore stay key-gated.

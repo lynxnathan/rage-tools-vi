@@ -64,6 +64,8 @@ Last updated: 2026-11-23.
 
 Each needs a specific input, not more effort.
 
+- [ ] No game executable exists in the build (0 `*.exe`, 16 DLLs, `gameos.xvd` with no
+  D3D12/DXC/Oodle strings), so key material cannot be recovered locally.
 - [ ] RPF9 table of contents — Front A, Front B and the trailer are masked, so
   there are no original names or paths; every entry here is payload-derived.
 - [ ] Front B table `S`, and the `+0x50` profiles as cipher parameters — need a
