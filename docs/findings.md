@@ -88,6 +88,10 @@ array of 16-byte rows `(value, type, property, key)`: **62,910 rows** across 1,0
 records, of which 25 of 301 property names and 515 of 14,653 object keys are
 recovered.
 
+The same container appears in `levels.rpf`, where **5,116** streams carry the
+identical section sequence but a different payload (the unversioned layout, with
+32-byte rows rather than the 16-byte property array).
+
 `LSNS` is a table container, not a cipher: framing validates on **1,012 of 1,012**
 records, 58,697 sixteen-byte records. Each table is `[path of ≤10 × 128-bit
 levels][per-script tail]`, and the path is a trie — 853 tables share level 1, 381

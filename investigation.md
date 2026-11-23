@@ -6878,3 +6878,43 @@ against the 240k-token vocabulary, so those words are not names in any list we h
 The block tag `0x9c834886` is constant across the sampled records and does not match
 JOAAT of any word in the corpus, the prior-art vocabulary or CodeWalker's metadata
 table.
+
+## Journal: where the PSIN container lives across the corpus (2026-11-23)
+
+`tools/psin_sweep.py` scans any archive for the `PSIN` magic, so the container could
+be counted everywhere rather than assumed to be script-only:
+
+| Archive | PSIN records | Property rows |
+| --- | ---: | ---: |
+| `levels.rpf` | **6,982** (5,116 with the full 7 sections) | 28 |
+| `story000.rpf` | 5,348 | 0 |
+| `story000_script.rpf` | 2,309 | 0 |
+| `data.rpf` | 2,281 | 0 |
+| `script.rpf` | 1,012 | **62,910** |
+| `packs.rpf` | 586 | 0 |
+| `shared_minigame000.rpf` | 73 | 0 |
+| `navmeshes.rpf` | 22 | 0 |
+| `anim.rpf` | 18 | 0 |
+| `core_restofworld.rpf` | 6 | 0 |
+| `audio`, `core_bvh4`, `shaders`, `textures` | 0 | — |
+| **total** | **≈18,637** | |
+
+So the container is common — roughly eighteen thousand records across ten archives —
+and `script.rpf` is the *exception* in how it is used, not the rule. Three layouts
+appear:
+
+| Archive | Word at `+0x08` | Descriptor form |
+| --- | --- | --- |
+| `script.rpf` | `0x00000101` | directory of hash→offset pairs (v22) |
+| `story000_script.rpf` | `0x00000105` | `0xAA`×8 + tag `0x107` + length `0x840` |
+| `levels.rpf` | `0x2c1e6fd5` | `0xAA`×8 + tag `0x9c834886` + length |
+
+Only the first carries the 16-byte `(value, type, property, key)` array; the other
+two scanning at every byte offset find runs of at most two. Two files with the same
+container and the same section vocabulary therefore hold completely different
+payloads, and "the script format" is one of three.
+
+A useful side effect: `story000_script.rpf` holds 2,309 PSIN records that we had
+been treating as a second script archive. It is not — it has no property array,
+which is why the earlier attempt to use it as a cross-check on `script.rpf` produced
+nothing.
