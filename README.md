@@ -1,53 +1,53 @@
 # Rage Tools VI
 
-RPF9 archive extraction, payload reconstruction, and object-graph analysis for
+RPF9 archive extraction, entry reconstruction and identifier recovery for
 **GTA VI / Leonida** — built as an evidence problem, not a guessing game.
 
-> **Goal:** enumerate every archive entry, locate its stored bytes, and extract it
-> with the correct decoding.
+> **Goal:** enumerate every archive entry, locate its stored bytes, decode it, and
+> say what it is.
 
 ## The idea in three lines
 
-RPF9 archives hide their table of contents behind masked metadata (Front A,
-Front B, the trailer), so this project reconstructs entries from the **payload**
-and uses the masked table only as a cross-check:
+RPF9 archives hide their table of contents behind masked metadata, so this project
+reconstructs entries from the **payload** and uses the masked table only as a
+cross-check:
 
 - every payload range is found by scanning and **verified by zlib checksum**;
-- every pack declares an entry count `N`, and Front B's size law
-  (`align16(stride × N)`) turns that count into an oracle;
+- every pack declares an entry count `N`, so the count is an **oracle**: an entry
+  model that does not reproduce `N` exactly is rejected;
 - every identifier met so far is **`JOAAT(lowercase name)`**, so names are
   recoverable by vocabulary instead of by key.
 
 Full walkthrough: **[From first principles](docs/explained.md)**.
 
-## Highlights
+## Results
 
 | Area | Result |
 | --- | --- |
-| Corpus index | **22 archives · 4,415,850 ranges · 161.3 GB stored · 365.0 GB decoded** — every index tiles its archive exactly |
-| Bulk extraction | **2,190,635** zlib ranges extracted and SHA-256 verified |
-| Entry manifests | **328,481 entries** with exact boundaries across 4 archives, self-consistency PASS |
-| `core_bvh4` descriptors | **269,106** rows: exact payload size, orthonormal basis (269,105/269,106 within 1e-3) |
-| Unclassified layer | **closed** — 38.1 GB audio, 13.4 GB video, no unnamed game payload |
-| Cutscene audio | **196,350 Opus streams / 148.3 hours** decoded from a second AWC variant |
-| Naming | **99 / 612** bone-table hashes and **21 / 252** weight hashes resolved via `skel_`/`mh_`/`rb_` |
-| Decoded rig | root `0x48dcbb01`, **34 / 34 bones** — a two-sided hand rig |
-| Browser | static extraction browser over seven verified archives |
+| Corpus index | **22 archives · 4,415,850 ranges · 161.3 GB stored** — every index tiles its archive exactly |
+| Corpus pass | one command indexes, fits an entry model and emits manifests for all 22 archives in **4 minutes** |
+| Entry manifests | **188,298 entries** with exact boundaries across 14 archives (packs whose count verifies exactly) |
+| `core_bvh4` | **1,253 of 1,261 packs** whose declared count is reproduced exactly; 109,301 entries |
+| Audio | **93,344 Opus + 1,818 XMA2 + 73 ACE1** streams, zero failures; every stream reaches its declared length |
+| Names | one registry of **36,952** hash→name pairs, with a flag for JOAAT collisions |
+| Script schema | `PSIN` decoded: 62,910 typed rows, 25 properties + 515 object keys named; `LSNS` is a table of 16-byte records |
+| GPU | shader decompilation lives in its own repository, [`rdna2-spirv`](rdna2-spirv/) |
 
 ## What is solved, and what is not
 
-**Solved.** Payload coverage and verification; entry boundaries for four
-archives; the `core_bvh4` descriptor format; three AWC audio container variants;
-the JOAAT naming convention for rigs; the media composition of the "unknown"
-bytes.
+**Solved.** Payload coverage and verification for the whole corpus; entry
+boundaries for 14 archives; the `core_bvh4` descriptor format; the `ADAT` audio
+container including Opus, XMA2 and PCM; the `PSIN`/`LSNS` script schema; a merged
+name registry; and the archive/stream accounting above.
 
-**Open.** The masked metadata itself (Front A, Front B, trailer) — four questions
-are information-blocked on key material or a crib. 330 bone hashes belong to a
-namespace whose vocabulary is unknown. Packs whose entries mix shapes cannot be
-counted exactly and are marked rather than guessed.
+**Not solved, and why.** The RPF9 **table of contents is encrypted**, so there are
+no original file names or paths — everything here is payload-derived and
+offset-addressed. The compiled script bytecode is not in a plaintext section, and
+the 331 KB blob in `script.rpf` is masked. Both need the game executable or a PC
+build, not more effort.
 
-The live list is [`plan.md`](plan.md); the raw evidence is
-[`investigation.md`](investigation.md).
+Details and the failures that led here are in [investigation.md](investigation.md);
+open work is in [plan.md](plan.md).
 
 ## Checking the repository
 
@@ -56,166 +56,94 @@ tools/check.sh          # analysis tests, index invariants, shader suite, docs b
 tools/check.sh --fast   # skip the docs build and the shader suite
 ```
 
-It fails loudly and skips cleanly: anything needing the source archives reports
-`skipped` instead of failing, so a fresh clone with only the committed data still
+Tools run through **uv** (`pyproject.toml`, `uv.lock`), so their dependencies
+(numpy for the XMA2 wrapper) are declared rather than assumed. Anything needing
+the source archives reports `skipped` instead of failing, so a fresh clone still
 gets a meaningful answer.
 
 ## Using the names
 
-Every resolved hash across the repository — bones, weights, script properties and
-object keys — is merged into one registry, so other tools can join against it
-instead of reading six files with six schemas.
-
 ```bash
-# rebuild the registry from every name table
-python3 tools/name_registry.py --build
-
-# what is this hash?
-python3 tools/name_registry.py --lookup 0x01166164 0x67d26872 0xf5436868
-
-# add name / name_kind / name_confidence columns to any TSV with a hash column
+python3 tools/name_registry.py --build            # rebuild from every name table
+python3 tools/name_registry.py --lookup 0x01166164
 python3 tools/name_registry.py --annotate handoff/script-bones.tsv \
     --column bone_hash --out handoff/script-bones-named.tsv
-
-# from the archive to a readable schema: one command
-python3 tools/psin_extract.py script.rpf          # writes cache/psin-properties.tsv
-python3 tools/psin_dump.py --record 110
-
-# ...or as entries, with Id/Type rows paired (vehicle parts, locations, ...)
-python3 tools/psin_segment.py --describe 1054
-python3 tools/psin_dump.py --property position
+python3 tools/annotate_handoff.py                 # every handoff table at once
 ```
 
-The registry also carries the engine's own metadata names (20,300 of them, from
-CodeWalker's public `MetaNames` table) as a `meta` confidence level above
-`corpus`:
+`handoff/names.tsv` is `hash, name, kind, confidence, source, also_known_as,
+ambiguous`, with confidence `curated > meta > grammar > corpus > candidate`. Where
+two real strings share a 32-bit JOAAT the row is marked ambiguous rather than
+picking one.
+
+## The corpus pass
 
 ```bash
-python3 tools/fetch_vocab.py     # downloads it into cache/vocab/ (untracked)
-python3 tools/name_registry.py --build
+tools/corpus_pass.sh /home/lynxnathan/gta6-source --entries
+python3 tools/corpus_table.py
+python3 tools/corpus_report.py --write docs/extraction/corpus.md
 ```
 
-261 of the 267 hashes named by both that table and our corpus sweep agree
-(98 %). Where two real strings share a 32-bit JOAAT the row is marked
-`ambiguous` and `--lookup` says so, rather than picking one.
+It indexes each `*.rpf`, fits the entry models per pack (`single`, `pairs`,
+`chains`, `structs-1`, `pos-pairs`) and, with `--entries`, emits a manifest for the
+unit the archive's stream/declared ratio implies. The result is
+[`docs/extraction/corpus.md`](docs/extraction/corpus.md).
 
-To annotate every handoff table at once (hash columns are detected by their
-values, not their names):
+## Single-purpose tools
 
 ```bash
-python3 tools/annotate_handoff.py       # writes output/named/ and handoff/name-coverage.tsv
+python3 tools/stream_index.py ARCHIVE --out output/index/name.tsv
+python3 tools/extract_entry.py --archive A --kind zlib --start 0x0 --end 0x1000 --output out.bin
+python3 tools/psin_extract.py script.rpf           # PSIN schema from the archive
+python3 tools/psin_segment.py --describe 1054      # a script's records, as entries
+python3 tools/awc_chunk_table.py FILE              # ADAT chunk table for any variant
+python3 tools/lsns_tables.py                       # LSNS tables and record counts
 ```
 
-`handoff/name-coverage.tsv` says, per table, how many hash values now carry a
-name — 31,896 of 746,679 (4.27 %) at present, concentrated in the bone, rig and
-script-schema tables. Annotated copies are derivable and stay untracked in
-`output/named/`.
-
-`handoff/names.tsv` is `hash, name, kind, confidence, source, also_known_as`.
-Confidence is ordered `curated > grammar > corpus > candidate`, and a hash that
-two sources disagree about keeps the losing name in `also_known_as` rather than
-dropping it.
-
-## Documentation
-
-The site is built with MkDocs Material + Mermaid:
+The Rust CLI in `src/` covers inspection, pack mapping and partition work:
 
 ```bash
-tools/docs.sh build     # writes site/
-tools/docs.sh serve     # live preview
+cargo build && target/debug/rage-tools-vi --help
 ```
-
-Start with [From first principles](docs/explained.md), then
-[What we found](docs/findings.md). Deeper pages: [RPF9 format](docs/rpf9/format.md),
-[Metadata regions](docs/rpf9/metadata.md), [Entry manifests](docs/extraction/entries.md),
-[Rig names](docs/data/rig-names.md), [Audio](docs/extraction/audio.md).
 
 ## Layout
 
 | Path | Purpose |
 | --- | --- |
 | `src/` | Rust CLI: inspect, map, packs, partition, sections, extract |
-| `tools/` | Python indexing, extraction, verification, and semantic probes |
+| `tools/` | Python indexing, extraction, verification, naming and format probes |
+| `handoff/` | Verified manifests and measurements — see [handoff/README.md](handoff/README.md) |
 | `docs/` | MkDocs Material site with Mermaid diagrams |
-| `handoff/` | Verified TSV manifests and semantic reports |
+| `tests/` | Smoke tests over the committed data |
 | `plan.md` | Live check/todo list |
-| `investigation.md` | Append-only evidence journal |
+| `investigation.md` | Append-only research journal |
 | `rdna2-spirv/` | Submodule: RDNA2 shader decompiler (separate repository) |
 
-## Quick start
+## Data layout
 
-```bash
-cargo build
-target/debug/rage-tools-vi --help
-```
+Two disks, two jobs, forced by arithmetic:
 
-Reproducible full pipeline (index → extract → audio → browser → verify):
-
-```bash
-python3 tools/pipeline.py --source SOURCE_ROOT --output output all --resume
-# non-empty output requires --resume or --force; --dry-run prints every command
-```
-
-Focused tools:
-
-```bash
-# stream index, then bulk extraction and verification
-python3 tools/stream_index.py ARCHIVE --out output/index/name.tsv
-python3 tools/bulk_extract.py ARCHIVE INDEX.tsv OUT_DIR --resume
-python3 tools/verify_bulk.py ARCHIVE INDEX.tsv OUT_DIR/manifest.tsv
-
-# one entry / one range
-python3 tools/extract_entry.py --archive ARCHIVE --kind zlib --start 0x0 --end 0x1000 --output out.bin
-
-# entry manifests from the payload
-python3 tools/pair_entry_manifest.py --archive core_bvh4.rpf --index output/index/core_bvh4.tsv --out entries.tsv
-```
-
-## Data policy
-
-`*.rpf`, `output/`, `site/`, `target/`, `cache/`, the bus and extracted corpora
-are local-only and ignored. The source archives live on `/home/lynxnathan/gta6-source`
-(local NVMe) so passes read them at disk speed; extraction output stays on the
-Mammoth volume through the `output/` symlink, because a full decode (365 GB) fits
-on neither disk — extraction streams and keeps manifests. Source archives and multi-gigabyte extractions never
-enter Git; verified manifests and their hashes do.
-
-## Sibling project: RDNA2 shaders
-
-The GPU layer is its own repository, included here as a submodule:
-
-| Path | What it does |
+| Disk | Holds |
 | --- | --- |
-| `rdna2-spirv/` | Generic AMD RDNA2 (GFX10.x) decompiler: machine code to SPIR-V, with golden buffer and pixel tests |
+| local NVMe, `/home/lynxnathan/gta6-source` (209 GB) | the source archives, so passes read at disk speed |
+| Mammoth volume, `output/` | extraction output, manifests and chosen artifacts |
 
-It is a **separate Git repository**, not part of this history: its own `plan.md`
-and `investigation.md` live there. Clone with submodules to get it:
-
-```bash
-git clone --recurse-submodules https://github.com/lynxnathan/rage-tools-vi.git
-git submodule update --init --recursive      # in an existing clone
-```
+Decoded payload for the whole corpus is 365 GB and fits on neither disk (77 GB
+local + 201 GB on Mammoth), so extraction **streams**: decompress, measure, keep
+the manifest, discard the bytes. `*.rpf`, `output/`, `cache/`, `site/` and
+`target/` are local-only and ignored; manifests and their hashes are committed.
 
 ## Prior art and credits
 
-Two public projects document GTA VI formats in enough detail to check our results
-against, and this repository now follows them where they are ahead:
-
-| Project | What we use |
+| Project | What this repository uses |
 | --- | --- |
-| [ItsNotRexed/Leonida](https://github.com/ItsNotRexed/Leonida) | the `ADAT` layout (`id:29 \| tag_count:3`, optional flag tables, 2,048-byte Opus blocks, 312-sample lookahead) — `tools/awc_parse.py` implements it |
-| [TrinitronClient/GTA6-Asset-Info](https://github.com/TrinitronClient/GTA6-Asset-Info) | byte-level notes on `PSIN`/`LSNS` framing, chunk tags, and the object graph |
-| [dexyfex/CodeWalker](https://github.com/dexyfex/CodeWalker) | the metadata name table used as a hash vocabulary (`tools/fetch_vocab.py`) |
-| [GPUOpen isa_spec_manager](https://github.com/GPUOpen-Tools/isa_spec_manager) | the machine-readable RDNA2 ISA behind the `rdna2-spirv` submodule |
+| [ItsNotRexed/Leonida](https://github.com/ItsNotRexed/Leonida) | the `ADAT` layout — `tools/awc_parse.py` implements it and cites it |
+| [TrinitronClient/GTA6-Asset-Info](https://github.com/TrinitronClient/GTA6-Asset-Info) | byte-level notes on `PSIN`/`LSNS` framing and the object graph |
+| [dexyfex/CodeWalker](https://github.com/dexyfex/CodeWalker) | the metadata name table used as a hash vocabulary |
+| [GPUOpen isa_spec_manager](https://github.com/GPUOpen-Tools/isa_spec_manager) | the machine-readable RDNA2 ISA behind `rdna2-spirv` |
 
-Where their documentation contradicted this project's earlier conclusions, the
-journal records the correction rather than quietly changing the number: `LSNS` is
-a table container, not an encrypted blob, and the `0xff21` audio payload was
-already documented.
-
-What this repository has that those notes list as open: decoding RDNA2 shader
-code to SPIR-V, payload-derived entry boundaries without the table of contents,
-and a merged 36,952-entry hash→name registry.
+Where those notes contradicted this project's earlier conclusions, the journal
+records the correction instead of quietly changing the number.
 
 ## License
 
