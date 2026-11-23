@@ -6994,3 +6994,42 @@ ships a self-signed `CN=Rockstar Games, Inc.` certificate with its private key.
 `gameos.xvd` holds thousands of embedded PE images but no Direct3D, DXC or Oodle
 strings, so it is the console OS rather than a route to the game's compiler or
 archives. The key-gated items in the plan therefore stay key-gated.
+
+## Journal: the executable landed, and the first static pass (2026-11-23)
+
+`game_scarlett_master.exe`, sha256 `e95020b2fa4a721db3df59fdecf75621730ac559d8835252f6c3b658d5a08993`,
+120,181,760 bytes, PE32+ x86-64, timestamp 1794606036 (2026-11-13), 10 sections.
+
+Authentic, not a launcher: `.xbld`, `.retplne` and `.voltbl` sections match the
+shipped console DLLs, and it imports `d3d12_xs.dll`, `xg_xs.dll`, `xmem.dll`,
+`xapu.dll`, `AcpHal.dll`, `XCRDAPI.dll`, `XboxBvhBuilder.dll`,
+`amd_fidelityfx_loader_xbox.dll`, `libHttpClient.GDK.dll`, `Bink2Scarlett.dll` —
+every module we already have on disk.
+
+First static results:
+
+| Finding | Evidence |
+| --- | --- |
+| The archive magic is compared in code | `cmp dword ptr [rbx], 0x52504639` (`9FPR`) at `0x140fc21d7`, `0x141fb2616`, `0x141fb268e` |
+| Archive open/ctor | `0x140fc21c0` allocates 0x60 B, calls `0x140fc2240`; header read at `0x141fb2600` reads 0x10 bytes, checks the magic, then allocates `[hdr+0x04]` and reads the rest |
+| Archive load pipeline | `0x140fc2540` → `0x141fb2600` → `0x141fb2780` → `0x1408ec200` → `0x1406bd040` → `0x1408ec350` |
+| **AES-NI is present** | 126 × `AESENC`, 13 × `AESDEC`, 31 × `AESKEYGENASSIST` — which is why scanning for S-box tables found nothing |
+| AES block routine | `0x145648da0`: `movdqa`/`pxor` then 9–13 `aesenc`, round count in `r9d` (0xc = AES-192, 0xe = AES-256) |
+| CNG-style cipher context | `0x14215f06c`: rounds at `+0xf0`, key bits at `+0xf4`, IV at `+0x100`, key expansion at `0x14216127c` |
+| Section tags are code immediates | `PSIN` `0x4e495350` at file 0x4082868, then `LSCH` `0x4843534c`, `LENM`, `LSNS`, `LGID`, `LRSC` — one serializer at `0x144083410` |
+
+The serializer at `0x144083410` writes the container we parse: `PSIN` with a u16
+count at `+0x4c` of the source struct, entries of 16 bytes (`count << 4`), each with
+a size at `+0x0c`; then `LSCH` with a u16 count at `+0x48`, records of 32 bytes
+(`count << 5`), each holding a u16 sub-count at `+0x26` and a pointer at `+0x18` to
+16-byte sub-records. That confirms the `PSIN`/`LSCH` shapes from the data side, from
+the code that emits them.
+
+Two things follow for the plan. The metadata cipher is **AES with a runtime key**,
+not a custom construction, so the key hunt is a normal one: find the key schedule
+input. And the script schema's structure is now confirmed by the writer, leaving only
+the hash→name vocabulary open.
+
+Static tools added: `tools/pe_audit.py` (sections, entropy, certificate, imports,
+strings) and `tools/watch_for_exe.sh` (inotify on the drop folders, audit on arrival,
+desktop notification) — re-armed after the session restart.
