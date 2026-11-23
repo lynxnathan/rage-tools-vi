@@ -82,6 +82,10 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] Partial width law: 214/654 packs satisfy `size_b == align16(count * w)`
   with w in {8,10,12,16}, correlated with the mode word at `+0x20`; the other 440
   carry more than one table.
+- [x] The 448 packs that fail the width law are composite: no header word works as
+  a replacement count and `size_b/count` is scattered within a single mode.
+- [ ] Find the second component's size law in composite packs — it is not a
+  function of `count`.
 - [ ] Wide-hash layouts are still open: a 64/128-bit hash table is statistically
   identical to random data, so entropy and the 32-bit name test cannot exclude it.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or

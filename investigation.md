@@ -7751,3 +7751,25 @@ Structural tests that came out negative on the same regions: no column is
 monotonic under stride 4/8/16 (all 0.49–0.51, i.e. chance), no field is bounded
 by the archive size, and no XOR with a repeating header-derived key turns the
 entry offsets into small numbers.
+
+### The 440 packs that do not fit the width law are composite (2026-11-23)
+
+Follow-up on the partial width law. For the **448** packs where no width in
+`{8, 10, 12, 16}` satisfies `size_b == align16(count * w)`, I asked whether the
+*count field itself* is in a mode-dependent place: every one of the twelve header
+words was tried as `count` against those same four widths.
+
+**No header word works for any of them.** So the failure is not a misplaced count;
+those Front B regions hold more than one table, and the header count describes one
+of them. Their `size_b / count` ratios are scattered (12.0, 14.3, 21.1, 26.2 in
+mode `0x20007`; 9.0–9.2 in mode `0x10006`), which is what a mixture looks like.
+
+Two consequences for the next attempt:
+
+- A single-table model is only valid on the 206 packs that fit, and those are
+  already explained; the remaining work is to find the *second* component's size
+  law, which is not a function of `count` (the same mode shows ratios from 12 to
+  26 at comparable counts).
+- Because `size_b` is composite, "Front B is the entry table" is only true for the
+  simple packs. For the composite ones, the A/B boundary at `+0x08` may not even be
+  an entry-table boundary.
