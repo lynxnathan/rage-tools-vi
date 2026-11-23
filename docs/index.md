@@ -88,7 +88,7 @@ flowchart LR
 | Decoded rig | 34 / 34 bones | `handoff/script-skeleton-0x48dcbb01.tsv` |
 | Skeleton families | 16 | readings: hand, genital, large animal, props |
 | Textures | 788 textures / 306,008,064 bytes | descriptor-valid |
-| Script schema | `PSIN` ≈18,637 records in 10 archives; **property array only in `script.rpf`** (62,910 rows); `LSNS` 58,697 records | parsed; names partly recovered |
+| Script schema | `PSIN` ≈18,637 records in 10 archives; **property array only in `script.rpf`** (63,288 typed rows); `LSNS` 58,697 records | parsed; names partly recovered |
 | Front A / Front B / trailer | size laws only | masked; cipher open |
 
 ## Two object families

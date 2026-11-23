@@ -1,95 +1,170 @@
 # Script schema (PSIN)
 
-`script.rpf` records are not bytecode. Each one carries a section sequence —
-`PSIN`, `LSCH`, `LENM`, `LSNS`, `LGID`, `LRSC`, `CHKS` — and `PSIN` holds a flat
-array of 16-byte rows:
+`script.rpf` records are not bytecode. Each record is a chain of chunks, and the
+script schema lives inside them.
+
+The format below is not inferred from our corpus. It was read out of the writer
+in the executable — `FUN_144083410` — found by scanning `.text` for the chunk
+magics, each of which occurs exactly once and all inside that one function. When
+the recovered layout and the bytes disagree, the bytes win, and the checks below
+are exact rather than statistical.
+
+## The chunk chain
+
+Every chunk is `[4-byte ASCII magic][big-endian u32: distance to the next chunk]`.
+Nothing else is stored: no sizes, no counts, no terminator.
 
 ```
-struct PsinRow {          // 62,910 rows across 1,012 records
-    u32 value;            // union: float when type == 0x102
+PSIN → LSCH → LENM → LSNS → LGID → LRSC
+```
+
+`levels.rpf` records append a seventh chunk, `CHKS`. The order is fixed.
+
+Two traps cost us real time and are worth naming:
+
+- The header word is **big-endian** while the payload words are little-endian.
+  That is why an old helper that read a big-endian size happened to work: the
+  "size" it read *is* the distance to the next chunk.
+- `0x4d4e454c` is **`LENM`**, not `LMEN`. A scan for the wrong spelling reports
+  zero occurrences and looks like evidence that the chunk does not exist.
+
+## `PSIN`: the section table
+
+```
++0x00  'PSIN'
++0x04  u32 BE  distance to LSCH
++0x08  count × 16-byte descriptors
+          +0x00  u32  section tag
+          +0x04  u32  payload length
+          +0x08  u64  0xAAAAAAAAAAAAAAAA   (pointer, poisoned on disk)
+       then each descriptor's payload, in order, each rounded up to 16 bytes
+```
+
+`count` is not stored. It is recovered by asking which value closes the
+arithmetic exactly:
+
+```
+16*count + 0x10 + Σ align16(length_i)  ==  distance_to_next_chunk
+```
+
+The first payload starts at `16*count + 0x10` because the writer computes
+`(16*count + 0x17) & ~15`, which rounds **down**. Using an ordinary round-up
+alignment helper puts every payload 16 bytes late.
+
+The `0xAA` runs that earlier scans treated as a terminator are these poisoned
+pointers — the same trick appears as `0xEE` in `LENM` and `0xBB` in `LRSC`.
+
+## The typed block
+
+In `script.rpf` the sections are almost constant, five tags per record:
+
+| tag | role | records |
+| --- | --- | --- |
+| `0x85b4c631` | typed rows | 1,012 |
+| `0xde396fe2` | 80-byte sub-table directory | 1,012 |
+| `0x01393259` | struct-like block | 1,012 |
+| `0x16` | 16-byte rows, 128-bit material | 1,010 |
+| `0xaeb623d8` | 12-byte `{u32, f32, f32}` triples | 855 |
+
+The typed rows are 16 bytes each and the type word sits at the **end**:
+
+```
+struct PsinRow {          // 63,288 rows across 1,012 records
+    u32 property;         // 164 distinct — Flags, Heading, Position, Name, Id, ...
+    u32 key;              // 14,530 distinct — the object keys
+    u32 value;            // value or reference, see the open question below
     u32 type;             // 0x101 int, 0x102 float, 0x103 hash, 0x104 bool, 0x105 byte
-    u32 property;         // 301 distinct — names like Position, Flags, Heading
-    u32 key;              // 14,653 distinct — names like CAR, bonnet, ambrosia
 };
 ```
 
-Rows are recovered by scanning every record-aligned position and keeping maximal
-runs whose type word is in range, because the block directory does not align with
-record boundaries at the end of a block.
+Type distribution across the corpus: byte 20,005 · float 15,277 · hash 14,739 ·
+int 13,257 · bool 10.
 
-## Reading it
+### Correction: an earlier extraction was shifted by 8 bytes
+
+The first extractor sliced each record at `offset + 8`, which put its 16-byte grid
+8 bytes early. Its `type` column was therefore the real `+0x0c` word — correct by
+accident — but its `property` and `key` columns came from the *next* physical row.
+Values were being paired with the following row's property.
+
+Fixing the alignment changed what the data looks like: property coverage went from
+4.3 % of rows named to **42 %** (26,893 of 63,288), and the dominant entry pair
+became `Heading` + `Position` (2,807 pairs), which is what a flattened placement
+schema should look like.
+
+## `LSCH`: the index over sections
+
+`LSCH` rows are 32 bytes and *name the sections*:
+
+```
++0x00  u32  section tag          <- one of this record's PSIN tags (200/200 records)
++0x04  u32  hash
++0x08  u32  small value
++0x0c  u32  zero
++0x10  u64  pointer              <- poisoned 0xAA on disk
++0x18  u32  value
++0x1c  u16  zero
++0x1e  u16  sub-record count
+       then sub-records, 16 bytes each, appended after the rows
+```
+
+Sub-records carry a tag at `+0x0c`, so the record cross-references itself twice.
+`LENM` rows have the same shape in 24 bytes (`tag`, `hash`, poisoned pointer,
+`u16` sub-count at `+0x10`).
+
+None of the index fields is a count of its section: tested against both the block
+byte length and the row count over 4,901 sections, the best agreement is 36.7 %,
+which is a computed length rather than the literal size. The exact-fit solve stays
+the only count oracle.
+
+## `levels` records look different
+
+Same chain, different content: a `levels` PSIN is a bag of tagged sections. Over
+the first 400 records there are **209 distinct tags**, and the descriptor count
+varies from 2 to 17+ depending on what the level contains. `0x78ba5fa7` and
+`0xec610df1` carry NUL-padded ASCII resource paths, for example
+`acaidreams_protectedarea/all.pso.meta` — 3,697 distinct paths across 6,982
+records.
+
+## `CHKS`
+
+Twelve bytes: a big-endian total record size (matches the decompressed body length
+in 60/60 records) followed by a 4-byte tag we have not identified. Candidates
+joaat32, fnv1a, crc32 and adler32 over the body, the body prefix and the
+compressed stream are all excluded.
+
+## Running the parser
 
 ```bash
-python3 tools/psin_extract.py script.rpf          # 62,910 rows -> cache/
-python3 tools/psin_dump.py --record 110           # the rows, with names
-python3 tools/psin_segment.py --describe 1054     # as paired entries
-python3 tools/psin_entries.py                     # every pair, 4,968 of them
+# whole corpus, chain census and a decoded sample
+uv run python tools/script_meta.py script.rpf --index output/index/script.tsv --dump 1
+
+# the five sections side by side, corrected field order
+uv run python tools/psin_blocks.py --index output/index/script.tsv --show 1
+
+# joined PSIN + LSCH view
+uv run python tools/script_sections.py --out handoff/script-sections.tsv
+
+# levels section census and path harvest
+uv run python tools/levels_sections.py --archive "$SRC/levels.rpf" \
+    --index output/index/levels.tsv --limit 400
+uv run python tools/levels_paths.py --archive "$SRC/levels.rpf" \
+    --index output/index/levels.tsv
 ```
 
-Record 1054 is the vehicle customisation table:
+Validation: **1,012 / 1,012** records produce the complete six-chunk chain with
+zero failures, and the typed-word count agrees with the older independent
+heuristic scan to 0.6 % (63,290 vs 62,910).
 
-```
-  2  Type=Default      Id=0x00000000
-  3  Type=location     Id=CAR
-  4  Type=0x00000003   Id=motorbike
-  6  Type=0x00000006   Id=cosmetics
-  8  Type=0x00000009   Id=bonnet
- 10  Type=0x0000000b   Id=side
- 13  Type=0x0000000e   Id=roof
-```
+## Open questions
 
-Two details make that readable and both were learned the hard way: on `Id`/`Type`
-rows the payload is the **key** (the value column holds an ordinal), and the
-pairing is **local** — only one record in 868 repeats with period 2 throughout, so
-the renderer pairs run by run rather than assuming a layout.
-
-## What is named, and what is not
-
-| Namespace | Size | Resolved | How |
-| --- | ---: | ---: | --- |
-| properties | 301 | 25 | corpus + engine metadata |
-| keys | 14,653 | 515 | corpus |
-| types (`root_type`, `type_tag`) | 42 | 0 | not a vocabulary problem — see below |
-
-The type namespace is 21 `root_type` and 21 `type_tag` values. Three vocabularies
-return nothing against it: the 174k corpus (0 hits, 1.42 expected by chance),
-20,300 engine metadata names (4 doubtful hits in 234,720 values), and 40 engine
-class names (0 hits). A namespace that small would fall to any decent word list if
-its names were plain strings, so the names are most likely stored as text inside
-`LSNS`.
-
-## What LSNS is
-
-`LSNS` is a **table container**, not a cipher. Its payload is
-
-```
-u32 table count N | 4 flag bytes | per table: u32 length (then u32 id, except last)
-```
-
-with every length a multiple of 16 and `header + sum(lengths)` equal to the payload
-size. That framing holds on **1,012 of 1,012** records, giving 58,697 sixteen-byte
-records (`tools/lsns_tables.py`).
-
-An earlier reading of this section as an encrypted blob was wrong, and the
-measurements behind it were right about the bytes and wrong about their meaning:
-the "120 identical 160-byte bodies" are the 120 tables of exactly ten records, the
-16-byte blocking is the record size, and the uniform entropy is what four
-hash-like words per record look like.
-
-Each table is `[path of ≤10 × 128-bit levels][per-script tail]`:
-
-- the path is a **trie**. Require more leading records and the group shrinks — 853
-  tables share level 1, 381 share all ten, and 120 scripts share the full path.
-  So the head encodes a hierarchy of script kinds, visible but unlabelled.
-- the tail is per-script data. Within one kind every tail differs, but its length
-  is fixed (22–23, 19–20, 20–21 in three sampled groups), off by one for a
-  minority — what an optional trailing record looks like.
-- 120 tables are path only, with no tail at all.
-
-The records are not sorted in any interpretation (0 of 994 tables ascending as
-u128, as two u64, or as four u32), so the order carries no index-like structure.
-The values themselves remain opaque: 210,522 distinct words, none matching a known
-name or a PSIN key, and no slot holding a small integer.
-
-What remains masked in `script.rpf` is the 331,728-byte blob, which has entropy
-7.996 and no zlib stream at its start.
+- What the `value` word means. It is mostly the declaration index (0, 1, 2, ...)
+  but `Decay` appears six times with a shared `300000` inside the same block, so
+  it is either a value or a reference, and both cases coexist. Settling it needs
+  the script data section.
+- The roles of `0x01393259`, `0x16` and `0xaeb623d8`.
+- Why the `LSCH` `+0x18` word matches the block size 36.7 % of the time.
+- The `CHKS` tag.
+- How `levels` paths are keyed: the strings exist, but joaat in seven
+  normalizations matches none of the 36,952 names, the 14,530 PSIN keys or the 164
+  property hashes.

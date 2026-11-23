@@ -83,10 +83,13 @@ every time (`tools/awc_chunk_table.py`).
 
 ## Script schema
 
-`script.rpf` records are a section sequence, not bytecode. `PSIN` holds a flat
-array of 16-byte rows `(value, type, property, key)`: **62,910 rows** across 1,012
-records, of which 25 of 301 property names and 515 of 14,653 object keys are
-recovered.
+`script.rpf` records are a chunk chain, not bytecode, and the chain was recovered
+from the writer in the executable rather than inferred. `PSIN` holds a flat array
+of 16-byte rows `(property, key, value, type)`: **63,288 rows** across 1,012
+records, of which **42 % now name their property** (164 distinct properties,
+14,530 distinct keys). The type word is the last field of the row; an earlier
+extractor was misaligned by 8 bytes and paired every value with the next row's
+property, which is why coverage looked like 4 % before.
 
 `PSIN` itself is a general envelope — **≈18,637 records across ten archives** — but
 the property array is a single-file feature: scanning every body at every byte offset
