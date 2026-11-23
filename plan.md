@@ -4,7 +4,7 @@ Live check/todo list. Evidence, measurements and the failures that led here belo
 in [investigation.md](investigation.md) and `handoff/`; completed work is one line
 of state, not a log.
 
-Last updated: 2026-11-23.
+Last updated: 2026-11-23 (executable acquired).
 
 ## Current state
 
@@ -26,9 +26,23 @@ Last updated: 2026-11-23.
   hash values named corpus-wide, concentrated in bones and the script schema).
 - **GPU:** shader decompilation is a separate repository, `rdna2-spirv/`.
 - **Health:** `tools/check.sh` (tests, index invariants, shader suite, docs build).
+- **Executable:** `game_scarlett_master.exe` obtained (sha256 `e95020b2…8993`,
+  120,181,760 B, PE32+ x86-64, timestamp 2026-11-13). Authentic, not a launcher:
+  `.xbld`/`.retplne`/`.voltbl` sections and imports of `d3d12_xs`, `xg_xs`,
+  `xmem`, `xapu`, `AcpHal`, `XCRDAPI`, `XboxBvhBuilder`, `Bink2Scarlett`.
+  Analysis harness: `tools/pe_audit.py`, Ghidra headless (`cache/ghidra/Target.java`,
+  `-noanalysis`, 8 GB heap — 20 GB gets OOM-killed).
 
 ## Now
 
+- [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or
+  decrypted above the archive layer. The full read→mount→entry-walk path
+  (`0x140fc2540` → `0x141fb2600` → `0x1408ec210` → `0x1406bd160`) contains **no
+  cipher call**, and the earlier "CBC" evidence was retracted — identical plaintext
+  prefixes explain the predecessor statistic without a cipher.
+- [ ] Decompile the remaining archive vtable methods (`0x1428cd270`,
+  `0x1428cd2a0`, `0x1428cd2e0`) and find the caller that constructs the archive
+  object (reached only through the vtable at `0x1462fd480`).
 - [x] `LSNS` table structure: `[path of ≤10 × 128-bit levels][per-script records]`.
   The path nests — 853 tables share level 1, 381 share all ten, 120 share the full
   path — so it encodes a hierarchy of script kinds, not a flat type id. Records are
@@ -64,18 +78,19 @@ Last updated: 2026-11-23.
 
 Each needs a specific input, not more effort.
 
-- [ ] No game executable exists in the build (0 `*.exe`, 16 DLLs, `gameos.xvd` with no
-  D3D12/DXC/Oodle strings), so key material cannot be recovered locally.
-- [ ] RPF9 table of contents — Front A, Front B and the trailer are masked, so
-  there are no original names or paths; every entry here is payload-derived.
-- [ ] Front B table `S`, and the `+0x50` profiles as cipher parameters — need a
-  crib or key material.
+- [ ] RPF9 table of contents — content unidentified: `Front A`/`Front B` are
+  uniform random, hold no known name hashes at any 4/8-byte field, and the reader
+  does not decrypt them, so either they are the table as stored or the transform is
+  above the archive layer. Every entry here is payload-derived.
+- [ ] Cipher identity for the front region: not AES (forward S-box absent, the one
+  inverse S-box is CNG library code), not CNG (no `BCryptEncrypt`/`Decrypt`
+  imports), no Blowfish; ARX constants present (Murmur ×17, TEA delta ×11).
 - [ ] Front A milestone on `story000_bvh4.rpf` — needs independent table framing.
 - [ ] Exact end of the last `data.rpf` child — needs an independent trailer start.
 - [ ] Multi-mip texture tail — needs a multi-mip dictionary.
 - [ ] The 331,728-byte `script.rpf` blob — needs a PC launch or a new sample.
-- [ ] Script bytecode itself: not in a plaintext section — needs the executable or
-  a second build.
+- [ ] Script bytecode itself: not in a plaintext section. The executable is now in
+  hand, so this is a code-tracing task, not a waiting task.
 - [ ] Type-name vocabulary (`root_type`, `type_tag`): three vocabularies return
   nothing usable; most likely stored as text inside the masked data.
 
