@@ -29,10 +29,10 @@ Last updated: 2026-11-23.
 
 ## Now
 
-- [x] `LSNS` table structure: each table is `[10-record (160 B) header][per-script
-  records]`. 678 distinct headers over 994 tables, 65 shared; a header group shares
-  its PSIN row count and record count, so the header identifies the script *kind*.
-  120 tables are header only.
+- [x] `LSNS` table structure: `[path of ≤10 × 128-bit levels][per-script records]`.
+  The path nests — 853 tables share level 1, 381 share all ten, 120 share the full
+  path — so it encodes a hierarchy of script kinds, not a flat type id. Records are
+  not sorted in any interpretation.
 - [ ] What the ten header records and the per-script records contain. 210,522
   distinct words, none matching names or PSIN keys, no small-integer slot.
 - [x] `PSIN` tree segmented: `tools/psin_segments.py` splits a record where the

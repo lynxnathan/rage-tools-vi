@@ -6686,3 +6686,33 @@ roughly two.
 
 What the ten header records contain is still open, but they are now separable from
 the per-script records, which is what makes the next question answerable.
+
+### The header is a nested path, not a fixed block
+
+Testing the "160-byte header" more carefully changes its shape. If the ten leading
+records were one fixed block, every group would share all ten or none. Instead, the
+groups nest: the more leading records you require, the smaller the group.
+
+| Leading records | Distinct prefixes | Tables in a shared group | Largest group |
+| ---: | ---: | ---: | ---: |
+| 1 | 208 | 853 | 326 |
+| 2 | 338 | 725 | 157 |
+| 3 | 408 | 649 | 143 |
+| 4 | 457 | 606 | 124 |
+| 5 | 502 | 563 | 124 |
+| 6 | 550 | 515 | 120 |
+| 10 | 677 | 381 | 120 |
+
+Monotone in both directions, which is the signature of a **trie**: the head of an
+`LSNS` table is a path of up to ten 128-bit values, and scripts sharing a longer
+path are more closely related. 120 scripts share the full ten levels; the deepest
+common group is six records, after which the largest group stops growing.
+
+So the table is `[path of ≤10 × 128-bit levels][per-script records]`, and the path
+encodes a hierarchy (kind at the top, something finer below) rather than a flat type
+id. That is the strongest statement the ciphertext allows: the levels are 128-bit
+opaque values, so the hierarchy is visible while its labels are not.
+
+One negative from the same check: the records are not sorted in any interpretation
+(0 of 994 tables ascending as u128, as two u64, or as four u32), so the ordering
+carries no key-like structure.
