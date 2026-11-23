@@ -6762,3 +6762,34 @@ story000.rpf  0x12010–0x1474b matched the decoded file and SHA-256 28bfdac0…
 The page is `output/extraction-index-pilot/index.html` (untracked, as all generated
 output is). The lesson matches the one from the corpus pass: a tool that fails on a
 legitimately absent row hides the 21 archives that are fine.
+
+## Journal: what a `levels` pack is made of (2026-11-23)
+
+The `levels` entry model needed the entry-type distribution, so the streams were
+classified by their own bytes rather than by the generic "looks like a struct"
+heuristic. Three shapes are visible in the first 400 packs:
+
+| Shape | Signature | Share of streams |
+| --- | --- | ---: |
+| descriptor | eight zero bytes, then a tagged pointer (`4…`/`5…`/`6…` in the top nibble) | 50.7 % |
+| data | starts `42 40` | 17.6 % |
+| other | neither | 31.7 % |
+
+On a single pack that shape is decisive: `0xfbcd6b000` declares **140** entries,
+holds **358** streams, and contains **139** descriptor streams. The generic
+classifier called 153 of them structs — close enough to look right, wrong enough to
+break the count.
+
+Across 394 packs the descriptor count equals the declared count in **140 (36 %)**,
+with deltas clustering at −1 (59 packs), −3 (20), −2 (17), +1 (14). So the
+descriptor is the right unit, but between one and four entries per pack have no
+descriptor in the pack's stream window — either the descriptor lives outside it or
+it is one of the 31.7 % "other" streams.
+
+That is a better place to stand than "no count-only model fits": the unit is
+identified, and the remaining error is a bounded, localisable deficit rather than an
+unexplained surplus.
+
+Also caught in the process: the tag is the **top nibble** of the pointer word
+(`0x50xxxxxx` → tag 5), not the top byte. Reading it as a byte gave 11 matches where
+the correct reading gives 157,777.
