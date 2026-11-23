@@ -8,19 +8,35 @@
 # that needs the archives is skipped with a message rather than failed.
 set -uo pipefail
 cd "$(dirname "$0")/.."
+# Prefer `uv run` when a managed environment is present, so tools get their
+# declared dependencies (numpy for the XMA2 wrapper) without a global install.
+PY=python3
+if command -v uv >/dev/null && [ -f pyproject.toml ] && uv run python -c "" >/dev/null 2>&1; then
+    PY="uv run python"
+fi
+
 fast=0
 [ "${1:-}" = "--fast" ] && fast=1
 fail=0
 note() { printf '%-26s %s\n' "$1" "$2"; }
 
-if python3 tests/test_analysis_tools.py >/tmp/check-tools.log 2>&1; then
+if $PY tests/test_analysis_tools.py >/tmp/check-tools.log 2>&1; then
     note "analysis tools" "PASS ($(grep -c '  ok' /tmp/check-tools.log) checks)"
 else
     note "analysis tools" "FAIL"; tail -5 /tmp/check-tools.log | sed 's/^/    /'; fail=1
 fi
 
+# A symlink named `output` slipped into the published tree once, because
+# `.gitignore`'s `/output/` matches a directory but not a symlink.
+if git ls-files -s | awk '$1 == 120000 {print $4}' | grep -q .; then
+    note "tracked symlinks" "FAIL: $(git ls-files -s | awk '$1 == 120000 {print $4}' | tr '\n' ' ')"
+    fail=1
+else
+    note "tracked symlinks" "PASS (none)"
+fi
+
 if compgen -G "output/index/*.tsv" >/dev/null; then
-    if python3 tools/chain_start_verify.py output/index/*.tsv >/tmp/check-index.log 2>&1; then
+    if $PY tools/chain_start_verify.py output/index/*.tsv >/tmp/check-index.log 2>&1; then
         note "index invariants" "PASS ($(grep -c '\.tsv' /tmp/check-index.log) indexes)"
     else
         note "index invariants" "FAIL"; tail -3 /tmp/check-index.log | sed 's/^/    /'; fail=1

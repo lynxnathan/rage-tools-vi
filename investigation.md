@@ -6505,3 +6505,57 @@ Recorded in `handoff/audio-variant-decode.tsv` with `frames`, `channels` and
 The lesson is worth keeping: a validation metric that is off by a factor of the
 channel count sends a correct decoder back to the drawing board. The metric now
 carries its own units.
+
+## Journal: prior art surveyed, and three of our conclusions corrected (2026-11-22)
+
+The public GTA VI ecosystem is further along than this project on two fronts, and
+its documentation is detailed enough to check against our data. I cloned
+`ItsNotRexed/Leonida` and `TrinitronClient/GTA6-Asset-Info` into `~/code` and used
+them as the reference; what follows is what changed here as a result.
+
+### `LSNS` is a table, not a cipher
+
+Corrected in its own entry above: the framing validates on 1,012 of 1,012 records,
+58,697 sixteen-byte records. Our entropy and determinism measurements were right
+and described a table.
+
+### The `0xff21` audio payload is the documented one
+
+Leonida's `awc_opus.py` and the asset-notes both give the layout we were guessing
+at: per-stream word `id:29 | tag_count:3` — **the count in the high three bits**,
+which is the opposite end from what this project used — optional tables selected by
+`flags`, 2,048-byte blocks of `[u16 length][packet]`, and a decoder lookahead of
+312 samples. `tools/awc_parse.py` now implements that layout and cites it.
+
+With the parse fixed, the whole of `audio.rpf` decodes:
+
+| | Streams |
+| --- | ---: |
+| Opus (`0x0b`) | **93,344** |
+| XMA2 (`0x05`) | 1,818 |
+| other codecs | 246 |
+| failures | **0** |
+
+`frames × channels / declared` has median 1.051 and a 1st percentile of 1.002, so
+every stream reaches its declared length (the sum is interleaved across channels).
+`handoff/audio-full.tsv` records it with the three quantities as separate columns.
+
+### Validation arithmetic, twice
+
+Two withdrawals in this session were my own errors, both from a check rather than a
+decoder: dividing frames by an interleaved sample count, and requiring eight zero
+bytes in front of a `u16` length that sits at the block start. The lesson is in
+`plan.md`: a metric must carry its units, and a layout claim needs a denominator
+before it is written down.
+
+### What this project has that the public notes list as open
+
+- **RDNA2 shaders**: the notes say "native RDNA2 code spans inside DXBC wrappers,
+  decoding to a readable form" is not done. `rdna2-spirv/` decodes them, matches
+  `llvm-objdump` on three fixtures, compiles SPIR-V back to gfx1030/gfx1013/gfx1201,
+  and has pixel-level tests.
+- **Entry boundaries without the TOC**: the notes record the TOC as encrypted with
+  no file names. The payload-derived model work here fits an exact entry count for
+  1,250 of 1,261 `core_bvh4` packs.
+- **Names**: 36,952 hash→name pairs in one registry, with an ambiguity flag for the
+  JOAAT collisions.

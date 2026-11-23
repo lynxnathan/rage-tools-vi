@@ -14,12 +14,14 @@ from pathlib import Path
 
 FRAMING = ["handoff/audio-awc-framing.tsv", "handoff/story000-awc-framing.tsv"]
 DECODED = ["handoff/audio-opus-decode.tsv", "handoff/audio-xma2-decode.tsv",
-           "handoff/audio-ace1-decode.tsv"]
+           "handoff/audio-ace1-decode.tsv", "handoff/audio-variant-decode.tsv"]
 CODECS = {"0x0b": "Opus", "0x05": "XMA2", "0x02": "ACE1"}
 
 
 def key(row):
-    return os.path.basename(row["path"]), row["stream"]
+    # decode tables name the source in `path`; the variant manifest in `container`
+    source = row.get("path") or row.get("container", "")
+    return os.path.basename(source), row["stream"]
 
 
 def main():
