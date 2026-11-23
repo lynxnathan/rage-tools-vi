@@ -43,9 +43,14 @@ Last updated: 2026-11-23 (executable acquired).
   a 5-entry sub-table directory, a struct block, a 16-byte-row block and
   12-byte float triples. Field order corrected, `handoff/psin-rows.tsv` written;
   42 % of rows now have a named property (`tools/psin_blocks.py`).
-- [ ] Regenerate the downstream PSIN artifacts (`entry pairs`, `segments`,
-  `vocabulary`) from `handoff/psin-rows.tsv` — the old ones carry the 8-byte
-  shift.
+- [x] Downstream PSIN artifacts regenerated with the corrected pairing
+  (`entries`, `segments`); entry count unchanged at 4,969, pairs now semantic
+  (`Heading`+`Position` 2,807).
+- [ ] Rebuild the remaining PSIN derivatives (`vocabulary`, `property tree`,
+  `table width`) on the corrected pairing.
+- [ ] Settle whether the typed row's `c` word is a declaration index or a value:
+  `Decay` carries a shared `300000` while byte rows count 0..6. Needs the script
+  data section.
 - [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`, and use the
   directory block as an independent count oracle.
 - [ ] Decide whether the RPF front region is **stored as-is** (a hash table) or

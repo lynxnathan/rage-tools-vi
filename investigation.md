@@ -7482,3 +7482,48 @@ vocabulary rather than as a misalignment.
 The directory block is the useful one: it says how many entries each of the
 other blocks holds (`99`, `70`, ... per record), so it can be used as an
 independent check on the per-block row counts rather than as data.
+
+## Downstream PSIN artifacts regenerated with the corrected pairing (2026-11-23)
+
+The correction is reproducible without touching the legacy columns:
+
+```sh
+uv run python tools/psin_blocks.py --index output/index/script.tsv --show 0 \
+    --properties cache/psin-properties-corrected.tsv
+uv run python tools/psin_entries.py  --properties cache/psin-properties-corrected.tsv \
+    --out handoff/psin-entries.tsv
+uv run python tools/psin_segments.py --properties cache/psin-properties-corrected.tsv \
+    --out handoff/psin-segments.tsv
+```
+
+The entry count is unchanged (4,969), but the *pairing* changes and the pairs now
+make sense:
+
+| pair | count |
+| --- | --- |
+| `Heading`, `Position` | 2,807 |
+| `0x1a59185d`, `Flags` | 722 |
+| `0x9b21d37f`, `Name` | 425 |
+| `Id`, `Type` | 329 |
+| `Type`, `Id` | 266 |
+| `Flags`, `0x1a59185d` | 200 |
+
+`Heading`+`Position` at 2,807 pairs is the ordinary placement record — an object
+with a heading and a position — which is what a flattened scene/layout schema
+should look like. Under the old shift these two were being read from adjacent
+physical rows, so the pairing was arbitrary.
+
+Segmentation is stable (849 records, 371 table leaves, 4,962 flat, 163 tiny), so
+the earlier width conclusions were not an artifact of the shift: they were
+computed from the partition, not from the labels.
+
+### Open: what the `c` field means
+
+Rows of the typed block are ordered, and `c` is mostly the declaration index
+(0, 1, 2, 3, 4, ...). But it is not a unique row id: in record 42 the property
+`Decay` appears six times with `c = 300000` (`0x493e0`) while the surrounding
+`byte` rows count 0..6. So `c` is either a value or a reference into a shared
+object, and the two cases coexist inside one block. `psin_entries.py` treats it
+as a value, which is why `Decay` pairs against `0x000493e0` — that is a
+consequence of the choice, not evidence for it. Resolving this needs the script
+data section, not more schema work.

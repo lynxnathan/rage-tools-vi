@@ -86,6 +86,8 @@ def main():
     parser.add_argument("archive", type=Path, nargs="?", default=Path("script.rpf"))
     parser.add_argument("--index", type=Path, default=Path("output/index/script.tsv"))
     parser.add_argument("--rows", type=Path, help="write typed rows to this TSV")
+    parser.add_argument("--properties", type=Path,
+                        help="write the legacy column layout with corrected pairing")
     parser.add_argument("--show", type=int, default=1, help="records to print")
     parser.add_argument("--limit", type=int, default=0)
     args = parser.parse_args()
@@ -103,6 +105,11 @@ def main():
     out = args.rows.open("w") if args.rows else None
     if out:
         out.write("record\toffset\ta\tb\tc\ttype\ttype_name\n")
+    legacy = args.properties.open("w") if args.properties else None
+    if legacy:
+        # same columns as cache/psin-properties.tsv, now with the correct pairing:
+        # class_hash is this row's property, field_hash is this row's key.
+        legacy.write("psin\toffset\tvalue\ttype\tclass_hash\tfield_hash\tas_float\n")
 
     for record, body in sm.streams(args.archive, args.index):
         if args.limit and record >= args.limit:
@@ -118,6 +125,10 @@ def main():
                     if out:
                         out.write(f"{record}\t0x{offset:x}\t0x{a:08x}\t0x{b:08x}\t0x{c:08x}\t"
                                   f"0x{kind:03x}\t{TYPES.get(kind, '?')}\n")
+                    if legacy:
+                        as_float = struct.unpack("<f", struct.pack("<I", c))[0]
+                        legacy.write(f"{record}\t0x{offset:x}\t0x{c:08x}\t0x{kind:03x}\t"
+                                     f"0x{a:08x}\t0x{b:08x}\t{as_float:g}\n")
             elif role == "directory":
                 for count, count2, kind, zero in directory(payload):
                     dir_kinds[kind] += 1
@@ -148,6 +159,9 @@ def main():
     if out:
         out.close()
         print(f"\ntyped rows -> {args.rows}")
+    if legacy:
+        legacy.close()
+        print(f"legacy layout (corrected pairing) -> {args.properties}")
     print("\nblocks per role:", dict(shape))
     print("typed rows:", row_total)
     print("type words:", {TYPES.get(k, hex(k)): v for k, v in type_words.most_common()})
