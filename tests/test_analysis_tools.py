@@ -83,6 +83,47 @@ def main():
     else:
         print("extraction from the archive: skipped (script.rpf not present)")
 
+    print("script metadata format")
+    result = run("tools/script_meta.py", "--help")
+    check("script_meta runs", result.returncode == 0, result.stderr[:120])
+    result = run("tools/psin_blocks.py", "--help")
+    check("psin_blocks runs", result.returncode == 0, result.stderr[:120])
+
+    sections = list(csv.DictReader((ROOT / "handoff/script-sections.tsv").open(),
+                                   delimiter="\t"))
+    check("script-sections table exists", len(sections) > 4000, f"({len(sections)})")
+    check("script-sections columns",
+          {"record", "tag", "block_bytes", "block_rows"} <= set(sections[0]),
+          set(sections[0]))
+    check("section tags are 32-bit values",
+          all(row["tag"].startswith("0x") and len(row["tag"]) == 10
+              for row in sections[:100]))
+
+    rows = list(csv.DictReader((ROOT / "handoff/psin-rows.tsv").open(), delimiter="\t"))
+    check("typed rows table has 63,288 rows", len(rows) == 63288, f"({len(rows)})")
+    check("typed rows columns", {"a", "b", "c", "type"} <= set(rows[0]), set(rows[0]))
+    check("the type word is one of the five known types",
+          {row["type"] for row in rows} <= {"0x101", "0x102", "0x103", "0x104", "0x105"},
+          {row["type"] for row in rows})
+
+    if (ROOT / "script.rpf").is_file():
+        result = run("tools/script_meta.py", "--dump", "1")
+        check("script_meta walks a record", result.returncode == 0, result.stderr[:120])
+        check("every record reaches LRSC",
+              "LRSC" in result.stdout and "PSIN" in result.stdout)
+    else:
+        print("script_meta over the archive: skipped (script.rpf not present)")
+
+    exe = ROOT / "cache/exe/game_scarlett_master.exe"
+    if exe.is_file():
+        result = run("tools/pe_scan.py", "sections")
+        check("pe_scan reads the section table", ".text" in result.stdout)
+        check("pe_scan places .text at the right base", "0x140001000" in result.stdout)
+        result = run("tools/pe_scan.py", "sbox")
+        check("no AES forward S-box in the image", "AES forward sbox: 0" in result.stdout)
+    else:
+        print("pe_scan: skipped (executable not present)")
+
     print()
     if FAILED:
         print(f"FAIL: {len(FAILED)} check(s) failed: {', '.join(FAILED)}")

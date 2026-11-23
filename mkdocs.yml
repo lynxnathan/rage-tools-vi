@@ -111,6 +111,7 @@ nav:
       - Bus protocol: workstreams/bus.md
       - Roadmap: roadmap.md
   - Reference:
+      - Recovered structures: reference/structures.md
       - Report formats: reference/report-formats.md
       - Hash names: reference/names.md
       - Glossary: reference/glossary.md
