@@ -6604,3 +6604,46 @@ with `--tolerance 0`, so only packs whose entry count verifies exactly contribut
 Two archives still emit nothing: `shaders.rpf` (one page chain, declared count 3)
 and `story000_script.rpf` (one pack, mixed shapes). Both are already understood;
 neither has an entry model that verifies.
+
+## Journal: the PSIN tree is a change of period, and the splitter proves it (2026-11-23)
+
+The parent/child relation was filed as unrecoverable from the flat dump. The
+working hypothesis was that the dump flattens a tree, so a table width exists only
+inside a subtree and the subtree boundary shows up as a **change of period** in the
+property column.
+
+`tools/psin_segments.py` tests it by recursive splitting: try one width for a span,
+and if the agreement is below 0.95, halve the span and recurse. Two results, one of
+each kind.
+
+**It does not over-split.** The four records known to be clean tables from the
+earlier periodicity scan each come out as a **single leaf** at exactly the width
+predicted there:
+
+| Record | Rows | Leaf |
+| --- | ---: | --- |
+| `1056` | 868 | table width **4**, agreement 0.999 |
+| `853` | 732 | table width **4**, 0.999 |
+| `854` | 1,778 | table width **4**, 0.997 |
+| `282` | 169 | table width **6**, 0.994 |
+
+**It does split the mixed ones.** Record `1054` (6,246 rows, no global period)
+decomposes into alternating leaves:
+
+```
+rows     0..47    table width 2    agreement 0.957
+rows    48..55    flat             0.000
+rows    56..71    table width 4    1.000
+rows    72..95    table width 4    1.000
+rows    96..191   table width 6    0.956
+rows   192..239   table width 2    0.978
+rows   240..247   flat
+```
+
+Across the corpus the splitter returns 371 table leaves and 5,015 flat leaves over
+849 records. "Flat" is the honest verdict for interleaved rows: a span with no
+period is not a table, and calling it one would be the guessing this project avoids.
+
+So the boundary *is* a change of period, and the tree can be segmented without a
+hidden field. What the widths mean — 2 for an `Id`/`Type` pair list, 4 and 6 for
+wider records — is a separate question and stays open.

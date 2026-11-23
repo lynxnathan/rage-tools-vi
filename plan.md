@@ -31,10 +31,11 @@ Last updated: 2026-11-23.
 
 - [ ] What a 16-byte `LSNS` record identifies. 210,522 distinct words, none
   matching names or PSIN keys, no small-integer slot: opaque 128-bit values.
-- [ ] Recover the `PSIN` parent/child relation by segmenting on **local table
-  width**. Four records are fixed-width tables (width 4 ×3, width 6 ×1, ≥99.7 %
-  agreement); the largest (6,246 rows) has no global period, so the boundary is a
-  change of period rather than a hidden field.
+- [x] `PSIN` tree segmented: `tools/psin_segments.py` splits a record where the
+  table period changes. The four clean records come out as one leaf each (width
+  4×3, 6×1); record `1054` decomposes into widths 2/4/4/6/2 plus flat spans.
+  371 table leaves and 5,015 flat over 849 records.
+- [ ] What the widths mean (2 = an `Id`/`Type` pair list, 4 and 6 wider records).
 - [ ] Name the remaining ped-rig bones and weight hashes. The 174k-token corpus
   sweep is exhausted (4 bone candidates, 1 weight candidate, both unverified);
   this needs a new vocabulary source, not a wider search.
