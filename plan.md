@@ -4,7 +4,7 @@ Live check/todo list. Evidence, measurements and the failures that led here belo
 in [investigation.md](investigation.md) and `handoff/`; completed work is one line
 of state, not a log.
 
-Last updated: 2026-11-23 (executable acquired).
+Last updated: 2026-11-23 (script metadata format recovered from the writer).
 
 ## Current state
 
@@ -18,9 +18,11 @@ Last updated: 2026-11-23 (executable acquired).
   for 1,253 of 1,261 packs.
 - **Audio:** complete — 93,344 Opus + 1,818 XMA2 + 73 ACE1 streams, 0 failures;
   `frames × channels / declared` never below 1.0.
-- **Script schema:** `PSIN` parsed (62,910 typed rows; 25 of 301 properties and
-  515 of 14,653 keys named). `LSNS` is a table container — 1,012/1,012 records
-  parse, 58,697 sixteen-byte records.
+- **Script schema:** chunk chain `PSIN→LSCH→LENM→LSNS→LGID→LRSC` recovered from
+  the writer `FUN_144083410`; 1,012/1,012 records parse exactly. 63,288 typed
+  rows with the type word at `+0x0c`; 42 % of rows name their property (164
+  properties, 14,530 keys). `levels` uses the same chain with a tagged section bag
+  (209 tags) plus a `CHKS` trailer. `LSNS` 58,697 sixteen-byte records.
 - **Names:** one registry, 36,952 hash→name pairs with confidence and an
   ambiguity flag for JOAAT collisions; every handoff table annotated (4.3 % of
   hash values named corpus-wide, concentrated in bones and the script schema).
