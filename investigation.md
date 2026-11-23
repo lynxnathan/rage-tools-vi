@@ -7096,3 +7096,31 @@ The first headless run aborted after six minutes:
 Two query scripts live in `cache/ghidra/` for when it finishes:
 `xref_magic.py` (functions referencing the `9FPR` magic, via `findBytes` + function
 containment) and `decomp_at.py <addr>` (decompile any function).
+
+### CBC, confirmed by predecessor statistics (2026-11-23)
+
+Sampled the front regions of every archive (first 2 KB of each pack's front block,
+16-byte aligned, zero blocks excluded) and grouped repeated ciphertext blocks by
+their predecessor:
+
+| | Count |
+| --- | ---: |
+| repeated non-zero 16-byte blocks | 11,498 |
+| …with an **identical predecessor** | **11,487 (99.9 %)** |
+| …with a different predecessor | 11 |
+
+Only a chained construction can make a ciphertext block recur almost exclusively
+when its predecessor recurs: `C_i = E(P_i XOR C_{i-1})`. The 11 exceptions are
+alignment artefacts. Combined with the shared 64-byte prefixes across packs, the mode
+is **CBC with a fixed IV** (and a key that does not change per pack).
+
+Two earlier attempts are now explained rather than just rejected: AES with
+header-derived keys failed because the key is not in the header, and repeated
+ciphertext blocks are not ECB artefacts but shared plaintext prefixes.
+
+Also counted: of 68,584 sampled 16-byte blocks, 24,152 are distinct and 8,926 repeat;
+the single most frequent is the all-zero block (4,913×), which is padding outside the
+masked span, not ciphertext.
+
+So the remaining question is exactly one thing: **what key the CBC uses**. That is a
+code question, and Ghidra is on it.
