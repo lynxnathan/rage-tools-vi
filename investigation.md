@@ -7806,3 +7806,71 @@ functions outside this set.
 reported 62,910 rows, 303 "class" hashes and 14,655 "field" hashes. It now reads
 through `script_meta`/`psin_blocks` and reports 63,288 rows, 164 properties and
 14,530 keys.
+
+## The archive layer is a verbatim reader plus an arena layout formula (2026-11-23)
+
+Tracing the consumer code instead of guessing at bytes finally gives the front
+region's structure. Chain, all read from the analysed database:
+
+```
+ctor 0x140fc2540
+  └ FUN_141fb2600   read header (0x10 B), malloc, copy header, read the region
+  └ FUN_14087aec0   dispatch on mode 0/1/2
+       └ FUN_14087af70   read the front-region header fields
+            └ FUN_14087aff0   compute section offsets
+       └ FUN_14087b0b0   set obj+0x38 = entry array
+            └ FUN_14087b0f0   arena arithmetic
+```
+
+### `FUN_141fb2600`: the front region is copied, never transformed
+
+```
+read(stream, 0, .., buf16, 0x10)
+if u32(buf16) == '9FPR':
+    size = header[+4]                     (or header[+8] when the mode is 1)
+    buf  = malloc(size)
+    *buf = buf16; buf[1] = buf16[1]        ; the 16 header bytes are copied in
+    read(stream, 0x10, buf+0x10, size-0x10)
+    if mode == 1:                          ; the second buffer
+        size_b = header[+4] - header[+8]
+        buf2   = malloc(size_b)
+        read(stream, header[+8], buf2, size_b)
+```
+
+So the buffer handed to the archive is `[header 0x10 B][file bytes from 0x10]`, and
+the second buffer is `file[block .. front_end)` **byte for byte**. There is no
+decryption call anywhere in this function — the earlier trace said "no cipher on
+the path", and now it is visible line by line.
+
+### `FUN_14087aff0`: the front-region layout formula
+
+Given the region base and seven header fields, the code computes six section
+offsets (16-byte aligned unless a flag byte selects 4-byte):
+
+```
+p3 = u16 @ base+0x1a        p6 = u16 @ base+0x22
+p4 = u32 @ base+0x1c        p7 = u32 @ base+0x24
+p5 = u16 @ base+0x20        p8 = u8  @ base+0x2c
+
+out[1] = align(base + 0x40)                       ; 0x40-byte header
+out[2] = align(out[1] + p3*8)                     ; p3 × 8-byte records
+out[3] = align(out[2] + p4)                       ; p4 bytes
+out[4] = align(out[3] + p5*0x18)                  ; p5 × 24-byte records
+out[5] = align8(out[4] + (p5-p6)*p7*p8)           ; (p5-p6) × p7 × p8 bytes
+out[6] = align16(out[5])
+```
+
+For `data.rpf+0` that is p3=4, p4=336, p5=7, p6=1, p7=**699** (the declared entry
+count), p8=2 — so section 4 is `6 × 699 × 2 = 8,388` bytes, i.e. six `u16` values
+per entry. That is a *layout*, not a cipher, and it explains the "size_a/count ≈ 58"
+observation as an artefact of summing four independently sized sections.
+
+### What this changes
+
+- "Front A / Front B are masked" was the wrong frame for this layer: they are read
+  verbatim and then *interpreted* through a 0x40-byte header with four sections.
+- The two header words at `+4`/`+8` are not "front_end/block" in a name-table
+  sense; they are the size of the first buffer and the start offset of the second.
+- `p7` being the declared entry count ties the front region to the entry table we
+  already extract, which is a checkable relation: section 4 has exactly
+  `(p5-p6)*p7*p8` bytes.

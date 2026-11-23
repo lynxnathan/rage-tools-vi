@@ -104,6 +104,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] Test the front region as a hash table: 7 hash functions × 20 name
   normalizations × 7.4 M words → flat ~560 hits per algorithm, i.e. chance.
   Excluded (`tools/front_hash_probe.py`).
+- [x] Traced the consumer path in code: `FUN_141fb2600` copies the front region
+  verbatim (header copy + file bytes), `FUN_14087aff0` computes a four-section
+  arena layout from fields at `0x1a..0x2d`, `FUN_14087b0b0` sets `obj+0x38`.
+- [ ] Identify the four front-region sections (p3×8, p4 bytes, p5×24,
+  (p5-p6)×p7×p8 with p7 = declared entry count).
 - [ ] Find the layer that produces the mapped buffer at `[stream+0x18]` /
   `[stream+0x20]` (the file object handed to the archive ctor). Full analysis is
   now available (`cache/ghidra_full`), so this is unblocked: start from
