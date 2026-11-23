@@ -76,9 +76,20 @@ the "120 identical 160-byte bodies" are the 120 tables of exactly ten records, t
 16-byte blocking is the record size, and the uniform entropy is what four
 hash-like words per record look like.
 
-The records themselves are still opaque: 210,522 distinct words, none matching a
-known name or a PSIN key, and no slot holding a small integer. What a 16-byte
-record identifies is open.
+Each table is `[path of ≤10 × 128-bit levels][per-script tail]`:
+
+- the path is a **trie**. Require more leading records and the group shrinks — 853
+  tables share level 1, 381 share all ten, and 120 scripts share the full path.
+  So the head encodes a hierarchy of script kinds, visible but unlabelled.
+- the tail is per-script data. Within one kind every tail differs, but its length
+  is fixed (22–23, 19–20, 20–21 in three sampled groups), off by one for a
+  minority — what an optional trailing record looks like.
+- 120 tables are path only, with no tail at all.
+
+The records are not sorted in any interpretation (0 of 994 tables ascending as
+u128, as two u64, or as four u32), so the order carries no index-like structure.
+The values themselves remain opaque: 210,522 distinct words, none matching a known
+name or a PSIN key, and no slot holding a small integer.
 
 What remains masked in `script.rpf` is the 331,728-byte blob, which has entropy
 7.996 and no zlib stream at its start.

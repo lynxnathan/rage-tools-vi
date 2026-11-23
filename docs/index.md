@@ -77,15 +77,18 @@ flowchart LR
 | Entry manifests | 188,298 entries · 14 archives | exact declared-count verification |
 | `core_bvh4` descriptors | 269,106 rows | sizes + orthonormal basis |
 | Unclassified layer | 38.1 GB audio · 13.4 GB video | closed: all media |
-| Cutscene audio | 196,350 Opus streams · 148.3 hours | decoded, sampled clean |
+| Audio (`audio.rpf`) | **93,344 Opus · 1,818 XMA2 · 73 ACE1** | zero failures; every stream reaches its declared length |
+| Cutscene audio (`story000`) | 196,350 Opus streams · 148.3 hours | decoded, sampled clean |
 | Script object | 2,702,384 bytes, 42 zlib streams | checksum verified |
 | Object records | 30,683 records, 483 roots | graph enumerated |
 | Named script roots | 306 / 483 | JOAAT matched |
+| Hash→name registry | **36,952 names** | one table, confidence-ordered, collisions flagged |
 | Bone-table hashes | 99 / 612 named | JOAAT of `skel_`/`mh_`/`rb_` |
 | Weight hashes | 21 / 252 named | same namespace |
 | Decoded rig | 34 / 34 bones | `handoff/script-skeleton-0x48dcbb01.tsv` |
 | Skeleton families | 16 | readings: hand, genital, large animal, props |
 | Textures | 788 textures / 306,008,064 bytes | descriptor-valid |
+| Script schema | `PSIN` 62,910 typed rows; `LSNS` 58,697 16-byte records | parsed; names partly recovered |
 | Front A / Front B / trailer | size laws only | masked; cipher open |
 
 ## Two object families

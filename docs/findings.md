@@ -67,10 +67,32 @@ hash tables into readable rigs:
 
 ## Audio
 
-`audio.rpf`'s 23.5 GB of AWC containers decode to Opus, XMA2 and ACE1 impulse
-responses. `story000` turned out to hold a second, larger audio archive: 9.56 GB
-of AWC in a different container variant, now decoded to **196,350 Opus streams /
-148.3 hours / 47.7 GB of WAV**.
+`audio.rpf`'s 23.5 GB of AWC containers decode completely: **93,344 Opus, 1,818
+XMA2 and 73 ACE1** streams with zero failures. The check that makes it trustworthy
+is `frames × channels / declared`, which is **1.002 at the 1st percentile** — the
+declared count is interleaved across channels, so a naive `frames / declared` halves
+every stereo stream.
+
+`story000` turned out to hold a second, larger audio archive: 9.56 GB of AWC in a
+different container variant, decoded to **196,350 Opus streams / 148.3 hours**.
+
+The three container variants share one record format (`type:8 | size:28 | offset:28`)
+but not one table position. `0xff02` computes it; `0xff21`/`0xff61` carry it as the
+longest valid 8-byte-aligned suffix before the data offset, which a scan finds
+every time (`tools/awc_chunk_table.py`).
+
+## Script schema
+
+`script.rpf` records are a section sequence, not bytecode. `PSIN` holds a flat
+array of 16-byte rows `(value, type, property, key)`: **62,910 rows** across 1,012
+records, of which 25 of 301 property names and 515 of 14,653 object keys are
+recovered.
+
+`LSNS` is a table container, not a cipher: framing validates on **1,012 of 1,012**
+records, 58,697 sixteen-byte records. Each table is `[path of ≤10 × 128-bit
+levels][per-script tail]`, and the path is a trie — 853 tables share level 1, 381
+share all ten — so it encodes a hierarchy of script kinds while its labels stay
+opaque.
 
 ## What is not solved
 
@@ -79,7 +101,8 @@ of AWC in a different container variant, now decoded to **196,350 Opus streams /
   crib, not on effort.
 - The remaining 330-hash universe is a vocabulary problem: the names are not in
   the corpora harvested so far.
-- Packs whose entries mix shapes cannot be counted exactly; ~68 in `core_bvh4`,
-  16 in `navmeshes`, 23 in `data`, 2 in `textures`.
+- `core_bvh4` reproduces the declared count for **1,253 of 1,261 packs**; the rest,
+  and most of `levels`, have one to four entries per pack whose descriptor is not
+  where the stream window says it should be.
 
 See the [roadmap](roadmap.md) for the live list.
