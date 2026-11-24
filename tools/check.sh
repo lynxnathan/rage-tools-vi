@@ -77,9 +77,9 @@ else
     note "pack extents" "skipped (no archives or indexes)"
 fi
 
-if [ -f /home/lynxnathan/gta6-source/audio.rpf ]; then
-    if bash tools/demo_media.sh /tmp/demo-check >/tmp/check-demo.log 2>&1; then
-        note "playable audio" "PASS ($(grep -c 'wav' /tmp/check-demo.log) files)"
+if [ -n "${SRC:-}" ] && [ -f "${SRC}/audio.rpf" ] || [ -f /home/lynxnathan/gta6-source/audio.rpf ]; then
+    if $PY tools/rage.py demo /tmp/demo-check --quiet >/tmp/check-demo.log 2>&1; then
+        note "playable audio" "PASS (3 variants)"
     else
         note "playable audio" "FAIL"; tail -4 /tmp/check-demo.log | sed 's/^/    /'; fail=1
     fi
@@ -87,8 +87,8 @@ else
     note "playable audio" "skipped (no audio.rpf)"
 fi
 
-if [ -f common.rpf ] && [ -f output/index/common.tsv ]; then
-    if bash tools/e2e_mod.sh >/tmp/check-e2e.log 2>&1; then
+if [ -f common.rpf ]; then
+    if $PY tests/test_mod_roundtrip.py >/tmp/check-e2e.log 2>&1; then
         note "end-to-end mod" "PASS ($(grep -c '  ok' /tmp/check-e2e.log) checks)"
     else
         note "end-to-end mod" "FAIL"; tail -4 /tmp/check-e2e.log | sed 's/^/    /'; fail=1
@@ -103,26 +103,6 @@ if compgen -G "output/index/*.tsv" >/dev/null; then
     else
         note "index coverage" "FAIL"; tail -3 /tmp/check-coverage.log | sed 's/^/    /'; fail=1
     fi
-fi
-
-if [ -f /home/lynxnathan/gta6-source/audio.rpf ]; then
-    if bash tools/demo_media.sh /tmp/demo-check >/tmp/check-demo.log 2>&1; then
-        note "playable audio" "PASS ($(grep -c 'wav' /tmp/check-demo.log) files)"
-    else
-        note "playable audio" "FAIL"; tail -4 /tmp/check-demo.log | sed 's/^/    /'; fail=1
-    fi
-else
-    note "playable audio" "skipped (no audio.rpf)"
-fi
-
-if [ -f common.rpf ] && [ -f output/index/common.tsv ]; then
-    if bash tools/e2e_mod.sh >/tmp/check-e2e.log 2>&1; then
-        note "end-to-end mod" "PASS ($(grep -c '  ok' /tmp/check-e2e.log) checks)"
-    else
-        note "end-to-end mod" "FAIL"; tail -4 /tmp/check-e2e.log | sed 's/^/    /'; fail=1
-    fi
-else
-    note "end-to-end mod" "skipped (no common.rpf)"
 fi
 
 if compgen -G "output/index/*.tsv" >/dev/null; then

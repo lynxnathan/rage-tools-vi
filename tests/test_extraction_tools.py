@@ -142,16 +142,16 @@ def main():
     check("packet payloads survive the walk", packets[0] == b"\xAA" * 4, packets[0])
 
     print("in-place mod")
-    from mod_replace import pack_replacement
+    from rage import pack_replacement
     import zlib
-    packed, stream = pack_replacement(b"MOD_OK", 4430)
-    check("a small payload fits the original room", packed is not None, len(stream))
+    packed = pack_replacement(b"MOD_OK", 4430)
+    check("a small payload fits the original room", packed is not None)
     check("the replacement is exactly the stored length", len(packed) == 4430, len(packed))
     check("padding does not disturb the stream",
           zlib.decompress(packed) == b"MOD_OK", zlib.decompress(packed))
-    packed, stream = pack_replacement(b"x" * 100000, 64)
-    check("an oversized payload is refused", packed is None and len(stream) > 64, len(stream))
-    packed, _stream = pack_replacement(b"", 8)
+    packed = pack_replacement(b"x" * 100000, 64)
+    check("an oversized payload is refused", packed is None)
+    packed = pack_replacement(b"", 8)
     check("an empty payload still fills the room", packed is not None and len(packed) == 8, len(packed))
 
     print()

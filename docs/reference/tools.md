@@ -115,7 +115,6 @@ so `python3 tools/<name>.py` works without arguments.
 | [`metadata_regions.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/metadata_regions.py) | Compare the three RPF9 metadata regions across the observed controls. |  |
 | [`ml_binary_clusters.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/ml_binary_clusters.py) | Cluster packs binary streams from byte-level features (proposal engine only). |  |
 | [`mmap_extract.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/mmap_extract.py) | Bounded-memory selective zlib extraction using a read-only mmap. |  |
-| [`mod_replace.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/mod_replace.py) | Replace an asset inside an RPF without touching any other byte. | --dry-run --end --find --index --marker --payload |
 | [`name_hash_game.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/name_hash_game.py) | The game's own name hash, as read out of the executable. | --hash --probe |
 | [`name_registry.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/name_registry.py) | One name registry, and the two things anyone actually needs from it. | --annotate --build --column --lookup --out |
 | [`native_texture_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/native_texture_scan.py) | Scan decoded data.rpf resources for native texture dictionaries. |  |
@@ -148,6 +147,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`psin_sweep.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_sweep.py) | Find and extract PSIN records in any archive, not just `script.rpf`. | --archive --index --limit-mb --out |
 | [`psin_table_width.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_table_width.py) | Measure the row width of each PSIN property array. | --properties |
 | [`quadtree.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/quadtree.py) | Build one resource-local XY quadtree per class-0 root and an HTML view. |  |
+| [`rage.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/rage.py) | One entry point for the project's operations. | --help`) --marker |
 | [`rig_name_corpus_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/rig_name_corpus_probe.py) | Resolve rig hashes against a large text corpus in tiers. | --bones --corpus --deep) --out --weights |
 | [`root_classes.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/root_classes.py) | Classify object-tree roots by their child part/bone signatures. |  |
 | [`root_names.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/root_names.py) | Match the script.rpf object-tree root IDs against JOAAT names. |  |
