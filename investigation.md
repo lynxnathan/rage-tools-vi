@@ -8114,3 +8114,26 @@ Two smaller structural fixes came with it:
   producer, so "unknown" is a state nobody sits in.
 
 Verified: 114 tables listed, 0 unclassified, `check.sh` green.
+
+### Working rules, promoted to the docs (2026-11-23)
+
+Three things that were only said in conversation are now written where they belong:
+
+1. **`docs/living.md` has a "What belongs in the docs" section** with the rules:
+   a claim carries its verification state; a test guard must test everything the
+   check actually needs; the environment is part of the result.
+2. **`docs/extraction/audio.md` carries a verification note** on the per-stream word
+   `id:29 | tags:3` — it comes from the upstream layout notes and is consistent with
+   93,344 Opus / 1,818 XMA2 / 73 ACE1 decodes with zero failures, but it has **not**
+   been re-derived as a standalone count since the extraction volume went offline.
+   Inherited-but-consistent is a different claim from freshly measured, and the page
+   now says which one it is.
+3. **The guard bug is recorded with its cause.** `tests/test_analysis_tools.py`
+   checked for the archive but not the index, so an unmounted `output/` volume made
+   the suite fail where the README promised a skip. Both conditions are checked now.
+
+The general lesson, worth repeating because it has bitten three times in this
+project: **when the environment changes, re-read the guards.** A `| tail` hid a
+failing `check.sh`; a summed (not unioned) coverage hid gaps behind overlapping
+ranges; and an archive-only guard hid an index dependency. Each fix was one
+condition, and each was invisible until the environment moved.

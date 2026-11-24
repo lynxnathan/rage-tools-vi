@@ -50,6 +50,13 @@ This is also why the chunk-table search had to be a suffix scan: the table is
 located relative to `data_offset`, and `data_offset` depends on the tag count, so
 the two have to be solved together (`tools/awc_chunk_table.py`).
 
+!!! note "Verification state"
+    The bit split above is stated in the upstream layout notes and is consistent
+    with every stream decoded in this project (93,344 Opus, 1,818 XMA2, 73 ACE1,
+    zero failures), but it has not been re-derived as a standalone measurement
+    since the extraction volume went offline. Treat it as inherited-but-consistent
+    rather than freshly counted.
+
 ## `story000` cutscene audio
 
 `story000`'s 9.56 GB unclassified span is a second audio archive: 63,853 AWC

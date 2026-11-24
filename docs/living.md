@@ -20,6 +20,26 @@ The `include-markdown` plugin pulls the root files into the **Source documents**
 section at build time. If a root document changes, the next build picks it up;
 there is no second copy to update.
 
+## What belongs in the docs
+
+Findings go to `investigation.md`; state goes to `plan.md`; **caveats, environment
+dependencies and lessons go here or next to the claim they qualify**. Three rules
+earned the hard way:
+
+1. **A claim carries its verification.** If a number was measured, say when and
+   where; if it was inherited from an earlier session and not re-measured in this
+   environment, say that too. The `id:29 | tags:3` per-stream word is the current
+   example: it is documented from decoded evidence, and it has not been re-derived
+   since the output volume went offline.
+2. **Guard tests on the real condition.** `tests/test_analysis_tools.py` checked for
+   `script.rpf` but not for `output/index/script.tsv`, so with the external volume
+   unmounted the suite *failed* instead of skipping — while the README promised the
+   opposite. A guard has to test everything the check actually needs.
+3. **Record the environment.** `output/` is a symlink onto an external volume. With
+   it unmounted, index-dependent checks skip and archive-side extractions are
+   unavailable; that is a supported state, not a broken one, and the checks now say
+   so explicitly.
+
 ## Update loop
 
 ```mermaid
