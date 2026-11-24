@@ -54,10 +54,13 @@ Last updated: 2026-11-24.
 
 Each needs a specific input, not more effort.
 
-- [ ] **Play the game.** Wine loads the console image once the 128 console imports are
-  stubbed (`tools/stub_dlls.py`); it now reaches its own CRT startup and aborts at
-  `game.exe+0x5A91C21` because initialisation returns a negative code
-  (`FUN_1455dcf74`). Next: decompile that chain and implement what it requires.
+- [ ] **Play the game.** Wine loads the console image with 117 console imports and one
+  runtime module stubbed (`tools/stub_dlls.py`); engine threads start and execution stops
+  at `game.exe+0x2237178`, where a 32-byte structure returned by interface slot 2 is
+  still zero. Six interfaces are queried by GUID and each needs its real layout —
+  memory, GPU and storage semantics rather than signatures. Next: implement one interface
+  at a time, starting with the first GUID (`073b7dcb-…`), whose slot 2 fills that
+  structure.
 - [ ] RPF9 table of contents — content unidentified. `Front B` is a per-entry table for
   206 of 654 packs and composite for the other 448; no 32-bit hash of 36,952 names
   appears in either region.

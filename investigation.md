@@ -9360,3 +9360,29 @@ bytes is therefore not a shortcut; slot 2 and its neighbours need their real str
 
 State: 15 stub DLLs, slot and argument traces, deterministic abort at
 `game.exe+0x2237178`. Reproduce with `tools/rage.py play --stubs --game-dir <dump>`.
+
+### The queried interfaces, by GUID (2026-11-24)
+
+`QueryApiImpl` receives `&DAT_145f41040` twice plus an out-slot. The GUIDs the image asks
+for, read from its `.rdata`:
+
+```
+073b7dcb-1fcf-4030-94be-e3c9eb623428     (queried first, then again per subsystem)
+973a344e-24bf-4d0f-8457-56c534892b29
+2549f142-6419-4a06-97b5-931aab7c2f34
+e349bd1a-fc20-4e40-b99c-4178cc6b409f
+1861cf2e-e18b-4834-a9f5-b4a4e6efb4cf
+01acd177-91f9-4763-a38e-ccbb55ce32e0
+```
+
+Six interfaces. Slot 2 is called as `(this, buffer, 0x20)` and its return value is kept,
+so it is a query that fills a 32-byte structure; the abort at `game.exe+0x2237178` fires
+when `*(u32*)(rsi+0xc)` of the image's own heap block is zero.
+
+**Verdict on this path.** Passing the loader, the API query, GameInput and DStorage
+required reading four call sites. Going past `game.exe+0x2237178` requires implementing
+those six interfaces with their real layouts — memory, GPU and storage semantics, not
+signatures. Blind filling is measured to reach control flow (stack overflow), so the next
+step is interface by interface with its structure, which is a project rather than an
+iteration. The GUIDs are not in any public table reachable from here, and the NDA headers
+cannot be a dependency.
