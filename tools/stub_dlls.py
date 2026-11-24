@@ -141,6 +141,18 @@ def main():
     built = 0
     for dll, symbols in sorted(wanted.items()):
         built += 1 if write_stub(args.out, dll, symbols) else 0
+    # Modules the image loads by name at runtime never appear in the import table.
+    for source in sorted((Path(__file__).resolve().parent / "stub_custom").glob("*.dll.c")):
+        dll = source.name[:-2]
+        if dll in wanted:
+            continue
+        result = subprocess.run([MINGW, "-shared", "-Os", "-o", str(args.out / dll), str(source)],
+                                capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"  {dll}: {result.stderr.strip()[:300]}")
+            continue
+        built += 1
+        print(f"  {dll:34s} {source.stat().st_size:5d} B source (runtime module)")
     print(f"built {built} stub DLLs in {args.out}")
     return 0 if built == len(wanted) else 1
 

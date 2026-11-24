@@ -9285,3 +9285,29 @@ four register arguments, so each iteration measures the next missing call.
 `tools/stub_dlls.py` and `tests/test_stub_dlls.py` (19 checks) cover the import table and
 the export forms; a mangled C++ name is exported through an internal alias because C
 cannot declare it.
+
+### Stubs reach the GDK API layer (2026-11-24, continued)
+
+Three findings, each from a decompiled caller rather than from documentation:
+
+1. `FUN_1455e2a70` is the GDK loader. It loads `xgameruntime.dll` from the image
+   directory, then resolves `QueryApiImpl`, `InitializeApiImpl`, `InitializeApiImplEx`,
+   `InitializeApiImplEx2`, `XErrorReport`, `UninitializeApiImpl`. Missing any returns
+   `0x89240101`, which the CRT turns into `int 3`. A stub `xgameruntime.dll` answering
+   those six names moves the process past that abort.
+2. `QueryApiImpl` receives **three** arguments: the same GUID pointer in `rcx` and `rdx`,
+   and the writable out-slot in `r8` (`FUN_1455ddff0` passes `&DAT_145f41040` twice and
+   `local_res8` third). Writing to `rdx` faults on read-only image data; writing to `r8`
+   succeeds.
+3. `GameInput.dll` is imported by **ordinal 1** only. `FUN_1459258a0` calls it, caches the
+   result and uses vtable slot `+0x10`; a stub that fills the out-slot with a
+   vtable-backed object moves past it.
+
+Observed API queries: `…1040`, `…1070/1080`, `…10f0/1100` — distinct interfaces, so the
+runtime exposes more than one table. The process now stops later, in image code at
+`game.exe+0x661F0` reached from `FUN_141d109b0`, which is a validation rather than an
+import failure.
+
+State of the loop: `tools/rage.py play --stubs --game-dir <dump>` builds 15 stub DLLs,
+places them, runs Proton's wine, prints the last calls and the fault. Every step above is
+reproducible from that one command.

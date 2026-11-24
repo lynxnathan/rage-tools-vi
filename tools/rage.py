@@ -152,6 +152,7 @@ def cmd_play(args):
         dlls = sorted(stub_build.glob("*.dll"))
         for dll in dlls:
             shutil.copy(dll, game / dll.name)
+        print(f"placed {len(dlls)} stub DLLs in {game}")
         wine = proton_wine()
         if wine is None:
             print(f"{len(dlls)} stub DLLs written; no Proton wine found "
