@@ -8431,3 +8431,46 @@ bounded sub-streams of their parent.
 provenance, harness, the function table (address → what it settles → status), the class
 map, what the executable *rules out* (AES, CNG, compression, the CBC reading), and what
 it still owes us. `docs/reference/structures.md` gained the in-memory object layout.
+
+## The game's name hash: Murmur3-x64-128 over a lower-cased name (2026-11-23)
+
+Working outward from the executable's lookup path, `FUN_145305880` turns out to be the
+name hasher, and it is not JOAAT at all. Three details, all read from code:
+
+1. **A 256-byte substitution table at `0x1465b23b0`.** Diffed against the identity it
+   has exactly **27** non-identity entries: `A..Z` → `a..z` (26 of them) and
+   `'\\'` → `'/'` (1). So the input is `tolower(name)` with path separators folded.
+2. **Murmur3 x64-128**, identified by its constants (`0xc1 = 0x87c37b91114253d5`,
+   `0xc2 = 0x4cf5ad432745937f`, tail mixes `0x52dce729`, `0x38495ab5`) and by the
+   `fmix64` finalisation. The earlier corpus note "ARX constants present (Murmur
+   ×17)" was this function, not a cipher.
+3. **The 16-bit id is looked up, not derived.** After hashing, the code compares the
+   64-bit value against a stored hash at `obj+0x70`, splits the extension, and calls
+   `FUN_14056ec70` to obtain the id. That id comes from a runtime table, so it cannot
+   be computed from the string offline.
+
+### What this explains
+
+- Every JOAAT-based name test in this project was aimed at the wrong function. The
+  archive's *entry lookup* keys are 16-bit ids from a runtime mapping; JOAAT belongs
+  to the object/field names in `PSIN`, which is a different subsystem.
+- The u16 keys in buffer A section 1 are therefore **not** recomputable, which closes
+  that avenue honestly instead of leaving it open.
+
+### What is still testable, and the test that failed
+
+The 64-bit hash *is* computable, so it can be searched for directly. `tools/name_hash_game.py`
+implements Murmur3-x64-128 with the substitution table and tests every known name
+(36,952) in four normalisations against every 8-byte-aligned `u64` in the front
+regions of 654 headers — **3,716,607 distinct words**:
+
+```
+candidates 147,808    hits 0
+```
+
+Zero. So the front regions do not hold the pure 64-bit hash of any known name in the
+clear either, which is consistent with section 1 being a *table of ids* rather than a
+table of hashes.
+
+Both results are worth keeping: the algorithm is now known exactly, and its absence
+from the metadata is measured rather than assumed.

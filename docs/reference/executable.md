@@ -48,6 +48,8 @@ in `.text`" means what it says.
 | `0x1428ce080` | lookup (A) | reads `p3` from `[obj+0x30]+0x1a`, records from `obj+0x38` | code |
 | `0x1428ce200` | lookup (B) | tail-calls `0x144e6f780(records, p3, key16)` | code |
 | `0x144e6f780` | key scan | **linear scan**, compares `u16` at each 8-byte record, returns index or `0xffff` | code |
+| `0x145305880` | name hash | Murmur3 x64-128 over `tolower(name)` with `\\`→`/`, then a 16-bit id looked up in a runtime table | code |
+| `0x1465b23b0` | substitution table | 256 bytes, 27 non-identity: `A..Z`→`a..z`, `\\`→`/` | code |
 | `0x144083410` | script writer | the `PSIN→…→CHKS` chain, its payloads and its poisoning | code |
 | `0x14087b0f0` | arena arithmetic | `count × width × unit`, aligned | code |
 
@@ -89,6 +91,23 @@ slots**, and the two "create archive" factories are its own methods:
 Because both factories are methods of the archive itself, **archives nest**: each RPF
 pack is mounted as its own archive over a bounded sub-stream of the parent. There is
 no external owner to find, which is why every reference search for one came up empty.
+
+### The name hash, and why JOAAT was wrong
+
+The archive's own name hash is **Murmur3 x64-128**, not JOAAT:
+
+```
+hash = murmur3_x64_128( tolower(name) with '\' -> '/' )
+```
+
+and the 16-bit id the archive indexes by is then *looked up* in a runtime table
+(`FUN_14056ec70`), so it cannot be computed from the string offline. JOAAT remains
+correct for object and field names in `PSIN` — a different subsystem — but every
+JOAAT-based attempt on archive entry names was aimed at the wrong function.
+
+`tools/name_hash_game.py` implements the hash. Testing it against 3,716,607 front-region
+`u64` words with 147,808 candidates gives **zero** hits, so the metadata does not store
+these hashes in the clear either; it stores ids.
 
 ## What the executable rules out
 
