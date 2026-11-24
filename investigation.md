@@ -8910,3 +8910,34 @@ than a non-zero one — for candidate bases (`span`, `table_end`, entry 0 = 3,29
 the outlier `16,534,844`), count how often `base + off` begins a 4-byte-stride ascending
 run. The correct base should stand out by a wide margin; anything near the others is not
 the base.
+
+### The `restofworld` "offset table" reading does not survive testing (2026-11-23)
+
+I have to walk back the earlier interpretation. The monotonicity measurement stands — 987/999
+and 992/999 ascending steps at 4-byte stride — but **calling it an offset table does not**.
+
+Tests run, all negative:
+
+| test | result |
+| --- | --- |
+| base = span start, `table_end`, entry 0 (`3,293,771`), outlier | 0/998, 3/998, 0/998, 0/998 offsets start an ascending 4-byte run |
+| offsets landing in real data (`span + off`) | 989/997 and 991/997 — both regions are dense, so this decides nothing |
+| the offsets that *do* land on zeros | `30, 1080, 1364, 1920` — and the same small values appear in **both** archives |
+| `1920×1080`-style dimension pairs at 4-byte alignment | none found |
+| `DDS`, `DXT1`, `DXT5`, `DX10`, `RSC7`, `PNG` magics in the first 0x20000 bytes | none found |
+
+The decisive detail is the last-but-one: the same small values (`30`, `1080`, `1920`) recur in
+two unrelated archives. A file-offset table would not do that; constants and dimensions would.
+So the structure is *something* — the stride and ordering are real — but it is not the
+16 MiB-bounded offset index described two entries above, and the 16 MiB observation was a
+consequence of the same misreading.
+
+What remains true and useful:
+
+- the spans have real structure at 4-byte stride (ascending ~99 % of steps), so they are not
+  opaque payload;
+- the leading region is zero-padded and the structure begins at `+0x927` / `+0xccf`;
+- five candidate interpretations have now been tested and failed, and they are listed so the
+  next attempt does not repeat them.
+
+Recorded as an open structure with its failed readings attached, rather than as a named one.
