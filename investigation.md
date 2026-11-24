@@ -8213,3 +8213,52 @@ This is the second time today that a guard caught a real mistake rather than sit
 green: the index verifier here, and the tool index after adding a script. The pattern
 is consistent — the checks are worth more than they cost precisely because they
 encode a meaning that a hurried writer forgets.
+
+## `audio.rpf` is now 99.49 % indexed as ADAT (2026-11-23)
+
+The index that classified 99.93 % of `audio.rpf` as `unclassified` is fixed, in two
+steps that both come from reading the container layout properly.
+
+### One rule for both variants
+
+`0xff21` and `0xff02` differ in *where* the chunk table starts, not in how it is
+built:
+
+| variant | table start |
+| --- | --- |
+| `0xff21` | fixed `0x50` |
+| `0xff02` | `0x10 + 4·count` |
+
+In both, the table holds **four records per stream** (`0x36 0x55 0x76 0xa3`), and it
+ends **exactly at `header_size`** — an integer constraint on records-per-stream that
+doubles as a validator. The record is `type:8 | size:28 | offset:28`, and a bank ends
+where its furthest record ends, rounded up to `0x800`.
+
+Deriving the record count instead of assuming four resolved 17 of the 18 stragglers:
+some banks simply have a different records-per-stream, and `(header_size − table_at)`
+gives it without guessing.
+
+### Result
+
+```
+6,625 banks  from the extraction manifest   23,510,392,992 B
+  528 banks  found in the gaps between them  4,886,024,192 B
+------------------------------------------------------------
+7,153 banks  union 28,396,417,184 B = 99.485 % of 28,543,454,672 B
+             overlaps 0
+```
+
+`output/index/audio-adat.tsv` holds all 7,153 rows (`kind=adat`), and
+`chain_start_verify` accepts it.
+
+The residual **0.52 % (147,037,488 B)** is accounted for: **5 banks use flags
+`0xff61`** (a variant whose table offset is not established), **1 bank has a table
+that does not end at `header_size`**, and the rest is inter-bank `0x800` padding.
+
+### Why the earlier scan failed, precisely
+
+A magic scan found 7,159 aligned `ADAT` candidates and validated none of them,
+because validation used `awc_parse.py`'s tag-table model (the Leonida/story000
+layout). The `0xff21`/`0xff02` containers keep their records in a flat table at a
+different offset with a fixed record count. Two layouts, one magic — the scan could
+not tell them apart, and so it rejected the truth along with the noise.

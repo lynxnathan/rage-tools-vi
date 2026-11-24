@@ -150,9 +150,10 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 
 ## Next
 
-- [ ] Variant-aware ADAT indexer for `audio.rpf`: 82.37 % is now indexed from the
-  extraction manifest, and the remaining 5.03 GB (27 gaps, all `ADAT`, `0xff02`)
-  needs the `0xff02` chunk-table extent rule.
+- [x] Variant-aware ADAT index: `audio.rpf` is **99.485 %** indexed as ADAT
+  (7,153 banks), one rule for `0xff21` and `0xff02`, table ending at `header_size`.
+- [ ] The residual 0.52 % of `audio.rpf`: five `0xff61` banks (table offset unknown),
+  one bank whose table misses `header_size`, and `0x800` padding.
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.

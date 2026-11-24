@@ -35,13 +35,17 @@ MAX_BANK = 256 << 20     # no validated bank is larger than this
 MAX_STREAMS = 4096
 
 
-def find_banks(path, limit=0):
+def find_banks(path, limit=0, start=0, stop=None):
     """Offsets of `ADAT` magics on the container alignment."""
     offsets = []
     with path.open("rb") as handle:
-        position = 0
+        handle.seek(start)
+        position = start
         carry = b""
+        end_limit = stop
         while True:
+            if end_limit is not None and position >= end_limit:
+                break
             block = handle.read(CHUNK)
             if not block:
                 break
@@ -52,6 +56,8 @@ def find_banks(path, limit=0):
                 if index < 0:
                     break
                 absolute = position - len(carry) + index
+                if end_limit is not None and absolute >= end_limit:
+                    return offsets
                 if absolute % ALIGN == 0:
                     offsets.append(absolute)
                     if limit and len(offsets) >= limit:
@@ -112,6 +118,67 @@ def bank_extent(handle, offset):
     return end, count, total_tags, flags, None
 
 
+# Where the chunk table starts, per variant. `0x10 + 4*count` for 0xff02 is where
+# the optional per-stream table would end; 0x50 is a fixed offset for 0xff21.
+TABLE_AT = {0xFF21: lambda count: 0x50, 0xFF02: lambda count: 0x10 + 4 * count}
+
+
+def extent_bank(handle, offset, limit=MAX_BANK):
+    """(end, count, error) for an AWC bank in a known variant.
+
+    Both `0xff21` and `0xff02` hold exactly four chunk records per stream
+    (`0x36 0x55 0x76 0xa3`), and in both the table ends exactly at `header_size` —
+    the consistency check that keeps random `ADAT` bytes out. Each record is
+    `type:8 | size:28 | offset:28`; the bank ends where the furthest record ends.
+    """
+    handle.seek(offset)
+    head = handle.read(16)
+    if len(head) < 16 or head[:4] != b"ADAT":
+        return None, 0, "no magic"
+    version, flags, count, header_size = struct.unpack_from("<HHII", head, 4)
+    if flags not in TABLE_AT:
+        return None, count, f"unsupported flags 0x{flags:04x}"
+    if count == 0 or count > MAX_STREAMS:
+        return None, count, "implausible stream count"
+    table_at = TABLE_AT[flags](count)
+    # Derive the record count instead of assuming it: the table must end exactly at
+    # header_size, which is an integer constraint on records-per-stream.
+    span = header_size - table_at
+    if span <= 0 or span % (8 * count):
+        return None, count, "table does not end at header_size"
+    records_per_stream = span // (8 * count)
+    if not 1 <= records_per_stream <= 16:
+        return None, count, "implausible records per stream"
+    records = records_per_stream * count
+    handle.seek(offset + table_at)
+    table = handle.read(records * 8)
+    if len(table) < records * 8:
+        return None, count, "short table"
+    end = 0
+    for index in range(records):
+        (record,) = struct.unpack_from("<Q", table, index * 8)
+        end = max(end, (record & 0x0FFFFFFF) + ((record >> 28) & 0x0FFFFFFF))
+    if end == 0 or end > limit:
+        return None, count, "implausible extent"
+    return offset + ((end + ALIGN - 1) // ALIGN) * ALIGN, count, None
+
+
+def walk_gap(handle, start, stop):
+    """Banks laid end to end from `start` until `stop`."""
+    rows = []
+    offset = start
+    while offset < stop:
+        end, count, error = extent_bank(handle, offset, stop - offset + ALIGN)
+        if error:
+            rows.append((offset, None, count, error))
+            break
+        rows.append((offset, end, count, None))
+        if end <= offset:
+            break
+        offset = end
+    return rows
+
+
 def from_manifest(args, size):
     """Index banks from an extraction manifest: those extents were validated by decode."""
     import csv
@@ -151,6 +218,69 @@ def from_manifest(args, size):
     return 0
 
 
+def gaps_ff02(args, size):
+    """Index the 0xff02 banks that sit between manifest-covered containers."""
+    import csv
+    covered = sorted((int(row["start"], 16), int(row["end"], 16))
+                     for row in csv.DictReader(args.manifest.open(), delimiter="\t"))
+    gaps = []
+    previous = 0
+    for start, end in covered:
+        if start > previous:
+            gaps.append((previous, start))
+        previous = max(previous, end)
+    if previous < size:
+        gaps.append((previous, size))
+
+    rows = []
+    errors = {}
+    padding = 0
+    with args.archive.open("rb") as handle:
+        for gap_start, gap_stop in gaps:
+            # Banks are separated by zero padding, so walking "end to end" stops at
+            # the first pad. Scanning the gap for aligned magics is the honest pass.
+            for offset in find_banks(args.archive, 0, gap_start, gap_stop):
+                end, count, error = extent_bank(handle, offset, gap_stop - offset + ALIGN)
+                if error:
+                    errors[error] = errors.get(error, 0) + 1
+                    continue
+                if rows and offset < rows[-1][1]:
+                    padding += 1
+                    continue
+                rows.append((offset, end, count))
+    if args.combine:
+        merged = [(start, end) for start, end in covered] + [(s, e) for s, e, _c in rows]
+        merged.sort()
+        for (s1, e1), (s2, e2) in zip(merged, merged[1:]):
+            if s2 < e1:
+                print(f"  OVERLAP at 0x{s2:x}")
+                return 1
+        rows = [(s, e, 0) for s, e in merged]
+        total = sum(e - s for s, e in merged)
+        print(f"combined banks {len(merged):,}, {total:,} B ({total / size:.2%})")
+    else:
+        total = sum(end - start for start, end, _count in rows)
+    print(f"gaps {len(gaps)}, banks {len(rows):,}, {total:,} B "
+          f"({total / size:.2%} of the file)")
+    print(f"  streams: {sum(count for _s, _e, count in rows):,}")
+    if padding:
+        print(f"  overlapping candidates skipped: {padding}")
+    if errors:
+        for key, value in sorted(errors.items(), key=lambda item: -item[1]):
+            print(f"  {key}: {value}")
+    if args.show:
+        for start, end, count in rows[:5]:
+            print(f"  bank +0x{start:x}..0x{end:x} ({end - start:,} B) streams {count}")
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        with args.out.open("w") as handle:
+            handle.write("kind\tstart\tend\tstored_bytes\tdecoded_bytes\tchain_start\n")
+            for start, end, _count in rows:
+                handle.write(f"adat\t0x{start:x}\t0x{end:x}\t{end - start}\t\t\n")
+        print(f"  wrote {args.out}")
+    return 0 if not errors else 1
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -158,6 +288,12 @@ def main():
     parser.add_argument("--out", type=Path)
     parser.add_argument("--limit", type=int, default=0, help="stop after N banks")
     parser.add_argument("--show", action="store_true")
+    parser.add_argument("--combine", action="store_true",
+                        help="with --manifest and --gaps: write manifest banks and "
+                             "gap banks into one index")
+    parser.add_argument("--gaps", action="store_true",
+                        help="walk the 0xff02 banks that fill the gaps between "
+                             "manifest-covered containers")
     parser.add_argument("--manifest", type=Path,
                         help="use start/end from an extraction manifest instead of "
                              "parsing headers (the 0xff21 variant does not use the "
@@ -167,6 +303,8 @@ def main():
     if not args.archive.is_file():
         sys.exit(f"missing {args.archive}")
     size = args.archive.stat().st_size
+    if args.manifest and args.gaps:
+        return gaps_ff02(args, size)
     if args.manifest:
         return from_manifest(args, size)
     offsets = find_banks(args.archive, args.limit)
