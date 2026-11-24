@@ -8013,3 +8013,44 @@ a single zero. It would have caught the `CHKS` omission immediately.
 For the record, the same reasoning applies to the archives themselves: every index
 in this project tiles its archive exactly, which is why "no entry is unaccounted
 for" is a measured statement and not a hope.
+
+## The three-boundary pack model holds, and only opaque spans cross packs (2026-11-23)
+
+Model, all fields from the header plus the next magic:
+
+```
+header       [pack,              pack + 0x40)
+front region [pack,              pack + word_04)
+payload      [pack + word_04,    pack_end - word_0c)
+trailer      [pack_end - word_0c, pack_end)
+```
+
+`tools/pack_extent_check.py` measures, per pack, the **union** of the indexed
+ranges clipped to the payload window — a union, not a sum, because summing would
+let overlapping ranges hide a gap:
+
+| archive | packs | payload | covered |
+| --- | ---: | ---: | ---: |
+| `common.rpf` | 1 | 6,589,056 | 100.00 % |
+| `data.rpf` | 12 | 480,829,168 | 100.00 % |
+| `shaders.rpf` | 1 | 411,661,072 | 100.00 % |
+| `textures.rpf` | 7 | 192,578,112 | 100.00 % |
+| `script.rpf` | 2 | 4,259,472 | 100.00 % |
+| `appdata0`, `core_licenses_data`, `story000_bvh4` | 1 each | small | 100.00 % |
+
+So the payload window is exactly the region the index already covers — the model
+adds no unexplained space and leaves no hole.
+
+**One real finding came out of it.** 32 ranges cross a pack boundary, and **all 32
+are `unclassified`** — 18 in `data.rpf`, 12 in `textures.rpf`, 2 in `script.rpf`.
+No classified range (zlib, audio, zero-run, chain) ever crosses. The largest crosser
+is `data.rpf` `0x963ab5..0x9cc010`, which overruns pack 0 by 426,000 bytes.
+
+That is consistent with the pack model rather than against it: packs are independent
+archives, so a classified payload cannot span two of them, while an opaque span is
+simply the partitioner's residual and it does not know about pack edges. The tool
+therefore treats a crossing `unclassified` span as acceptable and **fails** on any
+crossing of a classified kind — which is the useful assertion.
+
+A follow-up worth doing: clip `unclassified` spans at pack boundaries so the index
+never reports a range that two archives both own.

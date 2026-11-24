@@ -55,6 +55,16 @@ else
     note "published counts" "FAIL"; sed 's/^/    /' /tmp/check-claims.log | head -6; fail=1
 fi
 
+if compgen -G "output/index/*.tsv" >/dev/null && [ -n "$(ls *.rpf 2>/dev/null)" ]; then
+    if $PY tools/pack_extent_check.py --all >/tmp/check-extents.log 2>&1; then
+        note "pack extents" "PASS ($(grep -c 'packs,' /tmp/check-extents.log) archives)"
+    else
+        note "pack extents" "FAIL"; grep -E "escaped|crossing|covered" /tmp/check-extents.log | head -5 | sed 's/^/    /'; fail=1
+    fi
+else
+    note "pack extents" "skipped (no archives or indexes)"
+fi
+
 if compgen -G "output/index/*.tsv" >/dev/null; then
     if $PY tools/chain_start_verify.py output/index/*.tsv >/tmp/check-index.log 2>&1; then
         note "index invariants" "PASS ($(grep -c '\.tsv' /tmp/check-index.log) indexes)"

@@ -60,11 +60,14 @@ at the file size):
 0x690000           next pack
 ```
 
-The payload window is not a guess: the index for this pack places **1,455 ranges**
-inside it, covering **6,784,240 of 6,788,912 bytes (99.93 %)** — 728 zlib, 719
-zero-run, 8 unclassified. The 4,672-byte residual is inter-range alignment, and
-the three region boundaries come from the header alone (`word_04`, `word_0c`, next
-magic).
+The window is not a guess: measuring the **union** of the index ranges clipped to
+it gives 100 % coverage for every pack in every archive (`tools/pack_extent_check.py`).
+
+One nuance, measured: 32 ranges cross a pack boundary and **all of them are
+`unclassified`** — 18 in `data.rpf`, 12 in `textures.rpf`, 2 in `script.rpf`. No
+classified payload (zlib, audio, zero-run, chain) ever crosses, which is what the
+model predicts: two packs are independent archives. The opaque spans are the
+partitioner's residual and simply do not know where a pack ends.
 
 ```mermaid
 flowchart LR

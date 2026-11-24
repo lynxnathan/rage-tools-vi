@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-160 scripts.
+161 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -111,6 +111,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`name_registry.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/name_registry.py) | One name registry, and the two things anyone actually needs from it. | --annotate --build --column --lookup --out |
 | [`native_texture_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/native_texture_scan.py) | Scan decoded data.rpf resources for native texture dictionaries. |  |
 | [`object_names.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/object_names.py) | Map JOAAT name fields across the script.rpf object tree. |  |
+| [`pack_extent_check.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_extent_check.py) | Check the three-boundary pack model against the index of every archive. | --all |
 | [`pack_extents.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_extents.py) | Resolve RPF9 pack extents from zero padding, in index-only mode. |  |
 | [`pack_layout.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_layout.py) | Draw one pack's front-region map from its own header, using the loader's formula. | --offset --scan |
 | [`pack_model_fit.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_model_fit.py) | Which simple entry model fits each pack exactly? | --out |
