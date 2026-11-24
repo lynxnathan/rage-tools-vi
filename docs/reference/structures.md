@@ -148,11 +148,29 @@ Status: **exact** for the tag relation, **open** for the other fields. Of the
 **4,901** sections in the corpus, **3,891** are indexed by `LSCH`; the 1,010 that
 are not are exactly the `0x16` block, which the index never rows for.
 
-## Audio (AWC)
+## Audio (`ADAT` / AWC)
 
-Per-stream word is `id:29 | tag_count:3` — the count lives in the **high** three
-bits. Complete: 93,344 Opus + 1,818 XMA2 + 73 ACE1 streams, 0 failures.
-Status: **exact**.
+Header: `ADAT`, `u16` version, `u16` flags, `u32` stream count, `u32` header size —
+where the header size doubles as the data offset.
+
+The stream table holds words `id:29 | tag_count:3`; the count is in the **high**
+three bits. The chunk table's *position* depends on the variant, but its *shape* does
+not: four records per stream (`0x36 0x55 0x76 0xa3`) and it ends **exactly at the
+header size**.
+
+| variant | chunk table starts at | status |
+| --- | --- | --- |
+| `0xff21` | fixed `0x50` | exact |
+| `0xff02` | `0x10 + 4·count` | exact |
+| `0xff61` | longest valid 8-byte suffix before the header size | measured |
+| `0xff25` | same suffix scan | measured |
+
+Record: `type:8 | size:28 | offset:28`. A bank ends at its furthest record, rounded up
+to `0x800`. In `audio.rpf` these rules classify **99.687 %** of 28.5 GB as 7,159
+banks; the residual is the archive front region plus bytes that merely spell `ADAT`.
+
+Streams decoded: 93,344 Opus + 1,818 XMA2 + 73 ACE1, zero failures.
+Status: **exact** for `0xff21`/`0xff02`; **measured** for the suffix-scanned variants.
 
 ---
 
