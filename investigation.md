@@ -7952,3 +7952,20 @@ With this, buffer A is fully bounded for the first time:
        ...   section 5: N × ~64     bytes (fixed per pack, high entropy)
        end = size_A
 ```
+
+### `CHKS`: ten hash candidates excluded, the size field is the usable part (2026-11-23)
+
+`tools/chks_probe.py` now also covers murmur3-32 (seed 0) and xxHash32 over the
+body, the prefix before `CHKS`, and the compressed stream. Across 80 records:
+
+- the big-endian size field matches the decompressed body length in **80/80**;
+- **none** of crc32, adler32, joaat32, fnv1a, murmur3-32 or xxh32 matches the
+  4-byte tag, on any of the three ranges.
+
+So the trailer's first word is a usable integrity check and its second word is not
+any common 32-bit hash of anything we can compute from the record. It is also not
+a *content* hash of a source asset, because the same trailer appears on records
+whose payload we never see in unpacked form.
+
+Status stays **open**, with the negative recorded so the next attempt starts from
+"not these ten".

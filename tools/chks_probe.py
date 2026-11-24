@@ -32,6 +32,81 @@ def joaat(data, seed=0):
     return value & 0xFFFFFFFF
 
 
+def murmur3_32(data, seed=0):
+    mask = 0xFFFFFFFF
+    c1, c2 = 0xCC9E2D51, 0x1B873593
+    value = seed & mask
+    length = len(data)
+    for index in range(0, length - length % 4, 4):
+        (block,) = struct.unpack_from("<I", data, index)
+        block = (block * c1) & mask
+        block = ((block << 15) | (block >> 17)) & mask
+        block = (block * c2) & mask
+        value ^= block
+        value = ((value << 13) | (value >> 19)) & mask
+        value = (value * 5 + 0xE6546B64) & mask
+    tail = data[length - length % 4:]
+    block = 0
+    for index, byte in enumerate(tail):
+        block |= byte << (index * 8)
+    if tail:
+        block = (block * c1) & mask
+        block = ((block << 15) | (block >> 17)) & mask
+        block = (block * c2) & mask
+        value ^= block
+    value ^= length
+    value ^= value >> 16
+    value = (value * 0x85EBCA6B) & mask
+    value ^= value >> 13
+    value = (value * 0xC2B2AE35) & mask
+    value ^= value >> 16
+    return value
+
+
+def xxh32(data, seed=0):
+    mask = 0xFFFFFFFF
+    p1, p2, p3, p4, p5 = 0x9E3779B1, 0x85EBCA77, 0xC2B2AE3D, 0x27D4EB2F, 0x165667B1
+
+    def rotl(value, count):
+        return ((value << count) | (value >> (32 - count))) & mask
+
+    length = len(data)
+    index = 0
+    if length >= 16:
+        v1, v2, v3, v4 = (seed + p1 + p2) & mask, (seed + p2) & mask, seed & mask, (seed - p1) & mask
+        while index <= length - 16:
+            for name in range(4):
+                (block,) = struct.unpack_from("<I", data, index)
+                index += 4
+                if name == 0:
+                    v1 = (rotl((v1 + block * p2) & mask, 13) * p1) & mask
+                elif name == 1:
+                    v2 = (rotl((v2 + block * p2) & mask, 13) * p1) & mask
+                elif name == 2:
+                    v3 = (rotl((v3 + block * p2) & mask, 13) * p1) & mask
+                else:
+                    v4 = (rotl((v4 + block * p2) & mask, 13) * p1) & mask
+        value = (rotl(v1, 1) + rotl(v2, 7) + rotl(v3, 12) + rotl(v4, 18)) & mask
+    else:
+        value = (seed + p5) & mask
+    value = (value + length) & mask
+    while index <= length - 4:
+        (block,) = struct.unpack_from("<I", data, index)
+        index += 4
+        value = (value + block * p3) & mask
+        value = (rotl(value, 17) * p4) & mask
+    while index < length:
+        value = (value + data[index] * p5) & mask
+        value = (rotl(value, 11) * p1) & mask
+        index += 1
+    value ^= value >> 15
+    value = (value * p2) & mask
+    value ^= value >> 13
+    value = (value * p3) & mask
+    value ^= value >> 16
+    return value
+
+
 def fnv1a(data):
     value = 0x811C9DC5
     for byte in data:
@@ -53,9 +128,7 @@ def main():
                     for row in csv.DictReader(args.index.open(), delimiter="\t")
                     if row["kind"] == "zlib")
 
-    counters = {"records": 0, "with_chks": 0, "size_matches": 0,
-                "crc_body": 0, "crc_prefix": 0, "crc_compressed": 0,
-                "joaat_body": 0, "joaat_compressed": 0, "fnv_body": 0}
+    counters = {"records": 0, "with_chks": 0, "size_matches": 0}
     samples = []
 
     with args.archive.open("rb") as handle:
@@ -95,8 +168,15 @@ def main():
                 "joaat_body": joaat(body),
                 "joaat_compressed": joaat(raw),
                 "fnv_body": fnv1a(body),
+                "murmur3_body": murmur3_32(body),
+                "murmur3_prefix": murmur3_32(prefix),
+                "murmur3_compressed": murmur3_32(raw),
+                "xxh32_body": xxh32(body),
+                "xxh32_prefix": xxh32(prefix),
+                "xxh32_compressed": xxh32(raw),
             }
             for name, value in candidates.items():
+                counters.setdefault(name, 0)
                 if struct.pack("<I", value) == tag or struct.pack(">I", value) == tag:
                     counters[name] += 1
             if len(samples) < 5:
