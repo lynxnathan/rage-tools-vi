@@ -8941,3 +8941,42 @@ What remains true and useful:
   next attempt does not repeat them.
 
 Recorded as an open structure with its failed readings attached, rather than as a named one.
+
+### The `restofworld` structure is a media descriptor, identical in both archives (2026-11-23)
+
+Following the recurring constants instead of assuming offsets resolves it. Searching for
+the value `1920` in the first 32 KB of both spans finds exactly one hit in each, and the
+surrounding fields line up:
+
+| field | `core_restofworld` | `story000_restofworld` |
+| --- | ---: | ---: |
+| `[0]` | 33,312,060 | 10,614,532 |
+| `[1]` | 1,364 | 1,065 |
+| `[2]` | 118,248 | 55,020 |
+| `[3]` | 1,364 | 1,065 |
+| `[4]` | **1,920** | **1,920** |
+| `[5]` | **1,080** | **1,080** |
+| `[6]` | **30** | **30** |
+| `[7]` | 1 | 1 |
+
+Read as a descriptor that is `… , width = 1920, height = 1080, 30, 1` — **1080p30**, the
+same in two unrelated archives — with `[1] == [3]` in both and `[2]` containing a mid-size
+value.
+
+This closes three loose ends at once:
+
+- the "small offsets" `1364`, `1080`, `1920` that landed on zeros are **fields of this
+  descriptor**, not pointers — which is why they recurred across archives;
+- the descriptor sits at an **odd offset** relative to any 4-byte grid (`+0x92b` and
+  `+0xcd3`), which is why an earlier search for a `(1920, 1080)` pair at 4-byte alignment
+  found nothing;
+- the "sorted table" was 4-byte-stride field repetition, not an index — consistent with the
+  retraction recorded above.
+
+So these spans begin with a media descriptor (1080p30, `[7] = 1`) followed by dense data,
+which matches what the archive names suggest: `restofworld` holds movie/streaming assets,
+and the descriptor is the same shape as the Bink2 header fields measured in `movies.rpf`
+(`width`, `height`, fps).
+
+Open, and now narrowly: what `[0]`, `[1] == [3]` and `[2]` measure, and whether the payload
+after the descriptor is Bink2 or another codec.
