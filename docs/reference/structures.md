@@ -82,7 +82,7 @@ Status: **exact** for family 1, **open** for the identity of `S`.
 `FUN_144083410`:
 
 ```
-PSIN → LSCH → LENM → LSNS → LGID → LRSC        (levels records append CHKS)
+PSIN → LSCH → LENM → LSNS → LGID → LRSC → CHKS   (all seven, in every record)
 ```
 
 | Chunk | Payload | Status |

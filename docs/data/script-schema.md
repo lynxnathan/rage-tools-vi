@@ -18,7 +18,7 @@ Nothing else is stored: no sizes, no counts, no terminator.
 PSIN → LSCH → LENM → LSNS → LGID → LRSC
 ```
 
-`levels.rpf` records append a seventh chunk, `CHKS`. The order is fixed.
+Every record ends with a seventh chunk, `CHKS`. The order is fixed.
 
 Two traps cost us real time and are worth naming:
 

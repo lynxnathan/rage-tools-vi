@@ -7969,3 +7969,29 @@ whose payload we never see in unpacked form.
 
 Status stays **open**, with the negative recorded so the next attempt starts from
 "not these ten".
+
+### Correction: `CHKS` is in *every* corpus record, not only in `levels` (2026-11-23)
+
+The earlier entry "`levels` records carry a seventh chunk, `CHKS`" says that
+`script.rpf` records end at `LRSC`. **That is wrong.** `script.rpf` records carry
+`CHKS` too: re-running the census with `CHKS` registered as a known chunk gives
+
+```
+records: 1012  full PSIN→LRSC chain: 1012
+chunks: PSIN=1012 LSCH=1012 LENM=1012 LSNS=1012 LGID=1012 LRSC=1012 CHKS=1012
+```
+
+every chunk present in every record, `CHKS` included.
+
+The mistake was an artefact of order of work, not of the data: the first census ran
+before `CHKS` was added to `MAGICS`, so the walker simply stopped at `LRSC` and the
+result looked like a six-chunk format. Registering the magic later made `levels`
+look special when it never was.
+
+What survives from that entry: the `CHKS` payload is 12 bytes, its big-endian size
+field matches the decompressed body length (80/80 measured since), and ten 32-bit
+hash candidates over body, prefix and compressed stream do not match the tag.
+
+The lesson worth keeping in the record: **a chunk census is only as complete as the
+magic table of the walker that produced it.** Any "format ends here" conclusion has
+to name the set of magics that was searched.

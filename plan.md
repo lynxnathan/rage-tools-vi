@@ -60,6 +60,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [ ] Settle whether the typed row's `c` word is a declaration index or a value:
   `Decay` carries a shared `300000` while byte rows count 0..6. Needs the script
   data section.
+- [x] **Correction:** `CHKS` is a seventh chunk in *every* record, `script.rpf`
+  included (1012/1012); the earlier "levels only" reading came from a magic table
+  that did not list it yet.
 - [x] `levels` records add a seventh chunk `CHKS`: `u32` big-endian record size
   (matches body length 60/60) plus an unidentified 4-byte tag. Chain census over
   3,000 records recorded.
