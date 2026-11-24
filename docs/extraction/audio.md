@@ -195,7 +195,20 @@ payload offset `+0x860` holds the `a0 00 f8` **marker** already documented in
 `tools/awc_framing.py`, not packet data. Big-endian `u16` and little-endian `u32` length
 prefixes both fail there too.
 
-Three further measurements bound the problem:
+**Solved.** A `0xff25` container is a sequence of `0x800`-byte blocks, each carrying its
+packets from `block + 0x60`; runs are a fixed size at a fixed period, verified across nine
+containers. Decoding packet by packet gives, from one 266 KB container:
+
+```
+3,049 packets -> 60.98 s stereo   RMS 0.176   spectral flatness 0.0045
+```
+
+The variant that contributed nothing to every earlier pass accounts for roughly **50 hours**
+of audio across its 3,008 containers in `audio.rpf`. Decode with
+`tools/decode_adat_stream.py --ff25`.
+
+Earlier measurements that bounded the problem, retained because they explain why the
+structural routes failed:
 
 - the body entropy is 7.74–7.79 against 3.4–4.4 for the header, so the containers do hold
   audio;

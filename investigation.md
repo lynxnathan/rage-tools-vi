@@ -9122,3 +9122,38 @@ this search cannot yet confirm a start there.
 State: `0xff25` payload is decodable, the container's stream boundary is still unidentified,
 and the search is kept as `tools/probe_ff25_payload.py` so the question can be re-asked on
 any container without re-deriving the method.
+
+## `0xff25` solved: blocks of `0x800`, payload at `block+0x60` (2026-11-23)
+
+The acoustic search produced the regularity that the structural passes missed. Scanning
+every packet run in a 266,240-byte container gives runs of a fixed size at a fixed period:
+
+```
++0x1060  24 packets  1,968 B
++0x1860  24 packets  1,968 B
++0x2060  24 packets  1,968 B   ... period 0x800, start ≡ 0x60 (mod 0x800)
+```
+
+Across eight further containers the first run is at `+0x860` and every subsequent run is
+exactly `0x800` later — no exceptions. So a `0xff25` container is a sequence of `0x800`-byte
+blocks, each carrying its packets from `block + 0x60`.
+
+Decoding the whole container packet by packet:
+
+```
+3,049 packets -> 3,049 decoded -> 11,708,160 B PCM -> 60.98 s stereo
+RMS 0.1763   spectral flatness 0.0045
+```
+
+That is the first `0xff25` audio this project has produced. With 3,008 such containers in
+`audio.rpf`, the variant that contributed nothing to every earlier decode pass accounts for
+roughly **50 hours** of audio.
+
+Control that makes the acoustic method trustworthy: the same search on 266,240 bytes of
+`movies.rpf` video payload and of `shaders.rpf` program data returns **no candidate** at
+all — not a weaker one, none. So a flatness hit is not something arbitrary data produces.
+
+Two implementation notes: packets must be decoded one at a time (repacking them into
+`0x800` blocks splits any packet that straddles a boundary, which the block walker
+rejects), and the earlier `header_size`-based attempts failed because this variant's payload
+does not start at `header_size`.
