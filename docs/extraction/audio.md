@@ -52,7 +52,7 @@ the two have to be solved together (`tools/awc_chunk_table.py`).
 
 !!! note "Verification state"
     The bit split above is stated in the upstream layout notes and is consistent
-    with every stream decoded in this project (93,344 Opus, 1,818 XMA2, 73 ACE1,
+    with every stream decoded so far (93,344 Opus, 1,818 XMA2, 73 ACE1,
     zero failures), but it has not been re-derived as a standalone measurement
     since the extraction volume went offline. Treat it as inherited-but-consistent
     rather than freshly counted.
@@ -108,7 +108,7 @@ is the archive's own front region, and the other **69,952,816 B** are regions wh
 `ADAT` bytes exist but no candidate validates at any offset shift — the bytes are not
 a container header there.
 
-A caution for anyone reaching for a magic scan: `ADAT` occurs at 7,159 aligned
+A magic scan alone does not validate: `ADAT` occurs at 7,159 aligned
 offsets in `audio.rpf`, and **none** validate against `awc_parse.py`'s tag model,
 because that model is the Leonida/story000 layout rather than the `0xff21`/`0xff02`
 one. Validating one layout with the other yields confident garbage — which is exactly

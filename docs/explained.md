@@ -1,6 +1,6 @@
 # From first principles
 
-This page builds the whole project up from nothing: what the data is, what we can
+This page builds the method up from nothing: what the data is, what can be
 observe, and how each observation leads to the next. No prior knowledge of the
 game or the format is assumed. Terms are defined the first time they appear.
 
@@ -32,7 +32,7 @@ flowchart LR
     P --> T["Trailer<br/>end-of-pack records"]
 ```
 
-| Region | What it is for | Can we read it? |
+| Region | Purpose | Readable |
 | --- | --- | --- |
 | Header | sizes and pointers for the rest | **yes** — every field is now code-confirmed |
 | Buffer A | header, four sections, then one record per entry | the *layout* yes; the section contents are unidentified |
@@ -44,10 +44,10 @@ The bytes of the two metadata buffers look uniformly random, and no 32-bit or
 64-bit hash of any known name appears in them. The executable's loader **copies
 them verbatim** — so if a transform exists it lives in the stream's `Read`, not in
 the archive layer. That nuance matters less than the practical consequence, which
-has not changed: **we reconstruct the contents from the payload and use the
+has not changed: **contents are reconstructed from the payload, and the
 metadata only as a cross-check.**
 
-## 2. What we can trust: checksums
+## 2. What can be trusted: checksums
 
 The payload is mostly **zlib streams**: a compressed block that begins with a
 recognisable header and ends with a checksum (Adler-32) of the decompressed data.
@@ -85,8 +85,8 @@ Even unreadable bytes leak **sizes**. Three size laws fell out of a census of
 - the stride is `9` bytes for one format tag and `10` for another, and the tag is
   chosen by the count itself (small packs vs large packs).
 
-So we cannot read the table's *contents*, but we know its *shape*, and — crucially
-— we know **how many entries each pack declares**. That number becomes the yard
+The table's *contents* are unreadable, but its *shape* is known, and — crucially —
+so is **how many entries each pack declares**. That number becomes the yard
 stick for the payload work: if a payload reconstruction produces exactly `N`
 entries, the reconstruction is very likely right.
 
@@ -128,7 +128,7 @@ byte range*.
 
 ## 5. From numbers to names
 
-Every identifier we have met in the *object graph, bone tables and weight arrays* is
+Every identifier in the *object graph, bone tables and weight arrays* is
 **JOAAT**, the one-at-a-time hash: a specific 32-bit function of a string.
 
 That scope matters. Archive **entry names** are not JOAAT: the executable hashes them
@@ -138,7 +138,7 @@ resolves them through a 16-bit id taken from a runtime dictionary
 not of *file* names.
 
 That turns "opaque number" into "guess the string, test the hash". With a
-vocabulary of rig concepts we resolved **99 of 612** bone-table hashes and **21 of
+vocabulary of rig concepts resolved **99 of 612** bone-table hashes and **21 of
 252** weight hashes. The names came out in three families:
 
 | Prefix | Meaning | Example |
@@ -177,14 +177,14 @@ flowchart TB
       FA["Buffer A / Buffer B / trailer<br/>records unidentified"]
       PL["Payload<br/>zlib streams"]
     end
-    subgraph Method["How we know"]
+    subgraph Method["Evidence"]
       SC["Scan + checksum<br/>2.24 M streams"]
       SZ["Size laws<br/>Front B = stride × N"]
       CN["Declared count N<br/>per pack"]
       ST["Struct grammar<br/>tagged pointers"]
       CH["Chain rule<br/>64 KiB continuations"]
     end
-    subgraph Results["What we got"]
+    subgraph Results["Results"]
       EN["188,298 entries<br/>14 archives, exact"]
       DS["Descriptor inventory<br/>269,106 + 1,233"]
       NM["99 / 612 bone hashes<br/>21 / 252 weight hashes"]
@@ -219,9 +219,9 @@ Not everything is solved. The honest boundary:
   the layout is code-derived, so the container is understood — but what the records
   *mean* is not. No 32-bit or 64-bit hash of any known name appears in them, and the
   archive's own name hash is Murmur3 x64-128 whose 16-bit id comes from a runtime
-  dictionary whose source we have not seen. Naming those records is the open problem,
+  dictionary whose source has not been located. Naming those records is the open problem,
   and it is *information*-blocked, not effort-blocked.
-- **Names.** 330 bone hashes belong to a namespace whose vocabulary we have not
+- **Names.** 330 bone hashes belong to a namespace whose vocabulary has not been
   found — small props and weapons, not anatomy.
 - **Mixed packs.** Packs whose entries mix both shapes cannot be counted exactly;
   the manifests mark them rather than guessing.
@@ -233,7 +233,7 @@ sizes give counts, structures give entries, hashes give names.
 
 | If you want… | Read |
 | --- | --- |
-| the short list of results | [What we found](findings.md) |
+| the short list of results | [Findings](findings.md) |
 | the byte-level format | [RPF9 format](rpf9/format.md) |
 | the metadata regions in detail | [Metadata regions](rpf9/metadata.md) |
 | how entries were reconstructed | [Entry manifests](extraction/entries.md) |

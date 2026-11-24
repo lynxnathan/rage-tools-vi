@@ -3,7 +3,7 @@
 `script.rpf` records are not bytecode. Each record is a chain of chunks, and the
 script schema lives inside them.
 
-The format below is not inferred from our corpus. It was read out of the writer
+The format below is not inferred from the corpus. It was read out of the writer
 in the executable — `FUN_144083410` — found by scanning `.text` for the chunk
 magics, each of which occurs exactly once and all inside that one function. When
 the recovered layout and the bytes disagree, the bytes win, and the checks below
@@ -151,7 +151,7 @@ records.
 ## `CHKS`
 
 Twelve bytes: a big-endian total record size (matches the decompressed body length
-in 60/60 records) followed by a 4-byte tag we have not identified. Candidates
+in 60/60 records) followed by a 4-byte tag not yet identified. Candidates
 joaat32, fnv1a, crc32 and adler32 over the body, the body prefix and the
 compressed stream are all excluded.
 
@@ -161,7 +161,7 @@ compressed stream are all excluded.
 sections) are generated — by `tools/psin_blocks.py --rows` and
 `tools/script_sections.py` respectively. `handoff/psin-vocabulary.tsv` is **curated
 by hand**: it lists named PSIN values grouped by a lower-cased English property
-name (`flag`, `name`, `weapon_group`, `vehicle_class`), and no rule we have tried
+name (`flag`, `name`, `weapon_group`, `vehicle_class`), and no rule tried so far
 reproduces it from the rows alone. Treat it as a vocabulary table, not as output,
 and do not overwrite it from a script.
 
@@ -189,7 +189,7 @@ the chain covers each decompressed body **exactly** — the last chunk's distanc
 on the final byte, with zero slack. That is the check that would have caught an
 unlisted magic: a missing chunk type would leave the body longer than the chain. It
 is enforced by `tools/script_meta.py --verify`, and the earlier six-chunk reading in
-this project's history was exactly that bug, and the typed-word count agrees with the older independent
+an earlier reading fell into exactly that trap, and the typed-word count agrees with the olderer independent
 heuristic scan to 0.6 % (63,290 vs 62,910).
 
 ## Open questions

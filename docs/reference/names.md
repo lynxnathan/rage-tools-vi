@@ -12,7 +12,7 @@ files.
 
 ## The registry
 
-`handoff/names.tsv` merges every name this project has recovered:
+`handoff/names.tsv` merges every recovered name:
 
 | Column | Meaning |
 | --- | --- |
@@ -56,7 +56,7 @@ different ways:
   `0xbbb029a6`. That is a JOAAT collision, not an error, and the registry marks
   the row `ambiguous` instead of pretending one is right.
 
-Across the 267 hashes named by both the engine table and our corpus sweeps, 261
+Across the 267 hashes named by both the engine table and the corpus sweeps, 261
 agree (98 %); the remaining 6 are collisions.
 
 ## What is still unnamed

@@ -1,4 +1,4 @@
-# What we found
+# Findings
 
 A summary of the verified results, written for a reader who has not followed the
 journal. Each claim links to the page or artifact that proves it; the append-only

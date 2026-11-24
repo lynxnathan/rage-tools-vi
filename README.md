@@ -8,8 +8,8 @@ RPF9 archive extraction, entry reconstruction and identifier recovery for
 
 ## The idea in three lines
 
-The metadata records in an RPF9 pack are unidentified, so this project reconstructs
-entries from the **payload** and uses the metadata only as a cross-check:
+The metadata records in an RPF9 pack are unidentified, so entries are reconstructed
+from the **payload**, with the metadata used only as a cross-check:
 
 - every payload range is found by scanning and **verified by zlib checksum**;
 - every pack declares an entry count `N`, so the count is an **oracle**: an entry
@@ -73,8 +73,7 @@ covered, and the docs must build.
 
 Tools run through **uv** (`pyproject.toml`, `uv.lock`), so their dependencies
 (numpy for the XMA2 wrapper) are declared rather than assumed. Anything needing
-the source archives reports `skipped` instead of failing, so a fresh clone still
-gets a meaningful answer.
+the source archives reports `skipped` instead of failing.
 
 ## Using the names
 
@@ -94,7 +93,7 @@ picking one.
 ## The corpus pass
 
 ```bash
-tools/corpus_pass.sh /home/lynxnathan/gta6-source --entries
+tools/corpus_pass.sh /path/to/archives --entries
 python3 tools/corpus_table.py
 python3 tools/corpus_report.py --write docs/extraction/corpus.md
 ```
@@ -149,19 +148,15 @@ cargo build && target/debug/rage-tools-vi --help
 | `investigation.md` | Append-only research journal |
 | `rdna2-spirv/` | Submodule: RDNA2 shader decompiler (separate repository) |
 
-## Data layout
+## Data and paths
 
-Two disks, two jobs, forced by arithmetic:
+No game data is stored here; `*.rpf`, `output/`, `cache/`, `site/` and `target/` are
+ignored. Tools take the archive directory as an argument (`SRC=/path/to/archives` in
+the shell scripts), so nothing depends on where the archives are kept.
 
-| Disk | Holds |
-| --- | --- |
-| local NVMe, `/home/lynxnathan/gta6-source` (209 GB) | the source archives, so passes read at disk speed |
-| Mammoth volume, `output/` | extraction output, manifests and chosen artifacts |
-
-Decoded payload for the whole corpus is 365 GB and fits on neither disk (77 GB
-local + 201 GB on Mammoth), so extraction **streams**: decompress, measure, keep
-the manifest, discard the bytes. `*.rpf`, `output/`, `cache/`, `site/` and
-`target/` are local-only and ignored; manifests and their hashes are committed.
+The decoded corpus is 365 GB against 161 GB stored, so extraction streams: decompress a
+range, measure it, record the manifest entry, discard the bytes. Only manifests and
+measurements are committed.
 
 ## Prior art and credits
 
@@ -172,7 +167,7 @@ the manifest, discard the bytes. `*.rpf`, `output/`, `cache/`, `site/` and
 | [dexyfex/CodeWalker](https://github.com/dexyfex/CodeWalker) | the metadata name table used as a hash vocabulary |
 | [GPUOpen isa_spec_manager](https://github.com/GPUOpen-Tools/isa_spec_manager) | the machine-readable RDNA2 ISA behind `rdna2-spirv` |
 
-Where those notes contradicted this project's earlier conclusions, the journal
+Where those notes contradicted earlier conclusions, the journal
 records the correction instead of quietly changing the number.
 
 ## License

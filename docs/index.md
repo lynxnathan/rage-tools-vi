@@ -22,7 +22,7 @@ verified on 260 re-decoded samples. Applied across the archive, it yields
 whose count matches the declared index in **1,253 of 1,261** `core_bvh4` packs.
 
 New here? Start with **[From first principles](explained.md)**. The result list
-is in [What we found](findings.md).
+is in [Findings](findings.md).
 
 ## System at a glance
 
@@ -145,8 +145,8 @@ classDiagram
 - :material-graph: **[Object graph](architecture/object-graph.md)**
   Records, pointers, typed arrays, and the class-0 bone hierarchy.
 - :material-school: **[From first principles](explained.md)**
-  The whole story from zero: what the bytes are, how we read them, why it works.
-- :material-magnify: **[What we found](findings.md)**
+  The whole story from zero: what the bytes are, how they are read, why it works.
+- :material-magnify: **[Findings](findings.md)**
   The verified results in one page, with proof pointers.
 - :material-archive: **[RPF9 format](rpf9/format.md)**
   Header words, spans, zlib chains, and the metadata wall.
@@ -154,8 +154,6 @@ classDiagram
   Payload-derived entries, units, coverage, and verification.
 - :material-database: **[data.rpf](data/data-rpf.md)**
   Corpus layout, localization, textures, and named resources.
-- :material-account-group: **[Collaboration](workstreams/collaboration.md)**
-  The visible bus protocol, roles, and the current solo mode.
 
 </div>
 

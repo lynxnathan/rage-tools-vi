@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-172 scripts.
+170 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -44,8 +44,6 @@ so `python3 tools/<name>.py` works without arguments.
 | [`bruteforce_bink_framing.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bruteforce_bink_framing.py) | Parallel framing sweep for AWC payload -> Bink Audio decoder. |  |
 | [`bruteforce_ueba.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bruteforce_ueba.py) | Sweep AWC data payload offsets through a synthetic UEBA/Bink Audio wrapper. |  |
 | [`bulk_extract.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bulk_extract.py) | Parallel bounded-memory extraction of every zlib span in an index. |  |
-| [`bus.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bus.py) | Visible file bus for the script-graph and data-rpf workstreams. |  |
-| [`bus_digest_test.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bus_digest_test.py) | Isolated-bus check: non-terminal replies do not close a request. |  |
 | [`bvh4_alloc_harvest.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_alloc_harvest.py) | Harvest exact payload sizes from `*_bvh4` descriptors, slice by slice. |  |
 | [`bvh4_descriptor_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_descriptor_probe.py) | Probe the 208-byte plaintext descriptor that `core_bvh4` stores per entry. |  |
 | [`bvh4_entry_manifest.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_entry_manifest.py) | Build an entry-level manifest for `core_bvh4.rpf` from the payload model. |  |

@@ -77,8 +77,7 @@ extra_javascript:
 nav:
   - Home: index.md
   - From first principles: explained.md
-  - Living project: living.md
-  - What we found: findings.md
+  - Findings: findings.md
   - Architecture:
       - System overview: architecture/overview.md
       - Rust CLI: architecture/cli.md
@@ -107,10 +106,6 @@ nav:
       - Script schema: data/script-schema.md
       - Rig names: data/rig-names.md
       - Localization: data/localization.md
-  - Workstreams:
-      - Collaboration: workstreams/collaboration.md
-      - Bus protocol: workstreams/bus.md
-      - Roadmap: roadmap.md
   - Reference:
       - The executable as a source: reference/executable.md
       - Recovered structures: reference/structures.md
@@ -118,10 +113,6 @@ nav:
       - Report formats: reference/report-formats.md
       - Hash names: reference/names.md
       - Glossary: reference/glossary.md
-  - Source documents:
-      - Plan: reference/source-plan.md
-      - Investigation: reference/source-investigation.md
-      - Format contract: reference/source-format.md
       - AGENTS: reference/source-agents.md
       - Script status: reference/source-script-status.md
 

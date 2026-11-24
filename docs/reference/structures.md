@@ -1,8 +1,7 @@
 # Recovered structures
 
-One page, every structure this project has recovered, with how it was verified.
-Nothing here is a hypothesis dressed as a fact — the **Status** column says which
-kind of evidence each row rests on.
+Every recovered structure, with how it was verified.
+The **Status** column records which kind of evidence each row rests on.
 
 | Status | Meaning |
 | --- | --- |

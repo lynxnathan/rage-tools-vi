@@ -1,7 +1,7 @@
 # The executable as a source
 
-Everything this project states about a format is one of three kinds: inferred from
-the corpus, measured against the corpus, or **read out of the executable**. This page
+Every claim about a format here is one of three kinds: inferred from the corpus,
+measured against the corpus, or **read out of the executable**. This page
 is the third kind — the functions, where they live, and exactly what each one settles.
 
 Where the bytes and the code disagreed, the code won: it corrected the script row
@@ -109,7 +109,7 @@ JOAAT-based attempt on archive entry names was aimed at the wrong function.
 rather than believed:
 
 * **The engine confirms it.** Scanning the image for `mov r64, imm64` whose immediate
-  equals a hash we computed finds **26 sites / 11 distinct names** — `trailers`,
+  equals a recomputed hash finds **26 sites / 11 distinct names** — `trailers`,
   `graphics`, `snow`, `bird`, `train`, `discovery`, `none`, `null`, `default`,
   `dlc_ityp_request`, `permanent_ityp_file`. A false match is expected 3 × 10⁻⁷ times,
   so these are real. `tests/test_analysis_tools.py` asserts one of them.
