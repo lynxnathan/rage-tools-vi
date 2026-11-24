@@ -47,6 +47,33 @@ the whole front region and, in its second mode, a second allocation for
 `word_08 .. word_04` — a *suffix* of the first. So the entry table lives inside
 buffer A, at its end.
 
+## A whole pack, from the file's point of view
+
+`data.rpf` pack 0, with `pack_end` taken from the next header (the last pack ends
+at the file size):
+
+```
+0x00000            header 0x40
+0x00040 .. 0x11060 front region (buffer A; buffer B is its last 6,992 bytes)
+0x11060 .. 0x68a790 payload window   6,788,912 bytes
+0x68a790 .. 0x690000 trailer            22,640 bytes  (word_0c)
+0x690000           next pack
+```
+
+The payload window is not a guess: the index for this pack places **1,455 ranges**
+inside it, covering **6,784,240 of 6,788,912 bytes (99.93 %)** — 728 zlib, 719
+zero-run, 8 unclassified. The 4,672-byte residual is inter-range alignment, and
+the three region boundaries come from the header alone (`word_04`, `word_0c`, next
+magic).
+
+```mermaid
+flowchart LR
+    H["header<br/>0x40"] --> F["front region<br/>buffer A (+B)"]
+    F --> P["payload window<br/>ranges cover 99.93 %"]
+    P --> T["trailer<br/>word_0c bytes"]
+    T --> N["next pack"]
+```
+
 ## The shape in one picture
 
 ```mermaid
