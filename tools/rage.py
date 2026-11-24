@@ -54,6 +54,32 @@ def say(name, ok, detail=""):
     return ok
 
 
+def cmd_test(args):
+    """Run the test files, one tier at a time."""
+    tiers = {"unit": ["test_extraction_tools.py", "test_analysis_tools.py"],
+             "corpus": ["test_corpus_invariants.py", "test_mod_roundtrip.py"],
+             "e2e": []}
+    selected = list(tiers) if args.tier == "all" else [args.tier]
+    failures = 0
+    checks = 0
+    for tier in selected:
+        for name in tiers[tier]:
+            path = ROOT / "tests" / name
+            result = run(python() + [str(path)], capture_output=True, text=True)
+            passed = result.stdout.count("  ok  ")
+            skipped = result.stdout.count("skipped")
+            checks += passed
+            status = "PASS" if result.returncode == 0 else "FAIL"
+            print(f"{tier:7s} {name:34s} {status} {passed:3d} checks"
+                  + (f", {skipped} skipped" if skipped else ""))
+            if result.returncode != 0:
+                failures += 1
+                print("\n".join(result.stdout.splitlines()[-4:]))
+    print()
+    print(f"{checks} checks, {failures} failing file(s)")
+    return 0 if not failures else 1
+
+
 def cmd_check(args):
     return run([str(ROOT / "tools/check.sh")]).returncode
 
@@ -309,6 +335,10 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("check", help="run the repository gate").set_defaults(func=cmd_check)
+
+    test_p = sub.add_parser("test", help="run the unit, corpus or all tiers")
+    test_p.add_argument("--tier", choices=["unit", "corpus", "e2e", "all"], default="unit")
+    test_p.set_defaults(func=cmd_test)
     sub.add_parser("e2e", help="every end-to-end check, headless").set_defaults(func=cmd_e2e)
 
     demo_p = sub.add_parser("demo", help="decode three AWC variants to WAV")
