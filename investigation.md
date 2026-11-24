@@ -9046,3 +9046,26 @@ about native RDNA2 code spans inside DXBC, which is what the `rdna2-spirv` submo
 Nothing to index here yet: there is no per-shader boundary to find without a length field,
 and inventing one would be guessing. Recorded with its numbers so the next attempt starts
 from the two `SGD5` sites.
+
+## Content validation: the decoded output is real audio, not noise (2026-11-23)
+
+Everything in this project so far validated *bytes*: sizes, counts, checksums, coverage.
+None of it validated *content*. First such test, on the stream decoded from the previously
+untouched `0xff02` container:
+
+```
+samples 119,040   RMS 0.1067   spectral flatness 0.0051
+```
+
+Spectral flatness is the ratio of geometric to arithmetic mean of the magnitude spectrum:
+~1.0 means white noise, low values mean tonal structure. **0.0051** is strongly musical, so
+the decode produced programme material rather than a bit-shifted or wrongly-framed
+artefact — which is what a wrong packet offset would have produced.
+
+Also tried, and out of reach for now: verifying a Bink2 movie. `ffmpeg` reports *"no
+decoder found"* for this `KB2` variant, so the movie path cannot be content-checked with
+available tools. Recorded so it is not attempted again as if it were untested.
+
+Standing addition to the plan: **every decode path gets one content check** (spectral
+flatness for audio, pixel statistics for images, frame count against the declared count
+for video) before it counts as working.

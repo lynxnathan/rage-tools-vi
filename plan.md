@@ -209,6 +209,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] `shaders.rpf`: largest span begins with an `SGD5` header at `+0x9000` (only 2 in the
   archive), no `DXBC`/`DXIL`/`SHDR` magic, entropy 6.83 — raw program data, no per-shader
   boundary yet.
+- [x] First content-level validation: the decoded `0xff02` stream has spectral flatness
+  **0.0051** (1.0 = white noise), so it is programme material, not a framing artefact.
+  Bink2 movies cannot be content-checked: `ffmpeg` has no decoder for this `KB2` variant.
+- [ ] Give every decode path one content check (flatness for audio, pixel stats for
+  images, frames vs declared for video) before calling it working.
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.
