@@ -8669,3 +8669,27 @@ stream has been decoded yet.
 The census counts these containers (3,008 in `audio.rpf`, the most common variant) but
 their streams are excluded from decoded totals, which is the correct accounting while
 the payload split is unknown.
+
+### `0xff25`: two more probes, both narrowing (2026-11-23)
+
+**Byte-alignment probe.** Trying every byte shift and several records-per-stream counts
+against the known chunk types, only **32 of 200** containers admit a valid 8-byte table,
+and where one exists it is **two records per stream**, not four. So the 0xff21/0xff02
+record model does not generalise to this variant even partially.
+
+**Field-constant probe.** Across 300 containers, the header has stable `u16`s at
+`0x12 = 3`, `0x22 = 0x6000`, `0x2a = 0xc000`, `0x2e = 0x4800`, `0x3e = 0xa300`. The
+`0x…00` pattern means those values sit one byte into a field — the type-like bytes appear
+at odd offsets (`0x23`, `0x2b`, `0x2f`, `0x3f`), confirming the alignment is not the one
+the other variants use.
+
+No field in the first 64 bytes scales with the container size, so the payload split is
+not a header size field of the obvious kind. Stated as an open question rather than a
+conclusion: **where the two streams' payloads divide is still unknown**, and 3,008
+`audio.rpf` containers plus their streams remain excluded from decoded totals because of
+it.
+
+The useful part of these two probes is negative and cheap to keep: it is now established
+that `0xff25` is neither the four-record table model at a different offset, nor that model
+with a different alignment, nor a header with a per-stream size field — so the next
+attempt should start from the descriptor itself rather than from a table hypothesis.

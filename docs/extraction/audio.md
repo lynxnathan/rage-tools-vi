@@ -181,9 +181,17 @@ terminator. Over 600 such containers, **95.3 %** are Opus (codec `0x0b`) at 48 k
 one or two channels; stereo is the majority (401 stereo, 171 mono).
 
 So the compact variant describes its streams in place rather than through records, which
-is why the table model found nothing. What is not yet located is the **payload split
-between the streams**; until it is, no `0xff25` stream is decoded, and the census keeps
-its 3,008 containers' streams out of the decoded totals.
+is why the table model found nothing.
+
+Two further probes narrowed it without solving it: only **32 of 200** containers admit a
+valid 8-byte table under any byte shift (two records per stream where they do), and no
+field in the first 64 bytes scales with the container size. The type-like bytes sit at
+*odd* offsets (`0x23`, `0x2b`, `0x2f`, `0x3f`), so the alignment is not the one the other
+variants use.
+
+What is not yet located is the **payload split between the streams**; until it is, no
+`0xff25` stream is decoded, and the census keeps its 3,008 containers' streams out of the
+decoded totals.
 
 ## Codec status
 
