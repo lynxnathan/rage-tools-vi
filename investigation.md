@@ -8506,3 +8506,27 @@ Second, the list is a small map of the names the engine special-cases inline (te
 `graphics`/`snow`, animation `bird`/`train`/`trailers`/`discovery`, sentinels `null`/
 `none`/`default`, and two `ityp` names) — useful context even though it does not help
 invert the 16-bit id table.
+
+### The id lookup is a dictionary keyed by a constant, and its builder is unseen (2026-11-23)
+
+Reading the accessors around the 16-bit id, with the wording kept to what the code
+shows:
+
+```
+FUN_145305ee0(obj, id)   ->  [vtbl+0x3f8](obj, 0xb7076b6245d35fb5, id)   then *result
+FUN_145305ed0(obj)       ->  FUN_14056ed70(obj+0x28)
+FUN_14056ec70(obj, hash, ext)  ->  linear probe over ids 0..count-1,
+                                   comparing FUN_145305ee0/FUN_145305ed0
+```
+
+So a hash and an extension id are resolved by trying 16-bit ids in order and asking a
+dictionary for each one — a lookaside keyed by the constant `0xb7076b6245d35fb5`. That
+is a *search*, not a computation: the mapping is data the process holds.
+
+What is **observed**: the accessors, the constant key, the probe loop, and the fact
+that the result is a `u16` with `0xffff` as the "absent" value.
+
+What is **not observed**: anything that populates that dictionary. It may be built at
+init from a static array in the image, from a file in the archives, or from both. No
+initialiser has been found, and "there must be one" is not evidence — the next step is
+to look, starting from the vtable slot `+0x3f8` of the class that owns `0xb7076b6245d35fb5`.

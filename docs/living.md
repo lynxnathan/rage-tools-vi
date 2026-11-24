@@ -35,7 +35,15 @@ earned the hard way:
    `script.rpf` but not for `output/index/script.tsv`, so with the external volume
    unmounted the suite *failed* instead of skipping — while the README promised the
    opposite. A guard has to test everything the check actually needs.
-3. **Record the environment.** `output/` is a symlink onto an external volume. With
+3. **Say "may be", not "must be".** Three kinds of sentence are allowed: *this code
+   does X* (with an address), *this measurement gives Y* (with a denominator), and
+   *we have not looked here* — never "there must be a builder" or "that has to exist
+   somewhere". Inferring that something exists is not evidence that it does; the
+   right form is what was searched, what was found, and what remains unseen. Three
+   times in this project an asserted structure turned out to be a different one
+   (the 8-byte-shifted row read, the six-chunk chain, the "cipher" on a path that
+   only copies bytes).
+4. **Record the environment.** `output/` is a symlink onto an external volume. With
    it unmounted, index-dependent checks skip and archive-side extractions are
    unavailable; that is a supported state, not a broken one, and the checks now say
    so explicitly.
