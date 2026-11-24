@@ -193,6 +193,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   model (count 2, header 64, three non-chunk records per stream).
 - [x] `0xff25` identified as an **inline-descriptor** variant, not a table: 95.3 % of
   600 containers carry `80 bb` (48 kHz) + codec + channels; 401 stereo / 171 mono Opus.
+- [x] Acoustic search (`tools/probe_ff25_payload.py`) decodes `0xff25` payload: LE `u16`
+  packets from `+0x1060` at flatness 0.0022, candidate starts 82 bytes apart; small
+  containers give only weak 8–12 packet hits.
 - [ ] Locate the `0xff25` payload start and split. Established: body is audio
   (H 7.74–7.79), `header_size` is **not** the data offset, no table under any byte shift,
   no size field in the first 64 bytes, fields sit at odd offsets (three independent

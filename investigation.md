@@ -9094,3 +9094,31 @@ So decoding the whole Opus corpus is a **compute** problem that fits in an after
 
 The batch also reconfirms the variant split: every stream decoded here came from
 `0xff02`, `0xff21` or `0xff61`; `0xff25` still contributes nothing.
+
+## `0xff25` payload found by acoustic search (2026-11-23)
+
+Structural routes had stalled, so the search inverted: try candidate payload starts and
+packet-prefix widths, decode 8–40 packets with libopus, and score by spectral flatness
+(1.0 is white noise, low is programme material).
+
+In the 266,240-byte container at `+0x548f000`, little-endian `u16` packets decode cleanly
+from `+0x1060`:
+
+```
+flatness 0.0022   24 packets   92,160 B PCM   at 0x1060
+flatness 0.0022   23 packets   88,320 B PCM   at 0x10b2
+flatness 0.0022   22 packets   84,480 B PCM   at 0x1104
+```
+
+The candidate starts are **82 bytes apart**, which is the first length-like regularity seen
+in this variant. Two facts follow: the payload in this container is decodable Opus with
+`u16` length prefixes, and its start is near `+0x1060` rather than at `header_size`.
+
+On smaller containers (20–36 KB, `count = 2`) the same search returns only 8–12 packets at
+flatness 0.02–0.08, i.e. weak and inconsistent. Those are plausibly short sounds where a
+16-packet run is not enough to distinguish programme material from tonal-looking noise, so
+this search cannot yet confirm a start there.
+
+State: `0xff25` payload is decodable, the container's stream boundary is still unidentified,
+and the search is kept as `tools/probe_ff25_payload.py` so the question can be re-asked on
+any container without re-deriving the method.

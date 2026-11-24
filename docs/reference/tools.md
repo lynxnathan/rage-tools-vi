@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-170 scripts.
+171 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -132,6 +132,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`probe_0f000080.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_0f000080.py) | Probe the 0f000080 packs family: sizes, header words, and 16-bit texture. |  |
 | [`probe_4042.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_4042.py) | Probe the dominant u16_4042 packs stream header. |  |
 | [`probe_4042_classes.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_4042_classes.py) | Compare u16_4042 size classes by entropy and byte regularity. |  |
+| [`probe_ff25_payload.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_ff25_payload.py) | Find a 0xff25 payload by decoding candidates, not by guessing the container layout. | --end --start |
 | [`probe_index_layout.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_index_layout.py) | Test fixed-stride offset and length hypotheses against small RPF9 controls. |  |
 | [`property_tree.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/property_tree.py) | Dump a named object subtree from the script.rpf object graph. |  |
 | [`psin_blocks.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_blocks.py) | Decode the five PSIN blocks with the writer's own field order. | --index --rows |
