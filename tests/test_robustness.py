@@ -82,6 +82,37 @@ def main():
     else:
         check("chain solver survives arbitrary bytes", True, f"({len(inputs)} inputs)")
 
+    print("ADAT bank walk")
+    from io import BytesIO
+    from adat_index import bank_extent
+    for blob in inputs:
+        try:
+            end, count, tags, variant, error = bank_extent(BytesIO(blob), 0)
+        except Exception as failure:  # noqa: BLE001
+            check("bank walk survives arbitrary bytes", False, repr(failure))
+            break
+        if end is not None and not (count and 0 <= end <= len(blob) + 0x1000):
+            check("an accepted bank has a bounded extent", False, (end, count))
+            break
+    else:
+        check("bank walk survives arbitrary bytes", True, f"({len(inputs)} inputs)")
+        check("a rejected bank carries a reason", all(
+            bank_extent(BytesIO(blob), 0)[4] for blob in inputs[:5]), "")
+
+    print("Bink2 header")
+    from bink_index import movie_at
+    for blob in inputs:
+        try:
+            end, fields, error = movie_at(BytesIO(blob), 0, len(blob))
+        except Exception as failure:  # noqa: BLE001
+            check("bink header survives arbitrary bytes", False, repr(failure))
+            break
+        if end is not None and not (end <= len(blob) and fields):
+            check("an accepted movie has a bounded extent", False, (end, fields))
+            break
+    else:
+        check("bink header survives arbitrary bytes", True, f"({len(inputs)} inputs)")
+
     print("bounded output")
     huge = b"\xff" * 0x20000
     packets = ff25_packets_auto(huge)

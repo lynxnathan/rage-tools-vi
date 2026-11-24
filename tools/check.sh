@@ -28,6 +28,12 @@ else
     note "tool syntax" "FAIL"; tail -5 /tmp/check-compile.log | sed 's/^/    /'; fail=1
 fi
 
+if cargo test --offline --quiet >/tmp/check-rust.log 2>&1; then
+    note "rust tests" "PASS ($(grep -c 'test result: ok' /tmp/check-rust.log) suite)"
+else
+    note "rust tests" "FAIL"; tail -4 /tmp/check-rust.log | sed 's/^/    /'; fail=1
+fi
+
 if $PY tests/test_robustness.py >/tmp/check-fuzz.log 2>&1; then
     note "parser robustness" "PASS ($(grep -c '  ok' /tmp/check-fuzz.log) checks)"
 else
