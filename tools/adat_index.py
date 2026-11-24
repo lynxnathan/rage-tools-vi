@@ -282,6 +282,39 @@ def from_manifest(args, size):
     return 0
 
 
+def scan_all(args, size):
+    """Index every bank in the archive, without a manifest."""
+    rows = []
+    errors = {}
+    offsets = find_banks(args.archive, args.limit)
+    with args.archive.open("rb") as handle:
+        for offset in offsets:
+            end, count, error = extent_bank(handle, offset, MAX_BANK)
+            if error:
+                errors[error] = errors.get(error, 0) + 1
+                continue
+            if rows and offset < rows[-1][1]:
+                continue
+            rows.append((offset, end, count))
+    covered = sum(end - start for start, end, _count in rows)
+    print(f"{args.archive.name}: candidates {len(offsets):,}, banks {len(rows):,}, "
+          f"{covered:,} B ({covered / size:.3%} of the file)")
+    print(f"  streams: {sum(count for _s, _e, count in rows):,}")
+    for key, value in sorted(errors.items(), key=lambda item: -item[1]):
+        print(f"  rejected: {key} x{value}")
+    if args.show:
+        for start, end, count in rows[:5]:
+            print(f"  bank +0x{start:x}..0x{end:x} ({end - start:,} B) streams {count}")
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        with args.out.open("w") as handle:
+            handle.write("kind\tstart\tend\tstored_bytes\tdecoded_bytes\tchain_start\n")
+            for start, end, _count in rows:
+                handle.write(f"adat\t0x{start:x}\t0x{end:x}\t{end - start}\t\t\n")
+        print(f"  wrote {args.out}")
+    return 0
+
+
 def gaps_ff02(args, size):
     """Index the 0xff02 banks that sit between manifest-covered containers."""
     import csv
@@ -355,6 +388,8 @@ def main():
     parser.add_argument("--combine", action="store_true",
                         help="with --manifest and --gaps: write manifest banks and "
                              "gap banks into one index")
+    parser.add_argument("--scan", action="store_true",
+                        help="scan the whole archive for banks, no manifest needed")
     parser.add_argument("--gaps", action="store_true",
                         help="walk the 0xff02 banks that fill the gaps between "
                              "manifest-covered containers")
@@ -367,6 +402,8 @@ def main():
     if not args.archive.is_file():
         sys.exit(f"missing {args.archive}")
     size = args.archive.stat().st_size
+    if args.scan:
+        return scan_all(args, size)
     if args.manifest and args.gaps:
         return gaps_ff02(args, size)
     if args.manifest:

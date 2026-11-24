@@ -19,6 +19,29 @@ All eight local archives now have complete contiguous range coverage.
 | `shaders.rpf` | 411,695,600 | 18,686 | 411,695,600 | 275,540,780 | 273,959,915 | full |
 | `textures.rpf` | 192,585,024 | 5,581 | 192,585,024 | 161,086,752 | 136,021,963 | full |
 
+## How much is actually classified
+
+A tidy index is not the same as an understood one. `tools/index_coverage.py` reports,
+per archive, the share of bytes assigned a known kind — merging side indexes such as
+`audio-adat.tsv` when a specialised pass exists:
+
+| archive | size | main index | with side indexes |
+| --- | ---: | ---: | ---: |
+| `audio` | 28.5 GB | 0.07 % | **99.75 %** |
+| `levels` | 76.2 GB | 99.65 % | 99.65 % |
+| `data` | 0.48 GB | 95.80 % | 95.80 % |
+| `textures` | 0.19 GB | 99.53 % | 99.53 % |
+| `shaders` | 0.41 GB | 33.41 % | 33.41 % |
+| `shared_minigame000` | 0.81 GB | 55.33 % | 55.33 % |
+| `story000` | 20.0 GB | 35.39 % | 35.39 % |
+| `story000_script` | 0.08 GB | 32.04 % | 32.04 % |
+| `core_restofworld` | 1.30 GB | 4.17 % | 4.17 % |
+| `movies` | 8.83 GB | **0.00 %** | 0.00 % |
+
+Every index tiles its archive (union coverage 100 %), but the *classification* is
+what tells you whether the bytes are understood. `movies` is the clearest case: fully
+tiled, fully opaque — Bink video has no partitioner yet.
+
 Repo-wide totals from the 22-archive index: **4,415,868 ranges**,
 **161,307,137,472 stored bytes**, **365,020,088,082 decoded bytes**, of which
 **2,241,410 are zlib ranges** and **2,190,635** have an extraction manifest.

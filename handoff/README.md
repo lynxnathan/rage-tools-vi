@@ -4,7 +4,7 @@ Every table here, its size, and where it comes from. Rendered from
 `handoff/provenance.tsv` by `tools/handoff_manifest.py`; that manifest is the
 source of truth and is checked by `tools/check.sh`.
 
-**114 tables** — 105 generated, 4 curated, 5 legacy, 0 unclassified.
+**115 tables** — 106 generated, 4 curated, 5 legacy, 0 unclassified.
 
 ## Curated (hand-maintained)
 
@@ -42,6 +42,7 @@ source of truth and is checked by `tools/check.sh`.
 | `header-census-full.tsv` | 4,373 | 10 | exact name in a tool |
 | `header-census.tsv` | 71 | 10 | stem in a tool: header-census |
 | `header-words.tsv` | 4,373 | 34 | tool name appears in the table name: tools/header_words.py |
+| `index-coverage.tsv` | 22 | 6 | exact name in a tool |
 | `name-coverage.tsv` | 27 | 7 | exact name in a tool |
 | `navmeshes-entries-chains.tsv` | 25,981 | 8 | family: entry reconciliation |
 | `navmeshes-entries.tsv` | 2,447 | 8 | family: entry manifests (tools/corpus_pass.sh) |

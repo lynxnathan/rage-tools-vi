@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-164 scripts.
+165 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -102,6 +102,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`header_words.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/header_words.py) | Read every header listed in a census TSV and analyze the header words. | --source |
 | [`human_range_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/human_range_scan.py) | Scan AWC data chunks for tonal energy in the human 20 Hz-20 kHz band. |  |
 | [`identify_opaque_context.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/identify_opaque_context.py) | Identify opaque RPF9 fragments from verified neighboring payload headers. |  |
+| [`index_coverage.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/index_coverage.py) | Report how much of each archive is classified, merging side indexes. | --out |
 | [`layout_link_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/layout_link_probe.py) | Test structured vehicle-model/layout pairs against class-0 layout roots. |  |
 | [`levels_paths.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/levels_paths.py) | Harvest the ASCII resource paths that `levels` PSIN sections carry. | --archive --index --limit --out |
 | [`levels_sections.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/levels_sections.py) | Census the tagged sections of `levels`-style PSIN records. | --archive --index --limit |

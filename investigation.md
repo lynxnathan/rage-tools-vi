@@ -8293,3 +8293,40 @@ One near-miss worth noting: the counts in the docs (`23.51 GB`) were right all a
 What was wrong was the *index* that failed to see them, and my first attempt at fixing
 it, which scanned for a magic and validated against the wrong variant's layout. The
 publishable lesson is that a magic identifies a family, never a layout.
+
+## Classification coverage: every index tiles, not every index understands (2026-11-23)
+
+`tools/index_coverage.py` reports, per archive, the share of bytes with a known
+`kind`, merging side indexes (`audio-adat.tsv`) when a specialised pass exists. The
+distinction matters and the archive table does not show it: **union coverage is
+100 % everywhere** — every index tiles its file — while *classification* ranges from
+0 % to 99.9 %:
+
+| archive | size | main | with side |
+| --- | ---: | ---: | ---: |
+| `audio` | 28.5 GB | 0.07 % | **99.75 %** |
+| `levels` | 76.2 GB | 99.65 % | 99.65 % |
+| `textures` | 0.19 GB | 99.53 % | 99.53 % |
+| `data` | 0.48 GB | 95.80 % | 95.80 % |
+| `shared_minigame000` | 0.81 GB | 55.33 % | 55.33 % |
+| `story000` | 20.0 GB | 35.39 % | 35.39 % |
+| `shaders` | 0.41 GB | 33.41 % | 33.41 % |
+| `story000_script` | 0.08 GB | 32.04 % | 32.04 % |
+| `core_restofworld` | 1.30 GB | 4.17 % | 4.17 % |
+| `movies` | 8.83 GB | **0.00 %** | 0.00 % |
+
+`handoff/index-coverage.tsv` is the machine-readable version, and the check runs in
+`tools/check.sh` so the number cannot drift silently.
+
+Two consequences for the plan:
+
+- `movies` (8.83 GB) has no partitioner at all — a Bink2 container pass is the single
+  largest classification gap left.
+- `story000` and `story000_script` are ~65 % unclassified, and their known content is
+  largely audio; the `adat_index.py --scan` pass targets exactly that.
+
+A tooling note, because it bit the first version: the coverage report silently
+dropped main indexes whose side index sorted first (`setdefault` after a `setdefault`
+does nothing). The symptom was `audio` reporting 99.69 % for its *main* index when the
+main index is 0.07 %. Fixed to append, and the two columns now differ exactly where
+they should.

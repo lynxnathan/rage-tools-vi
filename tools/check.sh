@@ -72,6 +72,14 @@ else
 fi
 
 if compgen -G "output/index/*.tsv" >/dev/null; then
+    if $PY tools/index_coverage.py >/tmp/check-coverage.log 2>&1; then
+        note "index coverage" "PASS ($(grep -c '%' /tmp/check-coverage.log) rows)"
+    else
+        note "index coverage" "FAIL"; tail -3 /tmp/check-coverage.log | sed 's/^/    /'; fail=1
+    fi
+fi
+
+if compgen -G "output/index/*.tsv" >/dev/null; then
     if $PY tools/chain_start_verify.py output/index/*.tsv >/tmp/check-index.log 2>&1; then
         note "index invariants" "PASS ($(grep -c '\.tsv' /tmp/check-index.log) indexes)"
     else

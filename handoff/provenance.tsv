@@ -24,6 +24,7 @@ extraction-inventory-summary.tsv	127	6	generated	exact name in a tool
 header-census-full.tsv	4373	10	generated	exact name in a tool
 header-census.tsv	71	10	generated	stem in a tool: header-census
 header-words.tsv	4373	34	generated	tool name appears in the table name: tools/header_words.py
+index-coverage.tsv	22	6	generated	exact name in a tool
 name-coverage.tsv	27	7	generated	exact name in a tool
 names.tsv	36952	7	curated	JOAAT names from CodeWalker meta plus harvested corpus
 navmeshes-entries-chains.tsv	25981	8	generated	family: entry reconciliation
