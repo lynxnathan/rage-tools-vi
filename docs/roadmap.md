@@ -14,18 +14,18 @@ gantt
     section Verified
     RPF9 partition and zlib gates :done, 2026-11-20, 1d
     Script object graph           :done, 2026-11-20, 1d
-    Typed array header            :done, 2026-11-20, 1d
-    Class-0 bone table            :done, 2026-11-20, 1d
+    Audio complete (Opus/XMA2/ACE1) :done, 2026-11-21, 1d
     Full output rebuild           :done, 2026-11-21, 1d
-    XMA2 audio decode             :done, 2026-11-21, 1d
-    Opus 0x0B audio decode        :done, 2026-11-21, 1d
+    Script metadata chain from writer :done, 2026-11-23, 1d
+    PSIN field order corrected    :done, 2026-11-23, 1d
+    Buffer A layout from the binary :done, 2026-11-23, 1d
     section Active
-    Opus trim / ACE1 semantics    :active, 2026-11-21, 3d
+    Buffer A section roles        :active, 2026-11-23, 5d
+    Stream Read (+0x60) identity  :2026-11-23, 4d
     Bone hash names / geometry    :2026-11-24, 4d
     Remaining typed arrays        :2026-11-24, 4d
     section Blocked
-    Front A metadata cipher       :crit, 2026-11-20, 10d
-    Texture codec and top mip     :2026-11-20, 10d
+    Texture codec and top mip     :crit, 2026-11-20, 10d
     section Next
     Entry → payload range proof   :2026-11-26, 7d
     Full archive extraction       :2026-12-03, 10d
@@ -42,8 +42,8 @@ stateDiagram-v2
     BoneTable --> Naming: hash/name alignment
     Naming --> Milestone: record predicts payload range
     Milestone --> FullExtraction
-    Partitioned --> MetadataWall: Front A/B/trailer
-    MetadataWall --> Partitioned: key/framing needed
+    Partitioned --> MetadataLayout: buffer A arena formula
+    MetadataLayout --> SectionRoles: 654/654 headers fit
     FullExtraction --> [*]
 ```
 
@@ -51,12 +51,12 @@ stateDiagram-v2
 
 | Priority | Task | Evidence | Blocker |
 | --- | --- | --- | --- |
-| 1 | Opus trim and 0x02 semantics | 2,081 Opus WAVs / 73 ACE1 IRs | pre-skip and trailer pairs |
-| 2 | Name or align the 612 bone hashes | `handoff/script-bones.tsv` | hash namespace |
-| 3 | Geometry-classify bones | `handoff/script-bone-points.tsv` | no model orientation |
+| 1 | Identify buffer A's five sections | arena formula, 654/654 fit | section semantics |
+| 2 | Read the stream's `Read` (`+0x60`) | archive copies buffers verbatim | class identity |
+| 3 | Name or align the 612 bone hashes | `handoff/script-bones.tsv` | hash namespace |
 | 4 | Decode remaining typed arrays | `0xb066759f`, `0xb1ee00d0` | field semantics |
-| 5 | Front A milestone | metadata size model | key/framing/decoded field |
-| 6 | Texture top-mip verification | spinner + HUD holdouts | codec/pitch/tile |
+| 5 | Texture top-mip verification | spinner + HUD holdouts | codec/pitch/tile |
+| 6 | `CHKS` trailer tag | size field verified 60/60 | hash function outside our set |
 
 ## Done
 
@@ -67,6 +67,9 @@ stateDiagram-v2
 - [x] Resolve the 64 KiB continuation rule.
 - [x] Name 306 of 483 object roots with JOAAT.
 - [x] Decode typed array headers and the `vector3` type tag.
+- [x] Recover the script metadata chunk chain from the writer in the executable.
+- [x] Correct the PSIN row field order and rebuild the affected artifacts.
+- [x] Derive buffer A's arena layout from the binary; it fits 654/654 headers.
 - [x] Flatten the 44 class-0 bone tables and 3,043 bones.
 - [x] Rebuild all six verified archive extractions after a clean output wipe.
 - [x] Decode 151 AWC codec-`0x05` streams as XMA2 WAV.
