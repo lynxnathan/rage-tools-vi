@@ -7995,3 +7995,21 @@ hash candidates over body, prefix and compressed stream do not match the tag.
 The lesson worth keeping in the record: **a chunk census is only as complete as the
 magic table of the walker that produced it.** Any "format ends here" conclusion has
 to name the set of magics that was searched.
+
+### The chain covers every body exactly — the completeness proof (2026-11-23)
+
+`tools/script_meta.py --verify` now checks that the last chunk's distance lands on
+the final byte of the decompressed body:
+
+```
+records: 1012   full chain: 1012   chain covers the body exactly: 1012/1012
+```
+
+Zero slack in every record. This is the check that makes the seven-chunk reading
+safe rather than merely consistent: if a chunk type existed that the walker did not
+know, the body would be longer than the chain, and the slack histogram would not be
+a single zero. It would have caught the `CHKS` omission immediately.
+
+For the record, the same reasoning applies to the archives themselves: every index
+in this project tiles its archive exactly, which is why "no entry is unaccounted
+for" is a measured statement and not a hope.
