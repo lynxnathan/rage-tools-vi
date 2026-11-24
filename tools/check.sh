@@ -49,6 +49,12 @@ else
     note "tool index" "FAIL"; tail -3 /tmp/check-toolsindex.log | sed 's/^/    /'; fail=1
 fi
 
+if $PY tools/claims_check.py >/tmp/check-claims.log 2>&1; then
+    note "published counts" "PASS ($(grep -c . /tmp/check-claims.log) line)"
+else
+    note "published counts" "FAIL"; sed 's/^/    /' /tmp/check-claims.log | head -6; fail=1
+fi
+
 if compgen -G "output/index/*.tsv" >/dev/null; then
     if $PY tools/chain_start_verify.py output/index/*.tsv >/tmp/check-index.log 2>&1; then
         note "index invariants" "PASS ($(grep -c '\.tsv' /tmp/check-index.log) indexes)"

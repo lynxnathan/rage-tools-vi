@@ -144,7 +144,9 @@ LSCH  32 bytes   +0x00 tag (one of this record's PSIN tags)  verified 200/200
 LENM  24 bytes   +0x00 tag, +0x04 hash, +0x08 pointer (0xEE), +0x10 u16 count
 ```
 
-Status: **exact** for the tag relation, **open** for the other fields.
+Status: **exact** for the tag relation, **open** for the other fields. Of the
+**4,901** sections in the corpus, **3,891** are indexed by `LSCH`; the 1,010 that
+are not are exactly the `0x16` block, which the index never rows for.
 
 ## Audio (AWC)
 
