@@ -8,15 +8,19 @@ RPF9 archive extraction, entry reconstruction and identifier recovery for
 
 ## The idea in three lines
 
-RPF9 archives hide their table of contents behind masked metadata, so this project
-reconstructs entries from the **payload** and uses the masked table only as a
-cross-check:
+The metadata records in an RPF9 pack are unidentified, so this project reconstructs
+entries from the **payload** and uses the metadata only as a cross-check:
 
 - every payload range is found by scanning and **verified by zlib checksum**;
 - every pack declares an entry count `N`, so the count is an **oracle**: an entry
   model that does not reproduce `N` exactly is rejected;
 - every identifier met so far is **`JOAAT(lowercase name)`**, so names are
   recoverable by vocabulary instead of by key.
+
+Two things are now taken from the **game executable** rather than inferred: the
+script metadata chunk format (read out of its writer) and the pack's front-region
+layout (read out of its loader). Where the bytes and the code disagreed, the code
+settled it.
 
 Full walkthrough: **[From first principles](docs/explained.md)**.
 
@@ -30,21 +34,26 @@ Full walkthrough: **[From first principles](docs/explained.md)**.
 | `core_bvh4` | **1,253 of 1,261 packs** whose declared count is reproduced exactly; 109,301 entries |
 | Audio | **93,344 Opus + 1,818 XMA2 + 73 ACE1** streams, zero failures; every stream reaches its declared length |
 | Names | one registry of **36,952** hash→name pairs, with a flag for JOAAT collisions |
-| Script schema | `PSIN` decoded in `script.rpf` (63,288 typed rows, 42 % of them naming their property); `LSNS` is a table of 16-byte records. `PSIN` is a general envelope — ≈18,637 records in ten archives — but the property array exists in one file |
+| Script metadata | chunk chain `PSIN→LSCH→LENM→LSNS→LGID→LRSC→CHKS` recovered from the writer in the executable; **1,012/1,012** records parse, and the chain lands on the last byte of every body (zero slack). 63,288 typed rows with the type word **last**, 42 % naming their property |
+| Pack layout | every header field is code-confirmed; buffer A is a 0x40-byte header plus four sections sized by a formula from the binary, which fits **654/654** headers; buffer B is a suffix of buffer A, `align16(N × stride)` |
+| Provenance | `handoff/` carries 114 tables with an enforced manifest — **105 generated, 4 curated, 5 legacy**, 0 unclassified |
 | GPU | shader decompilation lives in its own repository, [`rdna2-spirv`](rdna2-spirv/) |
 
 ## What is solved, and what is not
 
-**Solved.** Payload coverage and verification for the whole corpus; entry
-boundaries for 14 archives; the `core_bvh4` descriptor format; the `ADAT` audio
-container including Opus, XMA2 and PCM; the `PSIN`/`LSNS` script schema; a merged
-name registry; and the archive/stream accounting above.
+**Solved.** Payload coverage and verification for the whole corpus, at 100 % union
+coverage per pack; entry boundaries for 14 archives; the `core_bvh4` descriptor
+format; the `ADAT` audio container including Opus, XMA2 and PCM; the script
+metadata chunk format and the `PSIN` row layout; the pack front-region layout; a
+merged name registry; and the archive/stream accounting above.
 
-**Not solved, and why.** The RPF9 **table of contents is encrypted**, so there are
-no original file names or paths — everything here is payload-derived and
-offset-addressed. The compiled script bytecode is not in a plaintext section, and
-the 331 KB blob in `script.rpf` is masked. Both need the game executable or a PC
-build, not more effort.
+**Not solved, and why.** The *contents* of the metadata records are unidentified:
+no 32-bit or 64-bit hash of any known name appears in them, and the loader copies
+them verbatim, so any transform would have to sit in the stream's `Read` — the one
+link not yet read. There are therefore still no original file names or paths;
+everything is payload-derived and offset-addressed. The compiled script bytecode is
+not in a plaintext section either. The executable is now in hand, so these are
+code-tracing problems rather than waiting problems.
 
 Details and the failures that led here are in [investigation.md](investigation.md);
 open work is in [plan.md](plan.md).
@@ -52,9 +61,15 @@ open work is in [plan.md](plan.md).
 ## Checking the repository
 
 ```bash
-tools/check.sh          # analysis tests, index invariants, shader suite, docs build
+tools/check.sh          # the full gate, see below
 tools/check.sh --fast   # skip the docs build and the shader suite
 ```
+
+The gate is deliberately boring and specific: every script must compile, 33
+analysis assertions must pass, the generated tool index and the handoff manifest
+must be current, the counts published in the docs must match the committed
+artifacts, every index must tile its archive, every pack's payload window must be
+covered, and the docs must build.
 
 Tools run through **uv** (`pyproject.toml`, `uv.lock`), so their dependencies
 (numpy for the XMA2 wrapper) are declared rather than assumed. Anything needing
@@ -99,6 +114,21 @@ python3 tools/psin_segment.py --describe 1054      # a script's records, as entr
 python3 tools/awc_chunk_table.py FILE              # ADAT chunk table for any variant
 python3 tools/lsns_tables.py                       # LSNS tables and record counts
 ```
+
+Formats recovered from the executable have first-class readers, all runnable without
+any reverse-engineering setup:
+
+```bash
+python3 tools/script_meta.py script.rpf --index output/index/script.tsv --dump 1
+python3 tools/script_meta.py script.rpf --index output/index/script.tsv --verify
+python3 tools/psin_blocks.py --index output/index/script.tsv --show 1
+python3 tools/pack_layout.py data.rpf --offset 0        # draw one pack from its header
+python3 tools/pack_extent_check.py --all                # payload windows vs the index
+```
+
+`tools/pe_scan.py` and `tools/vtable_scan.py` are the static-analysis entry points:
+the first proves negatives about a PE image with a correct section map, the second
+resolves a vtable slot to the classes that could be calling it.
 
 The Rust CLI in `src/` covers inspection, pack mapping and partition work:
 
