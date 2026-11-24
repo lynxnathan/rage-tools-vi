@@ -33,6 +33,7 @@ name-coverage.tsv	27	7	generated	exact name in a tool
 names.tsv	36952	7	curated	JOAAT names from CodeWalker meta plus harvested corpus
 navmeshes-entries-chains.tsv	25981	8	generated	family: entry reconciliation
 navmeshes-entries.tsv	2447	8	generated	family: entry manifests (tools/corpus_pass.sh)
+nested-packs.tsv	4356	7	generated	exact name in a tool
 pack-extents-leaves.tsv	45	6	generated	tool name appears in the table name: tools/pack_extents.py
 pack-extents-textures.tsv	21	9	generated	tool name appears in the table name: tools/pack_extents.py
 pack-model-fit.tsv	3467	7	generated	exact name in a tool
