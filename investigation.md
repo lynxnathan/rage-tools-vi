@@ -9157,3 +9157,28 @@ Two implementation notes: packets must be decoded one at a time (repacking them 
 `0x800` blocks splits any packet that straddles a boundary, which the block walker
 rejects), and the earlier `header_size`-based attempts failed because this variant's payload
 does not start at `header_size`.
+
+### Correction: the `0x800`/`0x60` framing is a common case, not a rule (2026-11-23)
+
+The previous entry called the `0xff25` framing "verified across nine containers". Measured
+over 300 sampled containers, that claim is too strong:
+
+| measurement | result |
+| --- | ---: |
+| containers with any run of ≥8 packets | **164 / 300 (55 %)** |
+| of those, first run at offset ≡ `0x60` (mod `0x800`) | 69 / 164 (42 %) |
+| of those, dominant period `0x800` | 95 / 164 (58 %) |
+| other first-run offsets (mod `0x800`) | `0xc0` (10), `0x80` (5), `0x30` (5), `0x64` (4) |
+
+So the framing is the most frequent pattern, present in roughly half the containers that
+parse this way, and **45 % of sampled containers do not produce an 8-packet run at all**
+under it. The earlier phrasing generalised from a handful of cases — the same mistake the
+`restofworld` table and the `PSIN` row order both punished.
+
+What this changes: `tools/decode_adat_stream.py --ff25` should not assume `+0x860` and
+`0x800`. The working approach is the one that found the data — search for packet runs and
+decode what parses — with the `0x800` pattern as a fast path when it applies, not as the
+definition.
+
+The `0xff25` corpus is therefore "decodable per container by search", not "solved by a
+formula", and the ~50 h estimate inherits that uncertainty.

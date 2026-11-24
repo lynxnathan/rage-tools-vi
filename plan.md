@@ -196,9 +196,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] Acoustic search (`tools/probe_ff25_payload.py`) decodes `0xff25` payload: LE `u16`
   packets from `+0x1060` at flatness 0.0022, candidate starts 82 bytes apart; small
   containers give only weak 8–12 packet hits.
-- [x] `0xff25` **solved**: blocks of `0x800`, payload at `block + 0x60`, ~24 packets per
-  block; 3,049 packets decode to 60.98 s stereo per 266 KB container (~50 h corpus-wide).
-  `tools/decode_adat_stream.py --ff25`.
+- [x] `0xff25` decodable per container: 3,049 packets → 60.98 s stereo from one container.
+  Correction: the `0x800`/`0x60` framing holds for 42–58 % of parsing containers, not all
+  (45 % show no 8-packet run), so it is a fast path, not a rule.
 - [ ] Decode the `0xff25` corpus (~50 h of audio) now that the framing is known. Established: body is audio
   (H 7.74–7.79), `header_size` is **not** the data offset, no table under any byte shift,
   no size field in the first 64 bytes, fields sit at odd offsets (three independent
