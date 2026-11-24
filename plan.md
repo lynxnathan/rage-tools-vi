@@ -199,7 +199,7 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] `0xff25` decodable per container: 3,049 packets → 60.98 s stereo from one container.
   Correction: the `0x800`/`0x60` framing holds for 42–58 % of parsing containers, not all
   (45 % show no 8-packet run), so it is a fast path, not a rule.
-- [ ] Decode the `0xff25` corpus (~50 h of audio) now that the framing is known. Established: body is audio
+- [ ] Decode the `0xff25` corpus (~8.2 h of audio, sampled) now that the framing is known. Established: body is audio
   (H 7.74–7.79), `header_size` is **not** the data offset, no table under any byte shift,
   no size field in the first 64 bytes, fields sit at odd offsets (three independent
   signs), payload is packet-framed (1,678 short runs) but **not** `0x800`-block framed.

@@ -204,8 +204,8 @@ for **42 %** of those that parse (first offset) and **58 %** (period), and **45 
 3,049 packets -> 60.98 s stereo   RMS 0.176   spectral flatness 0.0045
 ```
 
-The variant that contributed nothing to every earlier pass accounts for roughly **50 hours**
-of audio across its 3,008 containers in `audio.rpf`. Decode with
+The variant that contributed nothing to every earlier pass accounts for roughly **8.2 hours**
+of audio across its 3,008 containers (sampled: 9.8 s per container) in `audio.rpf`. Decode with
 `tools/decode_adat_stream.py --ff25`.
 
 Earlier measurements that bounded the problem, retained because they explain why the

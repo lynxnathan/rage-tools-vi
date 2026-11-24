@@ -9218,3 +9218,16 @@ and the archive layer opens named packs from its catalog rather than scanning fo
 What does work today is byte replacement inside an archive: same-size replacement of a
 `zlib` range, no repack, no offsets moved (`tools/mod_replace.py`, verified end to end).
 That is the minimum, and it is also the ceiling without an RPF9 writer.
+
+### Correction: the `0xff25` corpus is ~8.2 h of audio, not ~50 h (2026-11-23)
+
+The 50 h figure came from one 266 KB container (61 s). Sampling 30 containers spread
+across the census:
+
+```
+containers 30   bytes 26,836,992   packets 14,654   audio 4.9 min
+per container ~9.8 s   3,008 containers -> 8.2 h
+```
+
+So the single container was far above average, and the corpus estimate drops by a factor
+of six. `tools/rage.py measure` reproduces the number.
