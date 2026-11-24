@@ -163,6 +163,30 @@ Status: **exact** for the tag relation, **open** for the other fields. Of the
 **4,901** sections in the corpus, **3,891** are indexed by `LSCH`; the 1,010 that
 are not are exactly the `0x16` block, which the index never rows for.
 
+## Bink2 video (`.bk2`)
+
+```
++0x00  'KB2'   magic            +0x14  u32  width
++0x03  u8      version letter   +0x18  u32  height
++0x04  u32     payload size     +0x1c  u32  frames per second
++0x08  u32     frame count      ...
++0x10  u32     frame count, again
+```
+
+A container occupies `align(0x800, payload size)`; validated against the distance to the
+next container. The duplicate frame count is the field that gave a false lead in
+`restofworld` before the `KB2` magic was found.
+
+| archive | movies | covered | share |
+| --- | ---: | ---: | ---: |
+| `movies.rpf` | 515 | 8,831,840,256 B | 99.993 % |
+| `core_restofworld.rpf` | 11 | 1,241,526,272 B | 95.814 % |
+| `story000_restofworld.rpf` | 7 | 120,193,024 B | 60.595 % |
+
+Tool: `tools/bink_index.py`. Validation is the width/height/fps triple — random `KB2`
+bytes inside video data reject. Status: **exact** for the size rule, **measured** for the
+rejection filter.
+
 ## Audio (`ADAT` / AWC)
 
 Header: `ADAT`, `u16` version, `u16` flags, `u32` stream count, `u32` header size —
