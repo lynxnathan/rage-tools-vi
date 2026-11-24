@@ -139,6 +139,27 @@ Container flags in `audio.rpf`: `0xff25` 3,008, `0xff02` 2,071, `0xff21` 1,270 �
 compact variant dominates, which is why the first extraction pass (a `0xff21` scan)
 under-counted the archive so badly.
 
+## Decoding a previously missed container
+
+The old probe looked for the data offset at `+0x0c` — the `0xff21` layout — so it found
+nothing in the `0xff02` pools. `tools/decode_adat_stream.py` uses the verified table
+rules instead, and the first stream from an untouched container decodes:
+
+```
+audio.rpf+0x16437000  (0xff02, 1,914 streams)
+stream 0: Opus, mono, declared 32,000 Hz, 116,480 samples
+          4,096 B payload -> 124 packets -> 119,040 samples = 2.48 s
+          peak 0.743 FS, RMS 0.107 FS — not silence
+```
+
+Two details worth knowing before decoding at scale:
+
+- the `0x76` rate is the **source** rate (32 kHz here, 48 kHz in the packs measured
+  earlier); libopus only produces 48 kHz and rejects other rates with `OPUS_BAD_ARG`,
+  so always decode at 48 kHz;
+- the decoded length is ~2 % longer than the declared sample count, because the
+  declared value is post-trim.
+
 ## Codec status
 
 The corpus scan found 2,320 parsed streams:

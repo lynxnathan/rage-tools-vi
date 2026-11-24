@@ -8570,3 +8570,35 @@ Streams are counted from the container header's stream count; codecs are read fr
 `0xff25`/`0xff61` tables have no computable position, so they are located by the
 longest valid record run — a method that the exact XMA2 agreement supports but does not
 prove for every variant.
+
+## First decode from a container the old pass missed (2026-11-23)
+
+`tools/decode_adat_stream.py` reads the chunk table by the rules `adat_index.py`
+verified and decodes a stream with the project's existing libopus walker. The old
+probe could not do this: it looks for the data offset at `+0x0c`, which is the
+`0xff21` layout, so it yields nothing on the `0xff02` pools that hold most of the
+corpus.
+
+First result, from `audio.rpf+0x16437000` — an uncovered `0xff02` container with 1,914
+streams:
+
+```
+stream 0: codec 0x0b (Opus), 1 channel, declared rate 32000, samples 116,480
+payload 4,096 B -> 124 packets -> 119,040 samples = 2.48 s mono
+peak 0.743 FS, RMS 0.1067 FS  -> not silence
+```
+
+Three facts came out of it:
+
+1. **The declared rate is 32,000 Hz here, not 48,000.** The audio page has recorded
+   `0xBB80` (48 kHz) as the `0x76` rate; this container says `0x7D00`. Opus only
+   produces 48 kHz, so `opus_decoder_create(32000, ...)` fails with `OPUS_BAD_ARG` —
+   the field is the *source* rate, and decoding must ask for 48 kHz regardless.
+2. **Decoded length exceeds the declared sample count** by 2.2 % (119,040 vs 116,480),
+   which is the pre-skip/trim behaviour already documented — the declared count is the
+   post-trim length.
+3. The stream is real audio, so the 534 previously untouched containers are not empty
+   padding: they hold playable material.
+
+That makes the 1,024,691 streams in the gap set a concrete backlog rather than a
+number: each one is decodable with the tool above.
