@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-170 scripts.
+171 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -66,6 +66,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`data_last_child.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_last_child.py) | Compare the last data.rpf child trailer with a known boundary control. |  |
 | [`data_opus_exceptions.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_opus_exceptions.py) | Re-test only the failed rows of the existing AWC Opus manifest. |  |
 | [`data_rpf_inventory.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_rpf_inventory.py) | Audit data.rpf pack bounds, PSIN records, and localized resource payloads. |  |
+| [`decode_adat_sample.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/decode_adat_sample.py) | Sample streams across containers and measure how many actually decode. | --containers --index --per-container |
 | [`decode_adat_stream.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/decode_adat_stream.py) | Decode one stream from an AWC container using the indexer's own table rules. | --output --start --stream |
 | [`decode_raw_deflate.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/decode_raw_deflate.py) | Find complete raw DEFLATE streams in extracted RPF9 opaque ranges. |  |
 | [`entry_model.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/entry_model.py) | Which entry model does each archive follow, and how well does it fit? |  |

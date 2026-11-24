@@ -24,13 +24,46 @@ from data_awc_opus_probe import BLOCK_BYTES, decode_packets, load_opus, split_bl
 
 TABLE_AT = {0xFF21: lambda count: 0x50, 0xFF02: lambda count: 0x10 + 4 * count}
 
+# Record types that appear in a real chunk table; used to locate the table of the
+# variants whose position is not computable (0xff25, 0xff61).
+KNOWN_TYPES = {0x55, 0x36, 0x76, 0xA3, 0xFA, 0x48, 0x5C, 0x68, 0x2B, 0x5A, 0xD9, 0xBD}
+
+
+def scanned_table(blob, count, header_size):
+    """Longest valid record run ending at `header_size`, for the scanned variants."""
+    best = None
+    limit = min(header_size, len(blob))
+    for start in range(16, limit):
+        if (header_size - start) % 8:
+            continue
+        ok = True
+        for position in range(start, header_size, 8):
+            (raw,) = struct.unpack_from("<Q", blob, position)
+            kind = raw >> 56
+            size = (raw >> 28) & 0x0FFFFFFF
+            offset = raw & 0x0FFFFFFF
+            if kind not in KNOWN_TYPES or size == 0 or offset + size > len(blob):
+                ok = False
+                break
+        if ok:
+            length = (header_size - start) // 8
+            if best is None or length > best[1]:
+                best = (start, length)
+    if best is None:
+        raise ValueError("no valid chunk table suffix")
+    start, records = best
+    if count == 0 or records % count:
+        raise ValueError("table length is not a multiple of the stream count")
+    return start, records // count
+
 
 def records(blob, count, header_size, flags):
     """The chunk table as (kind, offset, size) triples."""
     start = TABLE_AT[flags](count) if flags in TABLE_AT else None
-    if start is None or (header_size - start) % (8 * count):
-        raise ValueError(f"unsupported table position for flags 0x{flags:04x}")
-    per_stream = (header_size - start) // (8 * count)
+    if start is not None and count and (header_size - start) % (8 * count) == 0:
+        per_stream = (header_size - start) // (8 * count)
+    else:
+        start, per_stream = scanned_table(blob, count, header_size)
     out = []
     for index in range(count * per_stream):
         (raw,) = struct.unpack_from("<Q", blob, start + 8 * index)

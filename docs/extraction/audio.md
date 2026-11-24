@@ -160,6 +160,26 @@ Two details worth knowing before decoding at scale:
 - the decoded length is ~2 % longer than the declared sample count, because the
   declared value is post-trim.
 
+## Decode coverage by variant
+
+A sample of 24 evenly spaced containers, 8 streams each (`tools/decode_adat_sample.py`):
+
+| variant | containers | streams decoded | audio |
+| --- | ---: | ---: | ---: |
+| `0xff02` | 9 | 72 | 3.0 min |
+| `0xff21` | 5 | 32 | 2.7 min |
+| `0xff61` | 1 | 8 | 0.1 min |
+| `0xff25` | 9 | **0** | — |
+
+112 streams, 5.8 minutes, median RMS 0.13 FS, 2 near-silent. `0xff61` decodes once its
+table is found by suffix scan.
+
+**`0xff25` does not fit the 8-byte record model.** A sampled container reports
+`count = 2`, `header_size = 64`, i.e. three records per stream, and those records have
+unknown type bytes. It is a compact encoding of its own, not a different table offset —
+which is why the most common variant in `audio.rpf` (3,008 containers) contributes
+nothing to any decode so far.
+
 ## Codec status
 
 The corpus scan found 2,320 parsed streams:

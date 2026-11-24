@@ -165,6 +165,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] First decode from a previously untouched `0xff02` container: Opus mono, 124
   packets, 2.48 s, non-silent; declared rate 32 kHz is the *source* rate, decode at
   48 kHz (`tools/decode_adat_stream.py`).
+- [x] Decode sample across variants: 112 streams / 5.8 min / 0.13 FS median RMS;
+  `0xff02`, `0xff21` and `0xff61` decode, `0xff25` does not fit the 8-byte record
+  model (count 2, header 64, three non-chunk records per stream).
+- [ ] Decode `0xff25` — the most common variant (3,008 of 7,159 containers in
+  `audio.rpf`) and the reason it contributes 0 streams to every pass so far.
 - [ ] Decode the remaining ~1.7 M Opus streams (5.2 % covered so far).
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.

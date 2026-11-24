@@ -8602,3 +8602,36 @@ Three facts came out of it:
 
 That makes the 1,024,691 streams in the gap set a concrete backlog rather than a
 number: each one is decodable with the tool above.
+
+## Decode sample across variants: 112 streams, 5.8 minutes, one variant still closed (2026-11-23)
+
+`tools/decode_adat_sample.py` walks evenly spaced containers from the ADAT index and
+decodes a few streams from each, so the corpus speaks instead of one anecdote:
+
+```
+containers sampled 24   streams decoded 112   audio 5.8 minutes   silence (<100 rms) 2
+duration s: min 0.28  median 1.76  max 24.12
+rms: median 4385  max 9004
+by variant: 0xff02 9 containers / 72 streams / 3.0 min
+            0xff21 5 containers / 32 streams / 2.7 min
+            0xff61 1 container  /  8 streams / 0.1 min
+            0xff25 9 containers /  0 streams / 0.0 min
+failures: 48 ValueError, 24 SystemExit, 8 codec 0x02
+```
+
+Readings that matter:
+
+- **Three of four variants decode.** `0xff61` needed the suffix-scan table and then
+  yielded 8 streams; `0xff02` and `0xff21` decode with the computed table position.
+- **The audio is real**: median RMS 4385 (0.13 FS), only 2 of 112 streams near silence.
+- **`0xff25` does not fit the 8-byte record model at all.** A sampled container has
+  `count = 2`, `header_size = 64`, so `(64 − 16) / (8 × 2) = 3` records per stream, and
+  those records are not valid 8-byte chunks: `0x044886ab00030000` has an unknown type
+  byte. So `0xff25` is a genuinely different, compact encoding — not a variant with a
+  different table offset.
+- The 8 `codec 0x02` failures are ACE1 streams in the sample; `decode_adat_sample.py`
+  decodes Opus only, and they are counted rather than silently skipped.
+
+That is why `0xff25` — 3,008 of the 7,159 `audio.rpf` containers, the most common
+variant — contributes 0 streams to every decode pass so far. Its layout is the concrete
+next target, and the census keeps its stream counts out of the decoded totals.
