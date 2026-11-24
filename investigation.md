@@ -9069,3 +9069,28 @@ available tools. Recorded so it is not attempted again as if it were untested.
 Standing addition to the plan: **every decode path gets one content check** (spectral
 flatness for audio, pixel statistics for images, frame count against the declared count
 for video) before it counts as working.
+
+## Decode throughput measured: 79 streams/s, 6.3 h compute, 0.45 TB of PCM (2026-11-23)
+
+A timed batch (60 containers, first stream of each, `0xff02`/`0xff21`/`0xff61` only):
+
+```
+containers 60   streams decoded 42   audio 1.8 min   PCM 10.4 MB   wall 0.53 s
+throughput 79 streams/s
+projection: 1,795,416 Opus streams -> 6.3 h of CPU
+            PCM size scaled from this sample -> ~0.45 TB
+```
+
+So decoding the whole Opus corpus is a **compute** problem that fits in an afternoon, and a
+**storage** problem that does not: the output volume has 188 GB free against a projected
+0.45 TB. Three ways forward, each concrete:
+
+1. decode to a smaller lossless form (Opus re-mux or FLAC) instead of 16-bit WAV — Opus
+   sources are already compressed, so re-encoding at the source bitrate is near-lossless
+   and roughly 10 % of the WAV size;
+2. stream-decode and record only measurements (duration, loudness, packet counts) plus a
+   hash, keeping no audio — the census table already has this shape;
+3. decode to WAV on a larger volume.
+
+The batch also reconfirms the variant split: every stream decoded here came from
+`0xff02`, `0xff21` or `0xff61`; `0xff25` still contributes nothing.

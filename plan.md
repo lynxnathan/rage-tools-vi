@@ -202,6 +202,10 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   A `a0 00 f8` marker-record form exists in 17/120 sampled containers: records of exactly
   162 bytes starting at `+0x860`, body high-entropy. The variant may cover more than one
   sub-layout.
+- [x] Decode throughput measured: **79 streams/s**, so the remaining 1.79 M Opus streams
+  are ~6.3 h of compute — but ~0.45 TB of PCM against 188 GB free.
+- [ ] Choose the bulk-decode output form (lossless re-mux/FLAC vs stream-and-measure vs
+  a larger volume) before running the 6.3 h pass.
 - [ ] Decode the remaining ~1.7 M Opus streams (5.2 % covered so far).
 - [x] `levels.rpf` KB2 scan: 719 candidates, **0** valid containers (462 bad version byte,
   257 bad dimensions) — the raw `KB2` matches there are coincidence, and the pass is
