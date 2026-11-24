@@ -8353,3 +8353,37 @@ for the wrong reason.
 `story000.rpf` is on the external volume rather than the NVMe mirror, so this pass is
 the first one in the project that reads a source archive from the spinning disk. It
 took a few minutes and needed no extra space: the scan is streaming.
+
+## `movies.rpf`: 515 Bink2 containers, 99.993 % of 8.8 GB (2026-11-23)
+
+The largest classification gap is closed. `movies.rpf` is raw video, so the stream
+partitioner saw one 8.8 GB `unclassified` span. The containers are self-describing:
+
+```
++0x00  'KB2'   magic            +0x14  u32  width
++0x03  u8      version letter   +0x18  u32  height
++0x04  u32     payload size     +0x1c  u32  frames per second
++0x08  u32     frame count      ...
+```
+
+and a container occupies `align(0x800, payload size)`. That last rule was verified the
+same way as ADAT's: the distance to the next container equals the aligned size in
+every measured case (`3,838,204 -> 3,842,048`, `13,438,220 -> 13,438,976`,
+`8,809,048 -> 8,810,496`).
+
+`tools/bink_index.py` scans for `KB2`, validates the width/height/fps triple — random
+`KB2` bytes in video data do not produce 2560x1440 at 30 fps — and indexes each
+container:
+
+```
+movies.rpf   8,832,481,776 B   candidates 1,545   movies 515
+covered 8,831,840,256 B = 99.993 %   frames 425,440   overlaps 0
+rejected: bad version byte 155, implausible dimensions 99
+```
+
+Resolutions are dominated by 1280x720 (246), 1920x1080 (130) and 720x1280 (67) — the
+portrait ones are phone-screen cutscenes. The archive's classified share goes from
+**0.00 % to 99.99 %**, and `output/index/movies-bink.tsv` holds the ranges.
+
+The 1,030 rejected candidates are the interesting part of the method: a magic-only
+scan would have produced 1,545 "movies" and no way to know 1,030 of them were noise.

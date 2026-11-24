@@ -36,11 +36,13 @@ per archive, the share of bytes assigned a known kind — merging side indexes s
 | `story000` | 20.0 GB | 35.39 % | **81.40 %** |
 | `story000_script` | 0.08 GB | 32.04 % | 32.04 % |
 | `core_restofworld` | 1.30 GB | 4.17 % | 4.17 % |
-| `movies` | 8.83 GB | **0.00 %** | 0.00 % |
+| `movies` | 8.83 GB | 0.00 % | **99.99 %** |
 
 Every index tiles its archive (union coverage 100 %), but the *classification* is
-what tells you whether the bytes are understood. `movies` is the clearest case: fully
-tiled, fully opaque — Bink video has no partitioner yet.
+what tells you whether the bytes are understood. `movies` was the clearest case — 100 %
+tiled and fully opaque — until `tools/bink_index.py` validated 515 Bink2 containers
+covering **99.993 %** of its 8.8 GB (425,440 frames, 1,030 false `KB2` candidates
+rejected by the width/height/fps check).
 
 Repo-wide totals from the 22-archive index: **4,415,868 ranges**,
 **161,307,137,472 stored bytes**, **365,020,088,082 decoded bytes**, of which

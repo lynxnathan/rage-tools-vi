@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-165 scripts.
+166 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -32,6 +32,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`awc_framing.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/awc_framing.py) | Inspect GTA VI ADAT/AWC stream framing without decoding. |  |
 | [`awc_framing_ff02.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/awc_framing_ff02.py) | Parse the `0xff02` / `0xff25` AWC variants and report their codecs. |  |
 | [`awc_parse.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/awc_parse.py) | Parse an `ADAT` bank, following the published GTA VI audio layout. |  |
+| [`bink_index.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bink_index.py) | Index the Bink2 movies inside `movies.rpf`. | --out |
 | [`bone_corpus.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_corpus.py) | Match plaintext data.rpf PSIN bone names against the script.rpf object tree. |  |
 | [`bone_geometry.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_geometry.py) | Summarize class-0 bone centroids, extents, and shared-hash templates. |  |
 | [`bone_geometry_names.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_geometry_names.py) | Predict bone names from geometry, inside a rig family. | --out |

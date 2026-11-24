@@ -141,6 +141,8 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [ ] Name the remaining ped-rig bones and weight hashes. The 174k-token corpus
   sweep is exhausted (4 bone candidates, 1 weight candidate, both unverified);
   this needs a new vocabulary source, not a wider search.
+- [x] `movies.rpf` indexed: 515 Bink2 containers covering **99.993 %** of 8.8 GB
+  (425,440 frames); payload size at `+0x04`, container is `align(0x800, size)`.
 - [ ] Entry model for `levels` (728 of 2,044 packs exact). The failures are
   systematic — about five non-entry struct streams and ninety surplus data
   streams per pack, i.e. entries owning several data streams. Needs the
