@@ -72,7 +72,7 @@ flowchart LR
 
 | Area | Value | State |
 | --- | ---: | --- |
-| Corpus index | 22 archives · 4,415,850 ranges · 365.0 GB decoded | tiles exactly |
+| Corpus index | 22 archives · 4,415,868 ranges · 365.0 GB decoded | tiles exactly |
 | Bulk extraction | 2,190,635 zlib ranges | SHA-256 verified |
 | Entry manifests | 188,298 entries · 14 archives | exact declared-count verification |
 | `core_bvh4` descriptors | 269,106 rows | sizes + orthonormal basis |

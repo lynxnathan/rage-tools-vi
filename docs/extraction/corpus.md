@@ -26,6 +26,6 @@ Every `*.rpf` in the source directory, indexed and measured with the current too
 | `story000_restofworld.rpf` | 1,237 | 624 | 0.2 | 16 | 56% | chains | 13 |
 | `story000_script.rpf` | 5,248 | 2,632 | 0.1 | 1 | 0% | — | — |
 | `textures.rpf` | 5,496 | 2,749 | 0.2 | 20 | 85% | pairs | 1326 |
-| **total** | **4,415,850** | **2,241,410** | **161.3** | | | | |
+| **total** | **4,415,868** | **2,241,410** | **161.3** | | | | |
 
 Regenerate with `tools/corpus_pass.sh <source> --entries` and `python3 tools/corpus_report.py --write docs/extraction/corpus.md`.

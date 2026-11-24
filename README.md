@@ -24,7 +24,7 @@ Full walkthrough: **[From first principles](docs/explained.md)**.
 
 | Area | Result |
 | --- | --- |
-| Corpus index | **22 archives · 4,415,850 ranges · 161.3 GB stored** — every index tiles its archive exactly |
+| Corpus index | **22 archives · 4,415,868 ranges · 161.3 GB stored** — every index tiles its archive exactly |
 | Corpus pass | one command indexes, fits an entry model and emits manifests for all 22 archives in **4 minutes** |
 | Entry manifests | **188,298 entries** with exact boundaries across 14 archives (packs whose count verifies exactly) |
 | `core_bvh4` | **1,253 of 1,261 packs** whose declared count is reproduced exactly; 109,301 entries |

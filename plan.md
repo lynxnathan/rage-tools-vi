@@ -8,7 +8,7 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 
 ## Current state
 
-- **Corpus:** 22 archives indexed — 4,415,850 ranges / 161.3 GB stored / 365.0 GB
+- **Corpus:** 22 archives indexed — 4,415,868 ranges / 161.3 GB stored / 365.0 GB
   decoded; every index tiles its archive. Source archives mirrored to local NVMe
   (`/home/lynxnathan/gta6-source`), verified by size/mtime on every path and by
   hash on a sample.

@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-161 scripts.
+162 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -52,6 +52,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`chain_start_verify.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/chain_start_verify.py) | Verify the `chain_start` column of the stream indexes. |  |
 | [`chks_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/chks_probe.py) | Probe the `CHKS` trailer that follows `LRSC` in `levels`-style records. | --archive --index |
 | [`claims_check.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/claims_check.py) | Check that the numbers the docs publish still match the committed artifacts. | --list |
+| [`clip_index_to_packs.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/clip_index_to_packs.py) | Split index ranges that cross a pack boundary, one row per pack. | --all --dry-run |
 | [`corpus_report.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/corpus_report.py) | Render `handoff/corpus-pass.tsv` into a docs page and a console table. | --write |
 | [`corpus_table.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/corpus_table.py) | Assemble `handoff/corpus-pass.tsv` from the per-archive products. |  |
 | [`coverage_gaps.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/coverage_gaps.py) | Report unclassified extraction spans by archive and largest gaps. |  |

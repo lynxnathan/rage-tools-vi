@@ -19,7 +19,7 @@ All eight local archives now have complete contiguous range coverage.
 | `shaders.rpf` | 411,695,600 | 18,686 | 411,695,600 | 275,540,780 | 273,959,915 | full |
 | `textures.rpf` | 192,585,024 | 5,581 | 192,585,024 | 161,086,752 | 136,021,963 | full |
 
-Repo-wide totals from the 22-archive index: **4,415,850 ranges**,
+Repo-wide totals from the 22-archive index: **4,415,868 ranges**,
 **161,307,137,472 stored bytes**, **365,020,088,082 decoded bytes**, of which
 **2,241,410 are zlib ranges** and **2,190,635** have an extraction manifest.
 `full` means every stored byte has a span; it does not mean every record has an

@@ -24,7 +24,7 @@ checksum verification, not by the table.
 
 ## Coverage
 
-All 22 source archives are indexed: **4,415,850 ranges / 161.3 GB stored /
+All 22 source archives are indexed: **4,415,868 ranges / 161.3 GB stored /
 365.0 GB decoded**, and every index tiles its archive exactly, with no gap and no
 overlap. Six archives plus `levels` carry bulk extraction manifests covering
 2,190,635 zlib ranges; each extraction is SHA-256 verified.

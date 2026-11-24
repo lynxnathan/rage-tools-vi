@@ -8054,3 +8054,30 @@ crossing of a classified kind — which is the useful assertion.
 
 A follow-up worth doing: clip `unclassified` spans at pack boundaries so the index
 never reports a range that two archives both own.
+
+### Crossing spans are now split per pack, and the byte total is unchanged (2026-11-23)
+
+`tools/clip_index_to_packs.py` rewrites an index so that any range crossing a pack
+boundary becomes one row per pack. Applied to the corpus:
+
+```
+data.rpf      11 ranges -> 11 extra rows
+script.rpf     1 range  -> 1 extra row
+textures.rpf   6 ranges -> 6 extra rows
+```
+
+(18 crossing ranges, not the 32 counted earlier — that figure counted a range once
+per pack window it overlapped, so a range over two boundaries was double-counted.)
+
+Verification after the rewrite:
+
+- rows **4,415,850 → 4,415,868** (+18, exactly one per crossing range);
+- total stored bytes **161,307,137,472 in both** — splitting moved no byte, it only
+  changed who owns it;
+- `chain_start_verify` reports **0 indexes with a broken chain_start**;
+- `pack_extent_check --all` now reports **escaped ranges 0** for every archive with
+  union coverage still 100.00 %.
+
+So the index no longer contains a range owned by two packs, and the pack model has
+no exceptions left to explain: everything classified stays inside its pack, and the
+formerly-crossing opaque spans have been cut at the boundary.
