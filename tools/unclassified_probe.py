@@ -10,10 +10,11 @@ has a sorted 24-bit offset table. This runs the same first look over every archi
   which the first three bytes (little-endian) increase, which is what a sorted offset
   table looks like and what raw payload does not.
 
-    python3 tools/unclassified_probe.py --source /home/lynxnathan/gta6-source
+    python3 tools/unclassified_probe.py --source $RAGE_SRC
 """
 
 import argparse
+import os
 import csv
 import math
 import struct
@@ -59,7 +60,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--source", nargs="*", type=Path,
-                        default=[Path("/home/lynxnathan/gta6-source"),
+                        default=[Path("$RAGE_SRC"),
                                  Path("/run/media/lynxnathan/Mammoth/GTA6.Xbox.v1.0.2.1-CYBERLEEK")])
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()

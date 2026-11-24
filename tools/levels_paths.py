@@ -5,7 +5,7 @@ Some PSIN sections in `levels` records store NUL-padded paths, for example
 name source that does not depend on the JOAAT name registry, and they can be
 hashed and tested against every hash table we already have.
 
-  python3 tools/levels_paths.py --archive /home/lynxnathan/gta6-source/levels.rpf \\
+  python3 tools/levels_paths.py --archive $RAGE_SRC/levels.rpf \\
       --index output/index/levels.tsv --limit 2000 --out cache/levels-paths.txt
 """
 

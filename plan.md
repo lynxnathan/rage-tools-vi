@@ -10,7 +10,7 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 
 - **Corpus:** 22 archives indexed — 4,415,868 ranges / 161.3 GB stored / 365.0 GB
   decoded; every index tiles its archive. Source archives mirrored to local NVMe
-  (`/home/lynxnathan/gta6-source`), verified by size/mtime on every path and by
+  (`$RAGE_SRC`, the read-only source mirror), verified by size/mtime on every path and by
   hash on a sample.
 - **Entries:** one corpus pass (4 min, parallel) fits an entry model per pack and
   emits payload-derived manifests for 14 archives — **188,298 entries**, exact

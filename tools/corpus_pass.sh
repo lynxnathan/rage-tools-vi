@@ -14,7 +14,7 @@
 # handoff/corpus-pass.tsv.
 set -uo pipefail
 cd "$(dirname "$0")/.."
-SRC=${1:-/home/lynxnathan/gta6-source}
+SRC=${1:-${RAGE_SRC:-../gta6-source}}
 entries=0
 [ "${2:-}" = "--entries" ] && entries=1
 out=handoff/corpus-pass

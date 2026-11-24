@@ -77,14 +77,13 @@ else
     note "pack extents" "skipped (no archives or indexes)"
 fi
 
-if [ -n "${SRC:-}" ] && [ -f "${SRC}/audio.rpf" ] || [ -f /home/lynxnathan/gta6-source/audio.rpf ]; then
-    if $PY tools/rage.py demo /tmp/demo-check --quiet >/tmp/check-demo.log 2>&1; then
-        note "playable audio" "PASS (3 variants)"
-    else
-        note "playable audio" "FAIL"; tail -4 /tmp/check-demo.log | sed 's/^/    /'; fail=1
-    fi
-else
+demo_out=$($PY tools/rage.py demo /tmp/demo-check --quiet 2>&1) && demo_ok=1 || demo_ok=0
+if printf '%s' "$demo_out" | grep -q '^skipped'; then
     note "playable audio" "skipped (no audio.rpf)"
+elif [ "$demo_ok" = 1 ]; then
+    note "playable audio" "PASS (3 variants)"
+else
+    note "playable audio" "FAIL"; printf '%s\n' "$demo_out" | tail -3 | sed 's/^/    /'; fail=1
 fi
 
 if [ -f common.rpf ]; then

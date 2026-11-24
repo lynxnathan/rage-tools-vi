@@ -12,7 +12,7 @@ word in Front A and Front B of every archive.
 A hit is only interesting if it is rare: the expected number of collisions by
 chance is printed so a single accidental match is not over-read.
 
-  python3 tools/front_hash_probe.py --source /home/lynxnathan/gta6-source
+  python3 tools/front_hash_probe.py --source $RAGE_SRC
 """
 
 import argparse

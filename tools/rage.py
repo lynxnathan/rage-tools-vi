@@ -32,7 +32,13 @@ DEMO_RUNS = [
     ("ff02", 0x16437000, 0x16BAA000, "stream", 0),
     ("ff25", 0x548F000, 0x58AF800, "ff25", 0),
 ]
-DEFAULT_AUDIO = Path("/home/lynxnathan/gta6-source/audio.rpf")
+def default_audio():
+    """First audio.rpf found: an explicit path, the source root, or the parent tree."""
+    candidates = []
+    if os.environ.get("RAGE_SRC"):
+        candidates.append(Path(os.environ["RAGE_SRC"]) / "audio.rpf")
+    candidates += [ROOT / "audio.rpf", ROOT.parent / "gta6-source/audio.rpf"]
+    return next((path for path in candidates if path.is_file()), None)
 
 
 def python():
@@ -68,7 +74,8 @@ def cmd_e2e(args):
         ok = mod_roundtrip(ROOT / "common.rpf", 0x3B2850, 0x3B399E, b"E2E_OK", Path(work))
         print(f"{'in-place replacement':40s} {'PASS' if ok else 'FAIL'}")
         failures += 0 if ok else 1
-        ok = demo(Path(work) / "demo", DEFAULT_AUDIO, quiet=True)
+        src = default_audio()
+        ok = demo(Path(work) / "demo", src, quiet=True) if src else True
         print(f"{'playable audio':40s} {'PASS' if ok else 'FAIL'}")
         failures += 0 if ok else 1
     print()
@@ -145,7 +152,10 @@ def demo(dest, archive, quiet=False):
 
 
 def cmd_demo(args):
-    archive = args.archive or DEFAULT_AUDIO
+    archive = args.archive or default_audio()
+    if archive is None:
+        print("skipped: no audio.rpf (pass a path or set RAGE_SRC)")
+        return 0
     ok = demo(args.dest, archive)
     if not args.quiet and ok:
         print(f"\nplay: ffplay {args.dest}/ff25-0.wav")

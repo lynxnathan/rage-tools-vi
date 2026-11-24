@@ -62,20 +62,27 @@ def main():
         check("annotate names some rows", any(row["name"] for row in rows))
 
     print("PSIN")
-    result = run("tools/psin_dump.py", "--property", "position")
-    check("property search finds records", "records mention" in result.stdout)
-    result = run("tools/psin_segment.py", "--describe", "1054")
-    check("describe prints entries", "Id=" in result.stdout)
-    check("describe pairs Id and Type",
-          any("Type=" in line and "Id=" in line for line in result.stdout.splitlines()))
+    properties = ROOT / "cache/psin-properties.tsv"
+    if not properties.is_file():
+        print("  skipped (no cache/psin-properties.tsv; "
+              "tools/psin_extract.py creates it)")
+    else:
+        print("PSIN")
+        result = run("tools/psin_dump.py", "--property", "position")
+        check("property search finds records", "records mention" in result.stdout)
+        result = run("tools/psin_segment.py", "--describe", "1054")
+        check("describe prints entries", "Id=" in result.stdout)
+        check("describe pairs Id and Type",
+              any("Type=" in line and "Id=" in line for line in result.stdout.splitlines()))
 
-    result = run("tools/psin_entries.py", "--out", "cache/psin-entries-test.tsv")
-    check("entries extraction runs", result.returncode == 0, result.stderr[:120])
-    entries = list(csv.DictReader((ROOT / "cache/psin-entries-test.tsv").open(),
-                                  delimiter="\t"))
-    check("entries found", len(entries) > 1000, f"({len(entries)})")
-    check("entries carry Id/Type pairs",
-          any(row["field_a"] in ("Id", "Type") for row in entries))
+        (ROOT / "cache").mkdir(exist_ok=True)
+        result = run("tools/psin_entries.py", "--out", "cache/psin-entries-test.tsv")
+        check("entries extraction runs", result.returncode == 0, result.stderr[:120])
+        entries = list(csv.DictReader((ROOT / "cache/psin-entries-test.tsv").open(),
+                                      delimiter="\t"))
+        check("entries found", len(entries) > 1000, f"({len(entries)})")
+        check("entries carry Id/Type pairs",
+              any(row["field_a"] in ("Id", "Type") for row in entries))
 
     if have_archive and have_index:
         print("extraction from the archive")

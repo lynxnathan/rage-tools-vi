@@ -38,6 +38,10 @@ def main():
     parser.add_argument("--out", type=Path, default=Path("handoff/psin-entries.tsv"))
     args = parser.parse_args()
 
+    if not args.properties.is_file():
+        print(f"skipped: {args.properties} is not present "
+              f"(create it with tools/psin_extract.py)")
+        return 2
     names = {}
     if args.names.is_file():
         names = {int(r["hash"], 16): r["name"]
