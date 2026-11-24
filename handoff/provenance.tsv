@@ -2,9 +2,13 @@ file	rows	columns	status	producer
 archive-inventory-summary.tsv	33	5	generated	exact name in a tool
 audio-ace1-decode.tsv	73	13	generated	exact name in a tool
 audio-awc-framing.tsv	2320	18	generated	exact name in a tool
+audio-census-totals.tsv	9	5	generated	exact name in a tool
+audio-full-census.tsv	7159	7	generated	exact name in a tool
 audio-full.tsv	95162	10	generated	exact name in a tool
+audio-gap-census.tsv	534	7	generated	exact name in a tool
 audio-opus-decode.tsv	2081	16	generated	exact name in a tool
 audio-opus-trim-model.tsv	2081	10	generated	exact name in a tool
+audio-story000-census.tsv	63325	7	generated	exact name in a tool
 audio-variant-decode.tsv	4704	9	generated	exact name in a tool
 audio-xma2-decode.tsv	166	10	generated	exact name in a tool
 bone-hash-names-curated.tsv	60	4	curated	bones confirmed by hand against geometry

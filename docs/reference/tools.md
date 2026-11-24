@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-167 scripts.
+169 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -23,6 +23,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`array_inventory.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/array_inventory.py) | Export every valid typed array with its root context. |  |
 | [`array_records.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/array_records.py) | Detect header plus 16-byte entry arrays in no-pointer object records. |  |
 | [`array_types.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/array_types.py) | Decode array headers with count, stride, and element type hash. |  |
+| [`audio_census_totals.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audio_census_totals.py) | Aggregate the AWC census tables into one result. | --out |
 | [`audio_gap.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audio_gap.py) | Exactly which audio streams are still undecoded. |  |
 | [`audio_opus_trim_model.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audio_opus_trim_model.py) | Test the AWC Opus trim model against the exported decode table. |  |
 | [`audit_opaque_streams.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audit_opaque_streams.py) | Validate zlib candidates and weak DOS signatures in the extracted data.rpf. |  |
@@ -72,6 +73,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`explorer_image_fixture.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/explorer_image_fixture.py) | Create and check a small synthetic PNG-in-zlib RPF fixture. |  |
 | [`explorer_sparse_fixture.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/explorer_sparse_fixture.py) | Create a sparse RPF9-shaped fixture and matching index for UI tests. |  |
 | [`export_localized_text.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/export_localized_text.py) | Export readable strings from the identified data.rpf localization archives. |  |
+| [`extract_adat_gaps.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_adat_gaps.py) | Extract and census the AWC containers the old pass missed. | --all --archive --census --known --out-dir |
 | [`extract_archive_ranges.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_archive_ranges.py) | Extract locally mapped RPF9 ranges, with a manifest covering every stored byte. |  |
 | [`extract_awc.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc.py) | Extract AWC containers (ADAT) from a raw audio span using mmap boundaries. |  |
 | [`extract_awc_ace1.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc_ace1.py) | Export AWC codec 0x02 ACE1 impulse responses as float32 WAV. |  |

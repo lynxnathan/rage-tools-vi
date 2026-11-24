@@ -159,6 +159,10 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   suffix-scan fallback when the computed rule does not close.
 - [ ] The residual 0.313 % of `audio.rpf`: 19.5 MB front region plus 70 MB where
   `ADAT` bytes do not validate as a container at any offset shift.
+- [x] Full AWC census: **70,484 containers / 1,819,816 streams / 28.53 GB** of stream
+  data across `audio.rpf` and `story000.rpf`; XMA2 count matches the decoded total
+  exactly, Opus decode covers 5.2 % of what exists.
+- [ ] Decode the remaining ~1.7 M Opus streams (5.2 % covered so far).
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.

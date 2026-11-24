@@ -114,6 +114,31 @@ because that model is the Leonida/story000 layout rather than the `0xff21`/`0xff
 one. Validating one layout with the other yields confident garbage — which is exactly
 what the first 7,159 rejections were.
 
+## How much audio there is
+
+Reading each container's chunk table, without decoding anything
+(`tools/extract_adat_gaps.py` + `tools/audio_census_totals.py`):
+
+| archive | containers | streams | stream data |
+| --- | ---: | ---: | ---: |
+| `audio.rpf` | 7,159 | 1,606,237 | 22.47 GB |
+| `story000.rpf` | 63,325 | 213,579 | 6.06 GB |
+| **total** | **70,484** | **1,819,816** | **28.53 GB** |
+
+| codec | in the corpus | decoded | share |
+| --- | ---: | ---: | ---: |
+| opus | 1,795,416 | 93,344 | 5.2 % |
+| xma2 | 1,818 | 1,818 | **100 %** |
+| ace1 | 227 | 73 | 32 % |
+
+The XMA2 number is the control: 1,818 obtained by decoding and 1,818 from the chunk
+tables, by independent paths. So the tables are read correctly, and the Opus figure
+means the decode passes covered about a twentieth of the streams that exist.
+
+Container flags in `audio.rpf`: `0xff25` 3,008, `0xff02` 2,071, `0xff21` 1,270 — the
+compact variant dominates, which is why the first extraction pass (a `0xff21` scan)
+under-counted the archive so badly.
+
 ## Codec status
 
 The corpus scan found 2,320 parsed streams:

@@ -8530,3 +8530,43 @@ What is **not observed**: anything that populates that dictionary. It may be bui
 init from a static array in the image, from a file in the archives, or from both. No
 initialiser has been found, and "there must be one" is not evidence — the next step is
 to look, starting from the vtable slot `+0x3f8` of the class that owns `0xb7076b6245d35fb5`.
+
+## The AWC census: 70,484 containers, 1,819,816 streams, 28.53 GB of stream data (2026-11-23)
+
+Reading each container's chunk table directly (no decoding) gives the size of the audio
+corpus for the first time:
+
+| archive | containers | streams | stream data |
+| --- | ---: | ---: | ---: |
+| `audio.rpf` | 7,159 | 1,606,237 | 22.47 GB |
+| `story000.rpf` | 63,325 | 213,579 | 6.06 GB |
+| **total** | **70,484** | **1,819,816** | **28.53 GB** |
+
+By codec descriptor: **opus 1,795,416**, xma2 1,818, ace1 227, and 19 with a zero
+descriptor. Container flags in `audio.rpf`: `0xff25` 3,008, `0xff02` 2,071, `0xff21`
+1,270 — the compact variant is far more common than the extraction pass assumed. In
+`story000`: `0xff02` 62,683, `0xff25` 639, `0xff61` 2.
+
+### Reconciliation with what was decoded
+
+| codec | in the corpus | decoded before | share |
+| --- | ---: | ---: | ---: |
+| opus | 1,795,416 | 93,344 | 5.2 % |
+| xma2 | 1,818 | 1,818 | **100 %** |
+| ace1 | 227 | 73 | 32 % |
+
+The XMA2 total matching exactly is the useful control: 1,818 was obtained by decoding,
+and 1,818 comes out of the chunk tables, from independent code paths. So the table
+reading is sound, and the Opus number means the earlier decode passes covered about a
+twentieth of the streams that exist — not that the corpus has 93k streams.
+
+This is a measurement of the corpus, not of our extraction: nothing here was decoded,
+and the "stream data" column is the summed size of the `0x55` payload chunks.
+
+### Method note
+
+Streams are counted from the container header's stream count; codecs are read from the
+`0x76` descriptor (`+0x1c`) that follows each `0x55` data chunk in the table. The
+`0xff25`/`0xff61` tables have no computable position, so they are located by the
+longest valid record run — a method that the exact XMA2 agreement supports but does not
+prove for every variant.

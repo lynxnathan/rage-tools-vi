@@ -4,7 +4,7 @@ Every table here, its size, and where it comes from. Rendered from
 `handoff/provenance.tsv` by `tools/handoff_manifest.py`; that manifest is the
 source of truth and is checked by `tools/check.sh`.
 
-**115 tables** — 106 generated, 4 curated, 5 legacy, 0 unclassified.
+**119 tables** — 110 generated, 4 curated, 5 legacy, 0 unclassified.
 
 ## Curated (hand-maintained)
 
@@ -22,9 +22,13 @@ source of truth and is checked by `tools/check.sh`.
 | `archive-inventory-summary.tsv` | 33 | 5 | exact name in a tool |
 | `audio-ace1-decode.tsv` | 73 | 13 | exact name in a tool |
 | `audio-awc-framing.tsv` | 2,320 | 18 | exact name in a tool |
+| `audio-census-totals.tsv` | 9 | 5 | exact name in a tool |
+| `audio-full-census.tsv` | 7,159 | 7 | exact name in a tool |
 | `audio-full.tsv` | 95,162 | 10 | exact name in a tool |
+| `audio-gap-census.tsv` | 534 | 7 | exact name in a tool |
 | `audio-opus-decode.tsv` | 2,081 | 16 | exact name in a tool |
 | `audio-opus-trim-model.tsv` | 2,081 | 10 | exact name in a tool |
+| `audio-story000-census.tsv` | 63,325 | 7 | exact name in a tool |
 | `audio-variant-decode.tsv` | 4,704 | 9 | exact name in a tool |
 | `audio-xma2-decode.tsv` | 166 | 10 | exact name in a tool |
 | `bone-hash-names.tsv` | 99 | 4 | exact name in a tool |
