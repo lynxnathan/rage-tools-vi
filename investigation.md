@@ -7874,3 +7874,39 @@ observation as an artefact of summing four independently sized sections.
 - `p7` being the declared entry count ties the front region to the entry table we
   already extract, which is a checkable relation: section 4 has exactly
   `(p5-p6)*p7*p8` bytes.
+
+## The archive class is self-nesting: its own vtable holds both factory slots (2026-11-23)
+
+`tools/vtable_scan.py` enumerates vtables by finding runs of code pointers in
+`.rdata` and resolves any slot. On the executable it finds 10,516 runs of ≥8
+slots (some of those are jump tables, not classes — the tool is for lookup, not
+for counting classes). It independently reproduces the archive vtable: **147
+slots at `0x1462fd480`**, the count we had from a byte-level dump.
+
+Searching every vtable for the factory address `0x140fc2490` gives **exactly one
+hit**: this vtable, at slot `+0x418`. And the next slot:
+
+| slot | target | role |
+| --- | --- | --- |
+| `+0x000` | `0x14087add0` | destructor |
+| `+0x018`..`+0x028` | `0x1428cd270`, `2a0`, `2e0` | lifecycle |
+| `+0x060` | `0x1428cd360` | — |
+| `+0x3a0` | `0x140fc2530` | validity check used by the factory |
+| `+0x3f8` | `0x1428ce0b0` | name/size query seen in constructor 2 |
+| `+0x418` | `0x140fc2490` | create child archive (ctor 1) |
+| `+0x420` | `0x1411a8970` | create child archive (ctor 2) |
+
+So the two constructors we found by tracing call sites are the two *factory
+methods of the archive class itself*: an archive can construct another archive
+from a stream. That is the nesting mechanism — each RPF pack is mounted as its own
+archive object over a sub-stream of the parent, and the second constructor is the
+variant that queries a name and size through `+0x3d0`/`+0x3f8` before reading.
+
+Consequences worth keeping:
+
+- "Which code opens the archive" has no single answer above the class: the parent
+  archive opens the child through its own vtable. Any trace that looks for an
+  external owner will come up empty, which is exactly what the reference search
+  showed.
+- The stream argument is a *bounded sub-stream* of the parent, so the transform
+  question (if any) applies to that stream class, not to the file layer.

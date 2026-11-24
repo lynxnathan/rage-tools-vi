@@ -109,6 +109,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   arena layout from fields at `0x1a..0x2d`, `FUN_14087b0b0` sets `obj+0x38`.
 - [ ] Identify the four front-region sections (p3×8, p4 bytes, p5×24,
   (p5-p6)×p7×p8 with p7 = declared entry count).
+- [x] Archive class mapped: 147-slot vtable `0x1462fd480`; both factories
+  (`+0x418`, `+0x420`) are methods of the archive itself, i.e. archives nest over
+  sub-streams. `tools/vtable_scan.py` reproduces the slot count independently.
+- [ ] Identify the stream class handed to the ctor (a bounded child stream) and
+  read its `Read` at `+0x60`.
 - [ ] Find the layer that produces the mapped buffer at `[stream+0x18]` /
   `[stream+0x20]` (the file object handed to the archive ctor). Full analysis is
   now available (`cache/ghidra_full`), so this is unblocked: start from
