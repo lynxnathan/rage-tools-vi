@@ -182,6 +182,7 @@ next container. The duplicate frame count is the field that gave a false lead in
 | `movies.rpf` | 515 | 8,831,840,256 B | 99.993 % |
 | `core_restofworld.rpf` | 11 | 1,241,526,272 B | 95.814 % |
 | `story000_restofworld.rpf` | 7 | 120,193,024 B | 60.595 % |
+| `story000.rpf` | 264 | 3,327,913,984 B | 16.621 % |
 
 Tool: `tools/bink_index.py`. Validation is the width/height/fps triple — random `KB2`
 bytes inside video data reject. Status: **exact** for the size rule, **measured** for the

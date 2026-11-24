@@ -159,6 +159,8 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   34.70 → 95.29 %.
 - [x] The `[1] == [3]` mystery is Bink2 storing the frame count twice (`+0x08`, `+0x10`),
   as already measured in `movies.rpf`.
+- [x] Bink2 indexed beyond the movie archives: `story000` **264 movies / 3.33 GB** (its
+  classified share goes 35.39 → **98.02 %** with the ADAT and Bink side indexes).
 - [ ] What `[0]`, `[1] == [3]` and `[2]` measure, and whether the payload after the
   descriptor is Bink2 (the `movies.rpf` header has the same width/height/fps shape).
 - [ ] What the 16 MiB window holds, and what the tags mean (mostly `0`; `1` in 214
