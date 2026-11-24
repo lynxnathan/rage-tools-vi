@@ -8884,3 +8884,29 @@ they sit in.
 
 Everything else stays open: what the tags mean (mostly `0`, with `1` in 214 entries of
 `core_restofworld` and absent from the other), and what the 16 MiB window holds.
+
+### The offset base is still undetermined, and the obvious test does not decide it (2026-11-23)
+
+Tested whether the table's offsets are relative to the span start or to the end of the
+table, by checking whether each lands on non-zero data:
+
+| archive | offsets tested | non-zero at `span + off` | non-zero at `table_end + off` |
+| --- | ---: | ---: | ---: |
+| `core_restofworld` | 997 | 989 | 997 |
+| `story000_restofworld` | 997 | 991 | 997 |
+
+**This does not decide it.** Both regions are dense data, so "lands on non-zero bytes"
+is satisfied either way; `table_end + off` is 997/997 only because that region is denser.
+Recorded so the test is not repeated as if it were conclusive.
+
+What *was* observed, and is worth keeping: `table_end + 1364` in `core_restofworld` lands
+on a clean sequence of increasing `u32` values (`0x01f9e9c4`, `0x01f9f9fc`, `0x01fa0960`,
+`0x01fa0d40` — step ~4,000), i.e. another table. So the region after the table contains
+further tables, which is consistent with a layered index and is the kind of thing the
+next attempt should look for.
+
+Next step, stated concretely: identify the **base** by requiring a *structural* hit rather
+than a non-zero one — for candidate bases (`span`, `table_end`, entry 0 = 3,293,771, and
+the outlier `16,534,844`), count how often `base + off` begins a 4-byte-stride ascending
+run. The correct base should stand out by a wide margin; anything near the others is not
+the base.

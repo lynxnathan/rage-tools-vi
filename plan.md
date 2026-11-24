@@ -152,6 +152,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] Read both `restofworld` tables: same first entry `(3,293,771, tag 110)`, ~99 %
   ascending, steps differ ~26×, and **both offset ranges stay under 16 MiB** although
   the spans are 1.24 GB / 120 MB — so they index a 16 MiB window, not file offsets.
+- [ ] Find the offset **base** structurally (a 4-byte-stride ascending run at
+  `base + off`), trying `span`, `table_end`, entry 0 (`3,293,771`) and the outlier
+  (`16,534,844`). The non-zero test is inconclusive and is recorded as such.
 - [ ] What the 16 MiB window holds, and what the tags mean (mostly `0`; `1` in 214
   entries of `core_restofworld`, absent in the other).
 - [ ] Explain the two non-ascending spans (descending order or another stride).
