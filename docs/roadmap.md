@@ -78,6 +78,9 @@ stateDiagram-v2
 
 ## Parked
 
-- 331,728-byte blob; revisit after a PC launch or new sample.
-- Full RPF9 metadata key recovery; needs key material or a second build.
+- The 331,728-byte blob: verified by hash, but it is neither a single indexed range
+  nor a single decoded stream, so its origin is not re-derivable from the current
+  index.
+- What populates the 16-bit id dictionary (`0xb7076b6245d35fb5`): accessors and the
+  probe loop are read, no initialiser has been seen.
 - Format `0x62` texture codec until a verified control exists.

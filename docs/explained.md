@@ -128,9 +128,14 @@ byte range*.
 
 ## 5. From numbers to names
 
-Every identifier we have met — in the object graph, in bone tables, in weight
-arrays — is **JOAAT**, the one-at-a-time hash Rockstar uses: a specific 32-bit
-function of a string.
+Every identifier we have met in the *object graph, bone tables and weight arrays* is
+**JOAAT**, the one-at-a-time hash: a specific 32-bit function of a string.
+
+That scope matters. Archive **entry names** are not JOAAT: the executable hashes them
+with **Murmur3 x64-128** over `tolower(name)` with `\\` folded to `/`, and then
+resolves them through a 16-bit id taken from a runtime dictionary
+([the executable](reference/executable.md)). So JOAAT is the hash of *content* names,
+not of *file* names.
 
 That turns "opaque number" into "guess the string, test the hash". With a
 vocabulary of rig concepts we resolved **99 of 612** bone-table hashes and **21 of
@@ -210,10 +215,12 @@ flowchart TB
 
 Not everything is solved. The honest boundary:
 
-- **Masked metadata.** Front A, Front B and the trailer cannot be read. Four
-  questions (the table's extra section, the 9→10 byte boundary, the trailer
-  cipher, the exact end of one child pack) need key material, a crib, or a second
-  build. They are *information*-blocked, not effort-blocked.
+- **Metadata record contents.** The loader copies both metadata buffers verbatim and
+  the layout is code-derived, so the container is understood — but what the records
+  *mean* is not. No 32-bit or 64-bit hash of any known name appears in them, and the
+  archive's own name hash is Murmur3 x64-128 whose 16-bit id comes from a runtime
+  dictionary whose source we have not seen. Naming those records is the open problem,
+  and it is *information*-blocked, not effort-blocked.
 - **Names.** 330 bone hashes belong to a namespace whose vocabulary we have not
   found — small props and weapons, not anatomy.
 - **Mixed packs.** Packs whose entries mix both shapes cannot be counted exactly;
@@ -228,7 +235,7 @@ sizes give counts, structures give entries, hashes give names.
 | --- | --- |
 | the short list of results | [What we found](findings.md) |
 | the byte-level format | [RPF9 format](rpf9/format.md) |
-| the masked regions in detail | [Metadata regions](rpf9/metadata.md) |
+| the metadata regions in detail | [Metadata regions](rpf9/metadata.md) |
 | how entries were reconstructed | [Entry manifests](extraction/entries.md) |
 | the rig naming work | [Rig names](data/rig-names.md) |
 | the audio pipeline | [Audio](extraction/audio.md) |

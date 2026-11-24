@@ -1,8 +1,14 @@
 # Hash names
 
-Every identifier in GTA VI is `JOAAT(lowercase(name))` — a 32-bit hash with no
-inverse. Names are recovered by *vocabulary*: hash candidate strings and keep the
-ones that collide with a value the game actually stores.
+Every identifier in the object graph, in bone tables and in weight arrays is
+`JOAAT(lowercase(name))` — a 32-bit hash with no inverse. Names are recovered by
+*vocabulary*: hash candidate strings and keep the ones that collide with a value the
+game actually stores.
+
+This is **not** the archive's entry-name hash. That one is Murmur3 x64-128 over a
+lower-cased name, and the 16-bit id it resolves to comes from a runtime dictionary —
+see [the executable as a source](executable.md). JOAAT names content; the other names
+files.
 
 ## The registry
 

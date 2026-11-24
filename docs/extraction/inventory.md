@@ -78,7 +78,10 @@ sequenceDiagram
     E-->>U: path + hash
 ```
 
-Verified end-to-end (6/6 PASS):
+Verified end-to-end (6/6 PASS). Note on the `script.rpf` blob below: its 331,728
+bytes are verified by hash, but the size matches neither an indexed range nor a single
+decoded stream in the current index, so its origin is not re-derivable from these
+tables — it is a recorded artifact, not a located one.
 
 - `script.rpf` object: 2,702,384 bytes, `592afd44…`;
 - `script.rpf` blob: 331,728 bytes, `b5d622ca…`;

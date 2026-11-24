@@ -187,10 +187,10 @@ the Front B chain is not, or its plaintext is pack-specific in every record.
 | `+0x50..+0x5c` | profile block | 4 values (2,906 / 1,398 / 67 / 2) |
 
 The thirteen `data.rpf` localization packs share a byte-identical 29,856-byte
-trailer and a single profile, but all thirteen Front B bodies differ. Under the
-deterministic build-wide cipher that means the trailer holds
-language-independent records while Front B holds the offset/size records that
-change with each language's compressed payload.
+trailer and a single profile, but all thirteen buffer B bodies differ. Whatever the
+explanation, one of the two regions is language-independent and the other is not; the
+traced loader copies both verbatim, so any transform would sit in the stream's `Read`,
+which has not been read.
 
 ## Evidence state
 

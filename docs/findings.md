@@ -54,8 +54,13 @@ full per-archive table is [the corpus pass](extraction/corpus.md).
 
 ## Naming
 
-Every identifier encountered is `JOAAT(lowercase name)`. That single fact turned
-hash tables into readable rigs:
+Archive **entry** names are a different function: Murmur3 x64-128 with a lower-casing
+substitution table, resolved to a 16-bit id from a runtime dictionary
+([the executable](reference/executable.md)). JOAAT below refers to content names.
+
+
+Every identifier encountered in the object graph, bones and weight arrays is
+`JOAAT(lowercase name)`. That single fact turned hash tables into readable rigs:
 
 - **99 of 612** class-0 bone-table hashes and **21 of 252** weight hashes resolve
   through the `skel_` / `mh_` / `rb_` families (skeleton, muscle helpers, ragdoll).
