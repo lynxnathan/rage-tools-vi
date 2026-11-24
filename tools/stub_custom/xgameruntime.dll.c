@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #define TRACE(fmt, ...) do { if (getenv("STUB_TRACE")) \
-    fprintf(stderr, "xgameruntime!%s: " fmt "\n", __func__, __VA_ARGS__); } while (0)
+    fprintf(stderr, "[%lx] xgameruntime!%s: " fmt "\n", GetCurrentThreadId(), __func__, __VA_ARGS__); } while (0)
 
 static unsigned long long generic(void)
 {

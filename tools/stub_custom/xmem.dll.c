@@ -13,7 +13,7 @@ static void *reserve(void *address, size_t size)
     if (!p && address)
         p = VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (getenv("STUB_TRACE"))
-        fprintf(stderr, "xmem!alloc(%p, %llx) -> %p\n", address,
+        fprintf(stderr, "[%lx] xmem!alloc(%p, %llx) -> %p\n", GetCurrentThreadId(), address,
                 (unsigned long long)size, p);
     return p;
 }

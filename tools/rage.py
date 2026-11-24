@@ -150,9 +150,14 @@ def cmd_play(args):
             print(built.stdout[-400:], built.stderr[-400:])
             return 1
         dlls = sorted(stub_build.glob("*.dll"))
-        for dll in dlls:
-            shutil.copy(dll, game / dll.name)
-        print(f"placed {len(dlls)} stub DLLs in {game}")
+        changed = [dll for dll in dlls
+                   if not (game / dll.name).is_file()
+                   or (game / dll.name).stat().st_size != dll.stat().st_size]
+        if changed:
+            # The game directory is an external volume; copying through the shell keeps
+            # the write path that already works there.
+            run(["cp", "-f", *[str(dll) for dll in changed], str(game)])
+        print(f"stub DLLs {len(dlls)}, {len(changed)} refreshed in {game}", flush=True)
         wine = proton_wine()
         if wine is None:
             print(f"{len(dlls)} stub DLLs written; no Proton wine found "

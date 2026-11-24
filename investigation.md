@@ -9311,3 +9311,28 @@ import failure.
 State of the loop: `tools/rage.py play --stubs --game-dir <dump>` builds 15 stub DLLs,
 places them, runs Proton's wine, prints the last calls and the fault. Every step above is
 reproducible from that one command.
+
+### Loop state after the GDK API layer (2026-11-24)
+
+Each iteration is `tools/rage.py play --stubs --game-dir <dump>`; the stub log is
+thread-tagged, so a crash in thread `0x4c` is matched to the call that fed it.
+
+| Step | Call before the stop | What the stop was |
+| --- | --- | --- |
+| 4 | `XMemVirtualAlloc(0, 0x600000000, 0x20402000, 0x21)` | CRT `int 3` after `FUN_1455dcf74` returned `0x89240101` |
+| 5 | `xgameruntime!InitializeApiImplEx2` | `xgameruntime.dll` absent → loader rejected the image |
+| 6 | `xgameruntime!QueryApiImpl` | wrote the out-slot to the GUID pointer (read-only) |
+| 7 | `xgameruntime!QueryApiImpl` ×4 | out-slot is the **third** argument (`r8`), not the second |
+| 8 | `gameinput!ord_1` | `GameInput.dll` is imported by ordinal only |
+| 9 | `xcrdapi!DStorageGetFactory` | caller asserts on a null factory |
+| 10 | — | abort inside engine code at `game.exe+0x2237178`, threads started |
+
+What this establishes: the image is a normal PE that Wine will load and execute; the
+console-only surface is 117 import symbols plus one runtime module (`xgameruntime.dll`)
+that the image loads by name and which never appears in its import table. Passing the
+API-query layer starts engine threads, and the next stop is inside engine initialisation
+rather than in the loader.
+
+What it does not establish: usable audio, video or input. The queried interfaces are
+answered by a vtable of functions that return zero, so any code that expects a real
+allocation or a real device object stops at the next dereference.

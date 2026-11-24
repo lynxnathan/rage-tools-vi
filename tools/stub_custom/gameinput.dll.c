@@ -18,7 +18,7 @@ long long ord_1(void **out, unsigned long long flags)
         object[0] = vtable;
     }
     if (getenv("STUB_TRACE"))
-        fprintf(stderr, "gameinput!ord_1(out=%p, flags=%llx)\n", (void *)out, flags);
+        fprintf(stderr, "[%lx] gameinput!ord_1(out=%p, flags=%llx)\n", (void *)out, flags);
     if (out) *out = object;
     return 0;
 }

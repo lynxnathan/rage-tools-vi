@@ -139,8 +139,11 @@ def main():
 
     args.out.mkdir(parents=True, exist_ok=True)
     built = 0
+    generated_ok = 0
     for dll, symbols in sorted(wanted.items()):
-        built += 1 if write_stub(args.out, dll, symbols) else 0
+        ok = write_stub(args.out, dll, symbols)
+        built += 1 if ok else 0
+        generated_ok += 1 if ok else 0
     # Modules the image loads by name at runtime never appear in the import table.
     for source in sorted((Path(__file__).resolve().parent / "stub_custom").glob("*.dll.c")):
         dll = source.name[:-2]
@@ -153,8 +156,9 @@ def main():
             continue
         built += 1
         print(f"  {dll:34s} {source.stat().st_size:5d} B source (runtime module)")
-    print(f"built {built} stub DLLs in {args.out}")
-    return 0 if built == len(wanted) else 1
+    print(f"built {built} stub DLLs in {args.out} "
+          f"({generated_ok}/{len(wanted)} from imports)")
+    return 0 if generated_ok == len(wanted) else 1
 
 
 if __name__ == "__main__":
