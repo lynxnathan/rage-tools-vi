@@ -203,6 +203,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   162 bytes starting at `+0x860`, body high-entropy. The variant may cover more than one
   sub-layout.
 - [ ] Decode the remaining ~1.7 M Opus streams (5.2 % covered so far).
+- [x] `levels.rpf` KB2 scan: 719 candidates, **0** valid containers (462 bad version byte,
+  257 bad dimensions) — the raw `KB2` matches there are coincidence, and the pass is
+  recorded as a negative rather than an empty index.
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.

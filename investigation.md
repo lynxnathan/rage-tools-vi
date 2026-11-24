@@ -9018,3 +9018,14 @@ with 720×1280 portrait — the phone-screen cutscenes seen in `movies.rpf` too.
 Classified share after the pass: `core_restofworld` **4.17 % → 99.98 %**,
 `story000_restofworld` **34.70 % → 95.29 %**. Nothing here was decoded; these are container
 extents and header fields, which is what the index needs.
+
+### `levels.rpf`: 719 `KB2` candidates, **0** valid Bink2 containers (2026-11-23)
+
+Scanning `levels.rpf` (76.2 GB) with `tools/bink_index.py` finds 719 offsets containing
+`KB2`, and every one fails validation — 462 on the version byte, 257 on dimensions. So the
+2,818 raw `KB2` byte matches in that archive are coincidence inside level data, not movies.
+
+Recorded as a negative with its denominators: the same filter that accepts 515/1,545 in
+`movies.rpf` accepts 0/719 here, which is what a validation-by-structure filter should do.
+`output/index/levels-bink.tsv` was empty and has been removed rather than left as an
+index with no rows.
