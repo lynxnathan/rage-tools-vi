@@ -8780,3 +8780,45 @@ first 64 bytes, no block framing at six sizes and four shifts, and packet chains
 near a documented marker. The remaining untested idea is that the two streams are
 **interleaved** between marker regions; everything else this pass tried is excluded and
 written down.
+
+### `0xff25`: a 162-byte marker-record structure exists in a minority of containers (2026-11-23)
+
+Scanning for the documented `a0 00 f8` marker inside `0xff25` containers: in **17 of 120**
+sampled containers there is a run of records of exactly **162 bytes**, each beginning with
+that marker, the first at `+0x860` (13 containers), `+0x8c0` (3) or `+0x870` (1). The
+record body is high-entropy — 159 of 162 bytes non-zero, no internal structure visible in
+a raw dump — so it is not a seek/index table in the clear.
+
+The other 103 containers have fewer than three markers, so `0xff25` likely covers more
+than one sub-layout: a marker-record form and something else. That is recorded as a
+possibility, not a conclusion — the sample is 120 containers out of 3,008.
+
+Nothing here is decoded, and no stream count from this variant enters the decoded totals.
+
+## `core_restofworld`: a sorted 24-bit offset table inside the unclassified span (2026-11-23)
+
+`core_restofworld.rpf` is 1.30 GB and the index leaves **1,241.7 MB** of it
+`unclassified` (4,659 ranges; only 51.6 MB is zlib). Probing the largest span
+(`0x33b66d9..0x4d3bb000`) shows it does not start with a magic: the first non-zero byte
+is at `+0x927`, so there is a leading zero region.
+
+At `+0x1000` there is a dense table of 4-byte entries:
+
+```
+45 89 00 a0 | 94 89 00 98 | db 89 00 b0 | 36 8a 00 d8 | 83 8a 00 68 | ...
+```
+
+read as `{u24 little-endian offset, u8 tag}`. Over 4 KB of that region: **1,020 entries,
+980 strictly increasing (96.2 %)**, offsets spanning `0 .. 15,801,753`, tag bytes spread
+over many values (`0`, `188`, `104`, `132`, `200` all appear ~20 times each). So it is a
+sorted 24-bit offset index with a one-byte classification per entry — a page or frame
+table.
+
+What is established: the table exists, its stride is 4, its offsets are sorted, and the
+span does not begin with a container magic. What is **not** established: what the offsets
+index, and whether this archive's tail is one such table or several. Recorded as an open
+structure rather than named.
+
+That is the second archive after `movies` whose unclassified region turned out to have
+recognisable internal structure — worth a systematic pass over every archive's largest
+`unclassified` range rather than one archive at a time.

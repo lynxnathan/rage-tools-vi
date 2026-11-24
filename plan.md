@@ -143,6 +143,10 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   this needs a new vocabulary source, not a wider search.
 - [x] `movies.rpf` indexed: 515 Bink2 containers covering **99.993 %** of 8.8 GB
   (425,440 frames); payload size at `+0x04`, container is `align(0x800, size)`.
+- [x] `core_restofworld`: 1,241.7 MB unclassified, and the largest span holds a sorted
+  table of **1,020 `{u24 offset, u8 tag}` entries** at `+0x1000` (96.2 % monotonic).
+- [ ] Sweep every archive's largest `unclassified` span for internal structure — two of
+  two examined so far (`movies`, `core_restofworld`) had some.
 - [ ] Entry model for `levels` (728 of 2,044 packs exact). The failures are
   systematic — about five non-entry struct streams and ninety surplus data
   streams per pack, i.e. entries owning several data streams. Needs the
@@ -176,8 +180,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   signs), payload is packet-framed (1,678 short runs) but **not** `0x800`-block framed.
   Payload not block-framed at six sizes × four shifts; chains stop after 12–25 packets;
   `+0x860` is a documented `a0 00 f8` marker region; BE-`u16` and LE-`u32` prefixes fail.
-  The one live hypothesis left is that the two streams are interleaved between marker
-  regions.
+  A `a0 00 f8` marker-record form exists in 17/120 sampled containers: records of exactly
+  162 bytes starting at `+0x860`, body high-entropy. The variant may cover more than one
+  sub-layout.
 - [ ] Decode the remaining ~1.7 M Opus streams (5.2 % covered so far).
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.
