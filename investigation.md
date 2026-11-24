@@ -8719,3 +8719,34 @@ and no valid Opus packet framing exists at `header_size` or in the 512 bytes aft
 Open, precisely: the offset where payload begins, and how `count` streams divide it.
 3,008 `audio.rpf` containers remain outside the decoded totals until those two numbers
 exist — and the checks in place keep them out rather than estimating.
+
+### `0xff25`: packet-like payload, but neither block-framed nor contiguous (2026-11-23)
+
+Following the descriptor in a 266,240-byte container (`+0x548f000`, `count = 2`):
+
+```
+0x50  2b 16 47 1d | 00 9f 2c 00 | f9 ff | 80 bb | 0b 01 | ff ff
+0x60  ff ff ff ff | 80 00 00 00 | 00 00 00 00 | 00 a6 2c 00 | ...
+0x80  ... 00 b4 00 00 00 0e 01 00 00 68 01 00 00 c2 01 00 00 ...
+```
+
+Read one byte in, that `0x80` run is `180, 270, 360, 450, 540, 630, 720, 810 …` — an
+arithmetic sequence with step 90, i.e. a table of some kind, again **misaligned by one
+byte** relative to a natural read. That is the third independent sign that this variant's
+fields sit at odd offsets.
+
+Two payload tests, both negative:
+
+- scanning the whole container for runs of ≥12 valid size-prefixed Opus packets finds
+  **1,678 candidates**, all short (≈1 KB) and scattered from `0x860` onward — real packet
+  framing exists, but as many short runs rather than one stream;
+- testing all 130 `0x800`-aligned blocks with the other variants' block rule (packets
+  until a zero length, then zero padding) yields **0 clean blocks**.
+
+So `0xff25` payload is packet-framed but not block-framed and not contiguous from the
+header. Two hypotheses remain open and both are testable: the two streams are
+**interleaved** (which would produce exactly these short runs), or the whole region is
+shifted by one byte like the fields appear to be.
+
+Nothing is decoded for this variant, and the census continues to count its 3,008
+containers without counting their streams as decoded.

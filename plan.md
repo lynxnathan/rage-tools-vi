@@ -171,9 +171,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] `0xff25` identified as an **inline-descriptor** variant, not a table: 95.3 % of
   600 containers carry `80 bb` (48 kHz) + codec + channels; 401 stereo / 171 mono Opus.
 - [ ] Locate the `0xff25` payload start and split. Established: body is audio
-  (H 7.74–7.79), `header_size` is **not** the data offset (descriptor extends past it),
-  no table under any byte shift, no size field in the first 64 bytes, and no Opus
-  framing at `header_size`.
+  (H 7.74–7.79), `header_size` is **not** the data offset, no table under any byte shift,
+  no size field in the first 64 bytes, fields sit at odd offsets (three independent
+  signs), payload is packet-framed (1,678 short runs) but **not** `0x800`-block framed.
+  Two live hypotheses: the two streams are interleaved, or the region is shifted by one
+  byte.
 - [ ] Decode the remaining ~1.7 M Opus streams (5.2 % covered so far).
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.

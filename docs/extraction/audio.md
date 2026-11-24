@@ -196,7 +196,11 @@ Three further measurements bound the problem:
 - **`header_size` is not the data start** — one container with `header_size = 64` has the
   `… 80 bb 0b 01 ff ff` descriptor sitting *at* offset 64, so the descriptor block extends
   past it;
-- no valid Opus packet framing exists at `header_size` or in the 512 bytes after it.
+- the payload is packet-framed but not block-framed: scanning a whole container finds
+  1,678 short runs of ≥12 valid size-prefixed packets, while all 130 `0x800`-aligned
+  blocks fail the other variants' block rule;
+- a table-like run in the header is an arithmetic sequence of step 90 read one byte in,
+  the third independent sign that this variant's fields sit at odd offsets.
 
 What is not yet located is the **payload start and the split between streams**; until
 both exist, no `0xff25` stream is decoded, and the census keeps its 3,008 containers'
