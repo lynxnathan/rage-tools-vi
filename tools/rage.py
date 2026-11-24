@@ -54,9 +54,150 @@ def say(name, ok, detail=""):
     return ok
 
 
+def pe_sections(data):
+    import struct
+    pe = struct.unpack_from("<I", data, 0x3C)[0]
+    count = struct.unpack_from("<H", data, pe + 6)[0]
+    size = struct.unpack_from("<H", data, pe + 20)[0]
+    table = pe + 24 + size
+    return [struct.unpack_from("<IIII", data, table + 40 * i + 8) for i in range(count)]
+
+
+def pe_imports(path):
+    """DLL names in the import table of a PE32+ image."""
+    import struct
+    data = path.read_bytes()
+    pe = struct.unpack_from("<I", data, 0x3C)[0]
+    optional = pe + 24
+    magic = struct.unpack_from("<H", data, optional)[0]
+    if magic != 0x20B:
+        raise ValueError(f"not a PE32+ image (magic {magic:#x})")
+    rva, _size = struct.unpack_from("<II", data, optional + 112 + 8)
+    sections = pe_sections(data)
+
+    def offset_of(target):
+        for virtual_size, virtual, raw_size, raw in sections:
+            if virtual <= target < virtual + max(virtual_size, raw_size):
+                return raw + (target - virtual)
+        raise ValueError(f"RVA {target:#x} is not in any section")
+
+    names = []
+    cursor = offset_of(rva)
+    while True:
+        entry = struct.unpack_from("<IIIII", data, cursor)
+        if entry[3] == 0:
+            break
+        name_at = offset_of(entry[3])
+        end = data.find(b"\0", name_at)
+        names.append(data[name_at:end].decode("ascii", "replace"))
+        cursor += 20
+    return names
+
+
+def platform_probe(exe):
+    """What a Windows image needs, and what this machine provides.
+
+    The binary is the authority: its import table names the runtime it expects, and a
+    library name that only exists on one platform decides the classification. Wine does
+    not provide console libraries, so the answer is a property of the image, not of
+    whether a compatibility layer happens to be installed.
+    """
+    imports = pe_imports(exe)
+    lowered = {name.lower() for name in imports}
+    console_only = {"xg_xs.dll", "d3d12_xs.dll", "xapu.dll", "xmem.dll", "acphal.dll",
+                    "xboxbvhbuilder.dll", "xcrДapi.dll", "xcrdapi.dll"}
+    required = sorted(name for name in lowered if name in console_only)
+    wine = shutil.which("wine") or shutil.which("wine64")
+    if required:
+        kind = "xbox"
+    elif wine:
+        kind = "windows"
+    else:
+        kind = "windows-unrunnable"
+    return {"imports": imports, "console_imports": required, "kind": kind,
+            "wine": wine, "exe": str(exe)}
+
+
+def proton_wine():
+    if os.environ.get("PROTON_WINE"):
+        return Path(os.environ["PROTON_WINE"])
+    home = Path.home()
+    roots = [home / ".steam/debian-installation/compatibilitytools.d",
+             home / ".steam/steam/steamapps/common",
+             home / ".local/share/Steam/steamapps/common"]
+    for root in roots:
+        if not root.is_dir():
+            continue
+        for entry in sorted(root.glob("*Proton*"), reverse=True):
+            wine = entry / "files/bin/wine"
+            if wine.is_file():
+                return wine
+    return None
+
+
+def cmd_play(args):
+    """Start the game with stub consoles libraries, and report how far it goes."""
+    if args.stubs:
+        exe = args.exe or (ROOT / "cache/exe/game_scarlett_master.exe")
+        game = args.game_dir
+        if game is None or not exe.is_file():
+            print("--stubs needs --game-dir and an executable")
+            return 1
+        stub_build = ROOT / "cache/stubs"
+        built = run([sys.executable, str(ROOT / "tools/stub_dlls.py"), str(exe),
+                     "--out", str(stub_build)], capture_output=True, text=True)
+        if built.returncode != 0:
+            print(built.stdout[-400:], built.stderr[-400:])
+            return 1
+        dlls = sorted(stub_build.glob("*.dll"))
+        for dll in dlls:
+            shutil.copy(dll, game / dll.name)
+        wine = proton_wine()
+        if wine is None:
+            print(f"{len(dlls)} stub DLLs written; no Proton wine found "
+                  "(set PROTON_WINE)")
+            return 2
+        prefix = Path(os.environ.get("PROTON_PREFIX", Path.home() / ".proton-vi/pfx"))
+        target = game / "game.exe"
+        if not target.exists():
+            target.symlink_to(exe)
+        env = dict(os.environ, WINEPREFIX=str(prefix), STUB_TRACE="1")
+        result = subprocess.run([str(wine), str(target)], cwd=str(game),
+                                env=env, capture_output=True, text=True, timeout=args.timeout)
+        log = result.stdout + result.stderr
+        calls = [line for line in log.splitlines() if "!" in line and "(" in line]
+        faults = [line for line in log.splitlines() if "Unhandled" in line or "page fault" in line]
+        print(f"stub DLLs {len(dlls)}  exit {result.returncode}  calls logged {len(calls)}")
+        for line in calls[-6:]:
+            print(f"  {line}")
+        for line in faults[-2:]:
+            print(f"  {line}")
+        (ROOT / "cache/play.log").write_text(log)
+        return 0 if not faults else 3
+
+    """Start the game, or say exactly what stops it."""
+    exe = args.exe or (ROOT / "cache/exe/game_scarlett_master.exe")
+    if not exe.is_file():
+        print(f"no executable at {exe}")
+        return 1
+    probe = platform_probe(exe)
+    if probe["kind"] == "xbox":
+        print(f"{exe.name}: Xbox Series image")
+        print("  runtime imports only that platform provides: "
+              + ", ".join(probe["console_imports"]))
+        print("  wine: " + (probe["wine"] or "not installed (and would not supply these)"))
+        print("  cannot start: no Xbox runtime on this machine")
+        return 2
+    if probe["kind"] == "windows":
+        return run([probe["wine"], str(exe)], cwd=str(exe.parent)).returncode
+    print(f"{exe.name}: Windows image, no compatibility layer installed")
+    return 2
+
+
 def cmd_test(args):
     """Run the test files, one tier at a time."""
-    tiers = {"unit": ["test_extraction_tools.py", "test_analysis_tools.py", "test_robustness.py"],
+    tiers = {"unit": ["test_extraction_tools.py", "test_analysis_tools.py", "test_robustness.py",
+                 "test_stub_dlls.py"],
              "corpus": ["test_corpus_invariants.py", "test_mod_roundtrip.py"],
              "e2e": []}
     selected = list(tiers) if args.tier == "all" else [args.tier]
@@ -335,6 +476,14 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("check", help="run the repository gate").set_defaults(func=cmd_check)
+
+    play_p = sub.add_parser("play", help="start the game, or name what stops it")
+    play_p.add_argument("--exe", type=Path)
+    play_p.add_argument("--stubs", action="store_true",
+                        help="build stub console DLLs, place them, run under Proton wine")
+    play_p.add_argument("--game-dir", type=Path)
+    play_p.add_argument("--timeout", type=int, default=120)
+    play_p.set_defaults(func=cmd_play)
 
     test_p = sub.add_parser("test", help="run the unit, corpus or all tiers")
     test_p.add_argument("--tier", choices=["unit", "corpus", "e2e", "all"], default="unit")

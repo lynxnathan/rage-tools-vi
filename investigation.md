@@ -9258,3 +9258,30 @@ Reproducibility: three containers decoded twice, `cmp` identical. Rebuild with
 
 Correction of the correction: the fast path was not a rule and not even a majority path —
 `0x860` parses 1 container in 5; the phase search parses all 3,008.
+
+### The console image boots under Proton to its own startup check (2026-11-24)
+
+Measured with `tools/rage.py play --stubs --game-dir <dump>`:
+
+```
+imports            68 libraries, 14 console-only, 128 symbols stubbed
+before stubs       wine: import_dll Library xg_xs.dll (needed by game.exe) not found
+after stubs        no "not found" lines; allocations proceed; abort in game.exe
+XMemVirtualAlloc   0, 0x600000000, 0x20402000, 0x21   (24 GiB reservation)
+allocations        24 GiB, 1.2 GiB, 2.3 GiB, 0.6 GiB, 20 MiB
+abort              0x80000003 at game.exe+0x5A91C21
+```
+
+`FUN_145a91bd0` is the CRT startup: it calls `FUN_1455dcf74()` and takes `swi(3)`
+(`int 3`) when the result is negative, which is the code the process stops in. Import
+resolution is therefore no longer the blocker; image initialisation returns an error
+that the stubs cannot satisfy yet.
+
+Stub shapes are inferred from call sites, not from documentation: `XMemVirtualAlloc`
+receives `(address, size, attribute, protection-shaped)` and forwards to `VirtualAlloc`.
+Custom implementations live in `tools/stub_custom/`; generated stubs log their first
+four register arguments, so each iteration measures the next missing call.
+
+`tools/stub_dlls.py` and `tests/test_stub_dlls.py` (19 checks) cover the import table and
+the export forms; a mangled C++ name is exported through an internal alias because C
+cannot declare it.

@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-172 scripts.
+173 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -166,6 +166,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`struct_grammar_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/struct_grammar_probe.py) | Test the struct-first entry grammar on any archive, not just core_bvh4. |  |
 | [`struct_harvest.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/struct_harvest.py) | Unified struct harvest across archives, with the two guards. |  |
 | [`struct_types.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/struct_types.py) | Partition the script.rpf object tree by record size and tagged-pointer layout. |  |
+| [`stub_dlls.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/stub_dlls.py) | Console-only imports of a Windows image, and stub DLLs that satisfy them. | --list --out |
 | [`test_audio_spectral.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/test_audio_spectral.py) | Spectral success-case test: harmonic speech/control vs noise candidate. |  |
 | [`test_awc_xma2.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/test_awc_xma2.py) | Build XMA2 WAVE wrappers from AWC 0x55 data chunks and decode with ffmpeg. |  |
 | [`texture_control_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/texture_control_probe.py) | Recover one descriptor-backed texture control from a bounded source window. |  |
