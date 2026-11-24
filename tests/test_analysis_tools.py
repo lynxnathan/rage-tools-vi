@@ -30,6 +30,12 @@ def run(*args):
 
 
 def main():
+    # The archive alone is not enough for the archive-side checks: they also need
+    # the stream index, which lives on an external volume and is absent on a fresh
+    # clone. Without this guard the suite fails instead of skipping.
+    have_archive = (ROOT / "script.rpf").is_file()
+    have_index = (ROOT / "output/index/script.tsv").is_file()
+
     print("registry")
     result = run("tools/name_registry.py", "--lookup", "0x01166164", "0xdeadbeef")
     check("lookup resolves a known hash", "Position" in result.stdout)
@@ -71,7 +77,7 @@ def main():
     check("entries carry Id/Type pairs",
           any(row["field_a"] in ("Id", "Type") for row in entries))
 
-    if (ROOT / "script.rpf").is_file():
+    if have_archive and have_index:
         print("extraction from the archive")
         result = run("tools/psin_extract.py", "script.rpf",
                      "--out", "cache/psin-properties-test.tsv")
@@ -81,7 +87,7 @@ def main():
         check("extract finds the same 62,910 rows", len(rows) == 62910, f"({len(rows)})")
         check("extract column layout", "class_hash" in rows[0], set(rows[0]))
     else:
-        print("extraction from the archive: skipped (script.rpf not present)")
+        print("extraction from the archive: skipped (archive or index not present)")
 
     print("script metadata format")
     result = run("tools/script_meta.py", "--help")
@@ -106,7 +112,7 @@ def main():
           {row["type"] for row in rows} <= {"0x101", "0x102", "0x103", "0x104", "0x105"},
           {row["type"] for row in rows})
 
-    if (ROOT / "script.rpf").is_file():
+    if (ROOT / "script.rpf").is_file() and have_index:
         result = run("tools/script_meta.py", "--dump", "1")
         check("script_meta walks a record", result.returncode == 0, result.stderr[:120])
         check("every record reaches LRSC",
@@ -118,7 +124,7 @@ def main():
               "chain covers the body exactly: 1012/1012" in result.stdout,
               result.stdout[-160:])
     else:
-        print("script_meta over the archive: skipped (script.rpf not present)")
+        print("script_meta over the archive: skipped (archive or index not present)")
 
     exe = ROOT / "cache/exe/game_scarlett_master.exe"
     if exe.is_file():
