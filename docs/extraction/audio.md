@@ -28,6 +28,28 @@ The `0x76` descriptor is 32 bytes: sample count at `+0x00`/`+0x0c`, rate as the
 low `u16` at `+0x08`, codec at `+0x1c`, codec sub-ID at `+0x1d`. Reading the rate
 as a `u32` yields nonsense on both variants.
 
+## The per-stream word
+
+The field that decides how many chunks a stream owns is a single `u32`, and its two
+halves do different jobs:
+
+```
+ 31              3 2   0
++-----------------+-----+
+|   stream id     | tags|
++-----------------+-----+
+  29 bits           3 bits
+```
+
+The tag count sits in the **high three bits**, not the low ones. Reading it as a
+plain integer gives a stream id in the millions for ordinary streams, which is what
+made the first parser look broken; masking the top three bits yields sensible ids,
+and masking the bottom three yields chunk counts that match the chunk table exactly.
+
+This is also why the chunk-table search had to be a suffix scan: the table is
+located relative to `data_offset`, and `data_offset` depends on the tag count, so
+the two have to be solved together (`tools/awc_chunk_table.py`).
+
 ## `story000` cutscene audio
 
 `story000`'s 9.56 GB unclassified span is a second audio archive: 63,853 AWC
