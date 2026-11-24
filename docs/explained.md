@@ -34,16 +34,18 @@ flowchart LR
 
 | Region | What it is for | Can we read it? |
 | --- | --- | --- |
-| Header | sizes and pointers for the rest | **yes** — 24 known words |
-| Front A | the names and directory paths | no, **masked** |
-| Front B | one record per entry | no, **masked** |
+| Header | sizes and pointers for the rest | **yes** — every field is now code-confirmed |
+| Buffer A | header, four sections, then one record per entry | the *layout* yes; the section contents are unidentified |
+| Buffer B | one fixed-stride record per entry | the size law yes (`align16(N × stride)`); the records are unidentified |
 | Payload | files, mostly zlib-compressed | **yes**, and verifiable |
-| Trailer | per-pack names/hashes | no, **masked** |
+| Trailer | per-pack records | no |
 
-"Masked" means the bytes are transformed (encrypted or keyed) so they look random.
-That single fact shapes the entire method: **the table of contents is unreadable,
-so we reconstruct the contents from the payload and use the table only as a
-cross-check.**
+The bytes of the two metadata buffers look uniformly random, and no 32-bit or
+64-bit hash of any known name appears in them. The executable's loader **copies
+them verbatim** — so if a transform exists it lives in the stream's `Read`, not in
+the archive layer. That nuance matters less than the practical consequence, which
+has not changed: **we reconstruct the contents from the payload and use the
+metadata only as a cross-check.**
 
 ## 2. What we can trust: checksums
 
@@ -71,7 +73,7 @@ flowchart TD
 The scan tells us *where* the bytes are. It does not tell us which file is which,
 or what the file means. Those are separate problems, solved separately.
 
-## 3. What the masked metadata still tells us
+## 3. What the unreadable metadata still tells us
 
 Even unreadable bytes leak **sizes**. Three size laws fell out of a census of
 4,373 headers:
@@ -90,7 +92,7 @@ entries, the reconstruction is very likely right.
 
 This is the key methodological move of the project:
 
-> **Use the masked table as an oracle for counting, and the payload for
+> **Use the unreadable table as an oracle for counting, and the payload for
 > structure.**
 
 ## 4. Reconstructing entries from the payload
@@ -167,7 +169,7 @@ flowchart TB
     subgraph Data["What exists"]
       AR["22 RPF9 archives<br/>161 GB stored"]
       HD["Headers<br/>4,373 counted"]
-      FA["Front A / Front B / trailer<br/>masked"]
+      FA["Buffer A / Buffer B / trailer<br/>records unidentified"]
       PL["Payload<br/>zlib streams"]
     end
     subgraph Method["How we know"]

@@ -11,10 +11,10 @@ RPF9 is a 0x60-byte header followed by three metadata regions and a payload:
 | Region | Bounds | State |
 | --- | --- | --- |
 | Header | `0x00..0x60` | mapped, 24 words |
-| Front A | `0x60..+0x08` | **masked**; holds names and paths |
-| Front B | `+0x08..+0x04` | **masked**; the entry table |
+| Buffer A | `0x00..+0x04` | read verbatim; 0x40-byte header + four sections + one record per entry |
+| Buffer B | `+0x08..+0x04` | read verbatim; fixed-stride per-entry table (`align16(N × stride)`) |
 | Payload | Front B end .. trailer | zlib chains, opaque spans, zero runs |
-| Trailer | `end - +0x0c .. end` | **masked**; CBC-like, pack-independent chain |
+| Trailer | `end - +0x0c .. end` | content unidentified; pack-independent length |
 
 The header fields are known well enough to predict sizes without decoding:
 `+0x0c` is the trailer length in all 4,373 headers censused, and Front B is
@@ -35,7 +35,7 @@ game payload left in it.
 
 ## Entry identity from the payload
 
-The index table is masked, so entries are identified from the payload instead:
+The index table's records are unidentified, so entries are identified from the payload instead:
 
 | Archive | Unit | Packs verified | Entries |
 | --- | --- | ---: | ---: |
@@ -112,8 +112,9 @@ opaque.
 
 ## What is not solved
 
-- Front A, Front B and the trailer are masked. The size laws are known; the
-  contents are not, and that is now measured rather than assumed: 36,952 known
+- The metadata record contents are unidentified. The loader copies both buffers
+  verbatim, so a transform would have to live in the stream's `Read`; the sizes
+  are known and the contents are not. That is measured rather than assumed: 36,952 known
   names hashed with seven functions in twenty path normalizations produce a flat
   ~560 matches per function against 7.4 million front-region words, which is
   exactly the chance rate — no hash function, including the game's own joaat,
