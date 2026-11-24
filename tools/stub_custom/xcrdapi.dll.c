@@ -6,7 +6,13 @@
 #include <windows.h>
 #include <stdio.h>
 
-static unsigned long long generic(void) { return 0; }
+static unsigned long long generic(void)
+{
+    if (getenv("STUB_TRACE"))
+        fprintf(stderr, "[%lx] %s!method caller=%p\n", GetCurrentThreadId(),
+                "xcrdapi", __builtin_return_address(0));
+    return 0;
+}
 static void *vtable[512];
 static void *object[1];
 

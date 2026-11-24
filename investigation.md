@@ -9336,3 +9336,27 @@ rather than in the loader.
 What it does not establish: usable audio, video or input. The queried interfaces are
 answered by a vtable of functions that return zero, so any code that expects a real
 allocation or a real device object stops at the next dereference.
+
+### Where blind stubbing stops (2026-11-24)
+
+Instrumenting the queried object's first 64 vtable slots with the index, the caller
+address and the four arguments names the calls precisely:
+
+```
+slot 29  args=6ffff26b0020, 6fffffaf6440, 0x20, 0     (this, buffer, size)
+slot  2  args=6ffff26b0020, 6fffffaf6440, 0x20, 0
+slot  3  args=6ffff26b0020, 6e6ff8e4,     0x20, 0
+slot  4  args=6ffff26b0020, 0x10, 6e6ff900, 6e6ffa00
+```
+
+The caller at `game.exe+0x55DEB6E` reads `[vtable+0x10]` (slot 2), keeps the return in
+`eax`, and the abort at `game.exe+0x2237178` fires when `*(u32*)(rsi+0xc) == 0` with
+`rsi = 0x2039b00`, a heap block the image allocated itself.
+
+Filling every (buffer, size) argument with `0x01` does not satisfy the image: it turns
+the abort into a **stack overflow** at `0x6ffffff38177`, which means the returned data
+reaches control flow — the caller treats a field as a count or a pointer. Writing plausible
+bytes is therefore not a shortcut; slot 2 and its neighbours need their real structure.
+
+State: 15 stub DLLs, slot and argument traces, deterministic abort at
+`game.exe+0x2237178`. Reproduce with `tools/rage.py play --stubs --game-dir <dump>`.
