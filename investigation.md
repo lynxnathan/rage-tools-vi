@@ -8855,3 +8855,32 @@ of the probe mis-scored it.
 
 Nothing here names the structure; it locates four spans that are worth reading next and
 records the metric that found them.
+
+### The two `restofworld` tables share a header shape and cap their offsets at 16 MiB (2026-11-23)
+
+Reading both tables at their first non-zero byte:
+
+| archive | table at | entries read | ascending | median step | max offset |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `core_restofworld` | `+0x927` | 1,000 | 987/999 | 22,848 | 16,749,632 |
+| `story000_restofworld` | `+0xccf` | 1,000 | 992/999 | 868 | 15,271,168 |
+
+Three observations, in order of how much they are worth:
+
+1. **The two tables begin with the same entry** — `(3,293,771, tag 110)` in both — and
+   both then have a single large outlier before settling into a monotone run
+   (`16,534,844` and `10,614,532`). So the first few bytes are a shared header, and the
+   sorted table starts slightly later. The shared value is therefore not a file-specific
+   offset.
+2. **Step sizes differ by a factor of ~26** (22,848 vs 868 median) while the ordering is
+   identical in kind — the same structure holding differently sized payloads.
+3. **Both offset ranges stay under 16 MiB** (16,749,632 and 15,271,168, both below
+   16,777,216) even though their spans are 1.24 GB and 120 MB. So the offsets index
+   something inside a 16 MiB window — a page or block base — not the whole span.
+
+Point 3 is the one that constrains the future attempt: the table cannot be a plain
+file-offset index, because the values are bounded by a window far smaller than the region
+they sit in.
+
+Everything else stays open: what the tags mean (mostly `0`, with `1` in 214 entries of
+`core_restofworld` and absent from the other), and what the 16 MiB window holds.

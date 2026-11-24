@@ -149,7 +149,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   two open with a sorted `u24` table (`core_restofworld` 97.5 %, `story000_restofworld`
   96.6 %), two are strongly *non*-ascending (`shared_minigame000` 22.6 %, `story000`
   18.8 %) — descending or a different stride, not random.
-- [ ] Read the two `restofworld` tables: same layout? what do the offsets index?
+- [x] Read both `restofworld` tables: same first entry `(3,293,771, tag 110)`, ~99 %
+  ascending, steps differ ~26×, and **both offset ranges stay under 16 MiB** although
+  the spans are 1.24 GB / 120 MB — so they index a 16 MiB window, not file offsets.
+- [ ] What the 16 MiB window holds, and what the tags mean (mostly `0`; `1` in 214
+  entries of `core_restofworld`, absent in the other).
 - [ ] Explain the two non-ascending spans (descending order or another stride).
 - [ ] Entry model for `levels` (728 of 2,044 packs exact). The failures are
   systematic — about five non-entry struct streams and ninety surplus data
