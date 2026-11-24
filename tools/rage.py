@@ -56,7 +56,7 @@ def say(name, ok, detail=""):
 
 def cmd_test(args):
     """Run the test files, one tier at a time."""
-    tiers = {"unit": ["test_extraction_tools.py", "test_analysis_tools.py"],
+    tiers = {"unit": ["test_extraction_tools.py", "test_analysis_tools.py", "test_robustness.py"],
              "corpus": ["test_corpus_invariants.py", "test_mod_roundtrip.py"],
              "e2e": []}
     selected = list(tiers) if args.tier == "all" else [args.tier]

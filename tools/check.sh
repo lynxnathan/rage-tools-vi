@@ -28,6 +28,12 @@ else
     note "tool syntax" "FAIL"; tail -5 /tmp/check-compile.log | sed 's/^/    /'; fail=1
 fi
 
+if $PY tests/test_robustness.py >/tmp/check-fuzz.log 2>&1; then
+    note "parser robustness" "PASS ($(grep -c '  ok' /tmp/check-fuzz.log) checks)"
+else
+    note "parser robustness" "FAIL"; tail -4 /tmp/check-fuzz.log | sed 's/^/    /'; fail=1
+fi
+
 if $PY tests/test_corpus_invariants.py >/tmp/check-corpus.log 2>&1; then
     note "corpus invariants" "PASS ($(grep -c '  ok' /tmp/check-corpus.log) checks)"
 else
