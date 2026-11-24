@@ -9198,3 +9198,23 @@ over the range. `tools/mod_replace.py`. No writer, no repack.
 Tests added: `tests/test_extraction_tools.py` — 27 checks over synthetic fixtures for the
 ADAT extent rules, the Bink2 header, coverage union, the script-chain solver, `0xff25`
 framing and the replacement path. Wired into `tools/check.sh`.
+
+### Which GTA V mod paths exist in this build (2026-11-23)
+
+Checked against the binary, not assumed:
+
+| V mechanism | evidence here |
+| --- | --- |
+| `.asi` plugins / ScriptHookV | **absent**: zero occurrences of `.asi`, `mods/`, `ScriptHook`, `OpenIV` |
+| loose-file override folder | **absent**: no such string; the archive layer composes `<name>.rpf` from its own catalog |
+| runtime DLL loading | **present**: imports `LoadLibraryW`, `LoadLibraryExW`, `GetProcAddress`, `FreeLibrary` |
+| directory scanning | **present**: `FindFirstFileW`, `FindNextFileW`, `GetFileAttributesW` |
+| self-patching surface | `VirtualProtect` / `CreateRemoteThread` not imported |
+
+So no V-style mod path is exposed by this build. A plugin could attach at the OS level
+because DLL loading exists, but nothing here defines a mod folder or an `.asi` convention,
+and the archive layer opens named packs from its catalog rather than scanning for overrides.
+
+What does work today is byte replacement inside an archive: same-size replacement of a
+`zlib` range, no repack, no offsets moved (`tools/mod_replace.py`, verified end to end).
+That is the minimum, and it is also the ceiling without an RPF9 writer.

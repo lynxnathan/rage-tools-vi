@@ -224,6 +224,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   Bink2 movies cannot be content-checked: `ffmpeg` has no decoder for this `KB2` variant.
 - [ ] Give every decode path one content check (flatness for audio, pixel stats for
   images, frames vs declared for video) before calling it working.
+- [x] Checked the V mod paths against the binary: no `.asi`/`mods/`/ScriptHook strings;
+  DLL loading and directory scanning exist but no mod convention; no `VirtualProtect`.
+  Working path today is in-place `zlib` replacement (`tools/mod_replace.py`).
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.
