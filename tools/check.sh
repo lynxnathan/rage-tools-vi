@@ -77,12 +77,32 @@ else
     note "pack extents" "skipped (no archives or indexes)"
 fi
 
+if [ -f common.rpf ] && [ -f output/index/common.tsv ]; then
+    if bash tools/e2e_mod.sh >/tmp/check-e2e.log 2>&1; then
+        note "end-to-end mod" "PASS ($(grep -c '  ok' /tmp/check-e2e.log) checks)"
+    else
+        note "end-to-end mod" "FAIL"; tail -4 /tmp/check-e2e.log | sed 's/^/    /'; fail=1
+    fi
+else
+    note "end-to-end mod" "skipped (no common.rpf)"
+fi
+
 if compgen -G "output/index/*.tsv" >/dev/null; then
     if $PY tools/index_coverage.py >/tmp/check-coverage.log 2>&1; then
         note "index coverage" "PASS ($(grep -c '%' /tmp/check-coverage.log) rows)"
     else
         note "index coverage" "FAIL"; tail -3 /tmp/check-coverage.log | sed 's/^/    /'; fail=1
     fi
+fi
+
+if [ -f common.rpf ] && [ -f output/index/common.tsv ]; then
+    if bash tools/e2e_mod.sh >/tmp/check-e2e.log 2>&1; then
+        note "end-to-end mod" "PASS ($(grep -c '  ok' /tmp/check-e2e.log) checks)"
+    else
+        note "end-to-end mod" "FAIL"; tail -4 /tmp/check-e2e.log | sed 's/^/    /'; fail=1
+    fi
+else
+    note "end-to-end mod" "skipped (no common.rpf)"
 fi
 
 if compgen -G "output/index/*.tsv" >/dev/null; then
