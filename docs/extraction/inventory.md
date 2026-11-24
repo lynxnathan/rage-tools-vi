@@ -33,7 +33,7 @@ per archive, the share of bytes assigned a known kind — merging side indexes s
 | `textures` | 0.19 GB | 99.53 % | 99.53 % |
 | `shaders` | 0.41 GB | 33.41 % | 33.41 % |
 | `shared_minigame000` | 0.81 GB | 55.33 % | 55.33 % |
-| `story000` | 20.0 GB | 35.39 % | 35.39 % |
+| `story000` | 20.0 GB | 35.39 % | **81.40 %** |
 | `story000_script` | 0.08 GB | 32.04 % | 32.04 % |
 | `core_restofworld` | 1.30 GB | 4.17 % | 4.17 % |
 | `movies` | 8.83 GB | **0.00 %** | 0.00 % |

@@ -8330,3 +8330,26 @@ dropped main indexes whose side index sorted first (`setdefault` after a `setdef
 does nothing). The symptom was `audio` reporting 99.69 % for its *main* index when the
 main index is 0.07 %. Fixed to append, and the two columns now differ exactly where
 they should.
+
+### `story000` scanned: 46 % of a 20 GB archive is AWC (2026-11-23)
+
+`tools/adat_index.py --scan` needs no manifest: it scans the whole file for bank
+headers and validates each candidate. On `story000.rpf`:
+
+```
+candidates 63,865   banks 63,325   9,212,590,080 B = 46.011 % of the file
+streams 213,579     rejected: 3 table-length, 2 stream-count, 5 unsupported flags
+```
+
+`output/index/story000-adat.tsv` holds the 63,325 ranges, zero overlaps, accepted by
+`chain_start_verify`. With it the archive's classification share goes from
+**35.39 % to 81.40 %**.
+
+The count agrees with the earlier hand measurement of 63,853 containers to within
+0.8 %; the difference is exactly the candidates the validator rejects, which is the
+behaviour we want — a scan that accepted everything would have matched the old count
+for the wrong reason.
+
+`story000.rpf` is on the external volume rather than the NVMe mirror, so this pass is
+the first one in the project that reads a source archive from the spinning disk. It
+took a few minutes and needed no extra space: the scan is streaming.

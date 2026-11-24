@@ -60,7 +60,10 @@ the two have to be solved together (`tools/awc_chunk_table.py`).
 ## `story000` cutscene audio
 
 `story000`'s 9.56 GB unclassified span is a second audio archive: 63,853 AWC
-containers, 98.4 % `0xff02`, all codec `0x0b` (Opus) at 48 kHz. Decoding it
+containers, 98.4 % `0xff02`, all codec `0x0b` (Opus) at 48 kHz. A whole-file scan
+with the rules above indexes **63,325 banks / 9,212,590,080 B = 46.011 %** of that
+20 GB archive, and raises its classified share from **35.39 % to 81.40 %**
+(`output/index/story000-adat.tsv`). Decoding it
 produced **196,350 streams / 148.3 hours / 47.7 GB of WAV** in
 `output/extracted/story000-opus/`. Opus packets are framed `[u16 size][packet]`
 inside `0x800`-byte blocks, the same as `audio.rpf`.
