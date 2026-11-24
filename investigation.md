@@ -7910,3 +7910,45 @@ Consequences worth keeping:
   showed.
 - The stream argument is a *bounded sub-stream* of the parent, so the transform
   question (if any) applies to that stream class, not to the file layer.
+
+## The arena formula validates on every header, and buffer A has a fifth region (2026-11-23)
+
+Applying `FUN_14087aff0`'s formula to all 654 headers in the mirror:
+
+- **654 / 654** produce a section end that fits inside buffer A. That is the first
+  time the front region has a model that does not need a tolerance, so the field
+  offsets (`0x1a`, `0x1c`, `0x20`, `0x22`, `0x24`, `0x2c`, `0x2d`) are confirmed
+  as code, not as guesses.
+
+What the formula does *not* cover is a trailing region, `tail = size_A − out[5]`.
+Measured against the declared entry count:
+
+| `tail` | packs |
+| --- | ---: |
+| exactly `N × 64` | 79 |
+| exactly `N × 112` | 21 |
+| exactly `N × 48` | 12 |
+| exactly `N × 96` / `N × 128` | 4 / 1 |
+| zero | some |
+| anything else | 537, with `tail/N` spread 48–68 |
+
+So the fifth region is a **per-entry record of about 62–64 bytes** that carries a
+pack-specific fixed size, like the four sections above it. `anim.rpf+0x0` is a
+clean example: `N = 265`, arena ends at `0xca0`, `tail = 14,784` bytes.
+
+Its bytes are high entropy (**7.99**) and the only printable runs are accidental
+(`n?-[~Q`, `YtoAhs`), so it is not a name blob in this build. That kills the
+"buffer A carries plaintext names" reading for these packs — whatever names exist
+are inside this record, in a form that is not ASCII.
+
+With this, buffer A is fully bounded for the first time:
+
+```
+0x00  0x40   arena header (magic, sizes, p3..p8, entry count N)
+0x40  0x60   section 1: p3 × 8      bytes
+       ...   section 2: p4          bytes
+       ...   section 3: p5 × 24     bytes
+       ...   section 4: (p5-p6)*N*p8 bytes
+       ...   section 5: N × ~64     bytes (fixed per pack, high entropy)
+       end = size_A
+```

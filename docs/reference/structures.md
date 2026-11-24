@@ -46,11 +46,19 @@ out[4] = align(out[3] + p5 * 0x18)                 p5 records of 24 bytes
 out[5] = align8(out[4] + (p5 - p6) * N * p8)       (p5 - p6) * N * p8 bytes
 ```
 
-Everything past `out[5]` is not sized by this formula, so a fifth variable region
-exists. For `data.rpf+0` (`p3=4, p4=336, p5=7, p6=1, N=699, p8=2`) the sections
-land at `0x40..0x60`, `0x60..0x1b0`, `0x1b0..0x260`, `0x260..0x2328`.
+For `data.rpf+0` (`p3=4, p4=336, p5=7, p6=1, N=699, p8=2`) the sections land at
+`0x40..0x60`, `0x60..0x1b0`, `0x1b0..0x260`, `0x260..0x2328`.
 
-Status: **code** for the formula, **open** for what each section contains.
+The formula fits inside buffer A for **654 / 654** headers, which is what promotes
+the field offsets from guess to code.
+
+Past `out[5]` sits a fifth region carrying `N ×` a fixed per-pack size — exactly
+`64` in 79 packs, `112` in 21, `48` in 12, and otherwise 48–68 bytes per entry. Its
+bytes are high entropy (7.99) with no printable runs, so it is not a plaintext name
+blob in this build.
+
+Status: **code** for the formula and **exact** for the fit; **open** for what each
+of the five regions contains.
 
 ## Buffer B: the entry table
 
