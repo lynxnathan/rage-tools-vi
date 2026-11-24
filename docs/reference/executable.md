@@ -105,9 +105,17 @@ and the 16-bit id the archive indexes by is then *looked up* in a runtime table
 correct for object and field names in `PSIN` — a different subsystem — but every
 JOAAT-based attempt on archive entry names was aimed at the wrong function.
 
-`tools/name_hash_game.py` implements the hash. Testing it against 3,716,607 front-region
-`u64` words with 147,808 candidates gives **zero** hits, so the metadata does not store
-these hashes in the clear either; it stores ids.
+`tools/name_hash_game.py` implements the hash. Two things about it are now measured
+rather than believed:
+
+* **The engine confirms it.** Scanning the image for `mov r64, imm64` whose immediate
+  equals a hash we computed finds **26 sites / 11 distinct names** — `trailers`,
+  `graphics`, `snow`, `bird`, `train`, `discovery`, `none`, `null`, `default`,
+  `dlc_ityp_request`, `permanent_ityp_file`. A false match is expected 3 × 10⁻⁷ times,
+  so these are real. `tests/test_analysis_tools.py` asserts one of them.
+* **The metadata does not store them.** 147,808 candidates against 3,716,607
+  front-region `u64` words gives **zero** hits — consistent with the front region
+  holding ids rather than hashes.
 
 ## What the executable rules out
 

@@ -126,8 +126,18 @@ def main():
     else:
         print("script_meta over the archive: skipped (archive or index not present)")
 
+    print("game name hash")
+    result = run("tools/name_hash_game.py", "--hash", "trailers")
+    check("hash tool runs", result.returncode == 0, result.stderr[:120])
+    # The executable compares against these values as inline mov immediates, which
+    # makes them independent confirmations of the implementation.
+    check("murmur3-x64-128 of 'trailers' matches the engine",
+          "0xfe29572e616c25ad" in result.stdout, result.stdout.strip()[:80])
+
     exe = ROOT / "cache/exe/game_scarlett_master.exe"
     if exe.is_file():
+        result = run("tools/name_hash_game.py", "--probe", "script.rpf")
+        check("hash probe runs", result.returncode == 0, result.stderr[:120])
         result = run("tools/pe_scan.py", "sections")
         check("pe_scan reads the section table", ".text" in result.stdout)
         check("pe_scan places .text at the right base", "0x140001000" in result.stdout)

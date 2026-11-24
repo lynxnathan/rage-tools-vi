@@ -8474,3 +8474,35 @@ table of hashes.
 
 Both results are worth keeping: the algorithm is now known exactly, and its absence
 from the metadata is measured rather than assumed.
+
+### The hash implementation is confirmed by the engine's own comparisons (2026-11-23)
+
+Searching the image for `mov r64, imm64` encodings (`48/49 b8..bf`) whose immediate
+equals a hash we computed finds **26 sites** covering **11 distinct names**. The
+compiler inlined these comparisons, so each one is an independent confirmation that
+`tools/name_hash_game.py` implements the engine's function exactly:
+
+| name | 64-bit value | file offset |
+| --- | --- | --- |
+| `trailers` | `0xfe29572e616c25ad` | `0x251306` |
+| `null` | `0x15c50f0697e94e34` | `0x2ae49b` |
+| `graphics` | `0xb8629fb6c04b2981` | `0x960ca5` |
+| `dlc_ityp_request` | `0x671ea456ba67afb2` | `0x1b3694a` |
+| `permanent_ityp_file` | `0xaf2d66d6fa0feb11` | `0x1b369f1` |
+| `default` | `0xa18b3a56cab3dcf3` | `0x2cf08a0` |
+| `snow` | `0x0a60a1c102991b4c` | `0x3a06bc4` |
+| `bird` | `0x90e3e72dabc834b7` | `0x48df003` |
+| `train` | `0xb93e52d4dd9036ff` | `0x58f5874` |
+| `none` | `0x9bda129680fad936` | `0x5b0096b` |
+| `discovery` | `0x7770a5c1e0538492` | `0x5b1de2e` |
+
+The probability of a false match is negligible: 41,338 candidate values against 120 M
+byte positions gives an expectation of 3 × 10⁻⁷.
+
+Two consequences. First, the implementation no longer rests on reading the algorithm
+correctly — the engine asserts it. `tests/test_analysis_tools.py` now checks
+`trailers` against its inlined constant, so a regression in the hash fails a test.
+Second, the list is a small map of the names the engine special-cases inline (terrain
+`graphics`/`snow`, animation `bird`/`train`/`trailers`/`discovery`, sentinels `null`/
+`none`/`default`, and two `ityp` names) — useful context even though it does not help
+invert the 16-bit id table.
