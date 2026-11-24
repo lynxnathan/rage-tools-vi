@@ -28,6 +28,28 @@ Two traps cost us real time and are worth naming:
 - `0x4d4e454c` is **`LENM`**, not `LMEN`. A scan for the wrong spelling reports
   zero occurrences and looks like evidence that the chunk does not exist.
 
+## Anatomy of one record
+
+Record 42 of `script.rpf`, 5,392 bytes after decompression — the whole chain, with
+each chunk's distance and payload size:
+
+```
+0x0000  PSIN  distance 0x0d60  payload 3,416 B  count 4 sections
+0x0d60  LSCH  distance 0x01d8  payload   464 B  count 3 index rows
+0x0f38  LENM  distance 0x0080  payload   120 B  count 1 index row
+0x0fb8  LSNS  distance 0x04e4  payload 1,244 B  opaque table block
+0x149c  LGID  distance 0x0008  payload     0 B  empty list
+0x14a4  LRSC  distance 0x0058  payload    80 B  fixed header block
+0x14fc  CHKS  distance 0x0014  payload    12 B  size + tag
+0x1510  end of body
+```
+
+`0x14fc + 0x14 = 0x1510` — the chain ends on the last byte. Reproduce with:
+
+```sh
+uv run python tools/script_meta.py --index output/index/script.tsv --dump 1
+```
+
 ## `PSIN`: the section table
 
 ```
