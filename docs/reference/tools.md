@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-171 scripts.
+172 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -174,6 +174,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`transform_pairs.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/transform_pairs.py) | Test whether 48-byte transform entries pair by index and high byte. |  |
 | [`transform_values.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/transform_values.py) | Follow tagged pointers from named tree parts to their float value leaves. |  |
 | [`type_tags.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/type_tags.py) | Match array header type tags to JOAAT names of likely value types. |  |
+| [`unclassified_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/unclassified_probe.py) | Probe every archive's largest `unclassified` span for internal structure. | --source |
 | [`value_array_context.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/value_array_context.py) | Link typed 48-byte-header value arrays to their nearest named ancestors. |  |
 | [`value_entries.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/value_entries.py) | Validate 48-byte array headers and classify their 16-byte value entries. |  |
 | [`vehicle_curve_branches.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vehicle_curve_branches.py) | Compare branch samples for known window channels and unknown mover channels. |  |

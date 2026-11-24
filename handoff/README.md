@@ -4,7 +4,7 @@ Every table here, its size, and where it comes from. Rendered from
 `handoff/provenance.tsv` by `tools/handoff_manifest.py`; that manifest is the
 source of truth and is checked by `tools/check.sh`.
 
-**119 tables** — 110 generated, 4 curated, 5 legacy, 0 unclassified.
+**120 tables** — 111 generated, 4 curated, 5 legacy, 0 unclassified.
 
 ## Curated (hand-maintained)
 
@@ -90,6 +90,7 @@ source of truth and is checked by `tools/check.sh`.
 | `struct-summary.tsv` | 22 | 12 | exact name in a tool |
 | `textures-entries-chains.tsv` | 25 | 8 | family: entry reconciliation |
 | `textures-entries.tsv` | 1,349 | 8 | family: entry manifests (tools/corpus_pass.sh) |
+| `unclassified-probe.tsv` | 21 | 9 | tool name appears in the table name: tools/unclassified_probe.py |
 | `unclassified-summary.tsv` | 7 | 5 | exact name in a tool |
 | `weight-hash-candidates.tsv` | 1 | 7 | exact name in a tool |
 | `weight-hash-names.tsv` | 21 | 2 | exact name in a tool |

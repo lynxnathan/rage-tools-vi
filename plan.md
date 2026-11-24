@@ -145,8 +145,12 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   (425,440 frames); payload size at `+0x04`, container is `align(0x800, size)`.
 - [x] `core_restofworld`: 1,241.7 MB unclassified, and the largest span holds a sorted
   table of **1,020 `{u24 offset, u8 tag}` entries** at `+0x1000` (96.2 % monotonic).
-- [ ] Sweep every archive's largest `unclassified` span for internal structure — two of
-  two examined so far (`movies`, `core_restofworld`) had some.
+- [x] Swept every archive's largest `unclassified` span (`tools/unclassified_probe.py`);
+  two open with a sorted `u24` table (`core_restofworld` 97.5 %, `story000_restofworld`
+  96.6 %), two are strongly *non*-ascending (`shared_minigame000` 22.6 %, `story000`
+  18.8 %) — descending or a different stride, not random.
+- [ ] Read the two `restofworld` tables: same layout? what do the offsets index?
+- [ ] Explain the two non-ascending spans (descending order or another stride).
 - [ ] Entry model for `levels` (728 of 2,044 packs exact). The failures are
   systematic — about five non-entry struct streams and ninety surplus data
   streams per pack, i.e. entries owning several data streams. Needs the

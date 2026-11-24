@@ -8822,3 +8822,36 @@ structure rather than named.
 That is the second archive after `movies` whose unclassified region turned out to have
 recognisable internal structure — worth a systematic pass over every archive's largest
 `unclassified` range rather than one archive at a time.
+
+## Sweep: two archives carry a sorted 24-bit table, two carry something else (2026-11-23)
+
+`tools/unclassified_probe.py` runs the "is there structure in the largest
+`unclassified` span?" question over every archive with an index. It reports the span's
+share, length, leading zero run, head and mid entropy, and the fraction of 4-byte steps in
+which the first three bytes increase — measured **at the first non-zero byte**, because a
+span often opens with zeros or a short header and a table test applied to those reports
+noise (the first version measured the raw head and read `core_restofworld` as 41.6 %;
+at the first non-zero byte it is 97.5 %).
+
+Results worth acting on, from `handoff/unclassified-probe.tsv`:
+
+| archive | unclassified | mid entropy | u24 ascending |
+| --- | ---: | ---: | ---: |
+| `core_restofworld` | 95.8 % | 7.89 | **97.5 %** |
+| `story000_restofworld` | 65.3 % | 7.90 | **96.6 %** |
+| `shared_minigame000` | 44.7 % | 7.79 | 22.6 % |
+| `story000` | 64.6 % | 7.79 | 18.8 % |
+| most others | — | 7.9 | ~50 % (chance) |
+
+So **two archives open their largest span with a sorted 24-bit offset table**, and two
+open with something that is *not* ascending — 22.6 % and 18.8 % are far below chance,
+which is the signature of a **descending** order or a different stride, not of random
+data. That is the useful part of the sweep: it separates "has a table" from "has a table
+sorted the other way" from "random".
+
+The two `restofworld` archives look like the same structure; `story000_restofworld`'s span
+opens with a long zero run (the first 256 bytes are zero), which is why the first version
+of the probe mis-scored it.
+
+Nothing here names the structure; it locates four spans that are worth reading next and
+records the metric that found them.

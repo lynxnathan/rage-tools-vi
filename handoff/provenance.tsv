@@ -79,6 +79,7 @@ struct-harvest.tsv	1590	10	generated	exact name in a tool
 struct-summary.tsv	22	12	generated	exact name in a tool
 textures-entries-chains.tsv	25	8	generated	family: entry reconciliation
 textures-entries.tsv	1349	8	generated	family: entry manifests (tools/corpus_pass.sh)
+unclassified-probe.tsv	21	9	generated	tool name appears in the table name: tools/unclassified_probe.py
 unclassified-summary.tsv	7	5	generated	exact name in a tool
 weight-hash-candidates.tsv	1	7	generated	exact name in a tool
 weight-hash-names.tsv	21	2	generated	exact name in a tool
