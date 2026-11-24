@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-157 scripts.
+158 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -171,5 +171,6 @@ so `python3 tools/<name>.py` works without arguments.
 | [`verify_bulk.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_bulk.py) | Verify a bulk extraction manifest against its range index and output files. |  |
 | [`verify_extraction.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_extraction.py) | Verify the general extraction entry point against known manifests. |  |
 | [`verify_quadtree.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_quadtree.py) | Verify the class-0 quadtree JSON against the geometry source. |  |
+| [`vtable_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vtable_scan.py) | Enumerate vtables in the executable and resolve chosen slots. | --find --limit --min-slots --slot |
 | [`wrapper_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/wrapper_probe.py) | Probe 32-byte +0x10 wrappers for a signature that predicts rotation leaves. |  |
 | [`zipcrypto_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/zipcrypto_probe.py) | Test passwords against a ZipCrypto entry without extracting anything. | --wordlist --words |
