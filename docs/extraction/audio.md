@@ -174,11 +174,16 @@ A sample of 24 evenly spaced containers, 8 streams each (`tools/decode_adat_samp
 112 streams, 5.8 minutes, median RMS 0.13 FS, 2 near-silent. `0xff61` decodes once its
 table is found by suffix scan.
 
-**`0xff25` does not fit the 8-byte record model.** A sampled container reports
-`count = 2`, `header_size = 64`, i.e. three records per stream, and those records have
-unknown type bytes. It is a compact encoding of its own, not a different table offset —
-which is why the most common variant in `audio.rpf` (3,008 containers) contributes
-nothing to any decode so far.
+**`0xff25` has no chunk table at all.** A sampled container reports `count = 2`,
+`header_size = 64`, and inside the header there is an inline descriptor ending
+`07 00 | 80 bb | 0b | 01 | ff ff` — flags, `0xbb80` (48 000 Hz), codec, channels,
+terminator. Over 600 such containers, **95.3 %** are Opus (codec `0x0b`) at 48 kHz with
+one or two channels; stereo is the majority (401 stereo, 171 mono).
+
+So the compact variant describes its streams in place rather than through records, which
+is why the table model found nothing. What is not yet located is the **payload split
+between the streams**; until it is, no `0xff25` stream is decoded, and the census keeps
+its 3,008 containers' streams out of the decoded totals.
 
 ## Codec status
 

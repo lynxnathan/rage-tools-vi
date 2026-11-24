@@ -8635,3 +8635,37 @@ Readings that matter:
 That is why `0xff25` — 3,008 of the 7,159 `audio.rpf` containers, the most common
 variant — contributes 0 streams to every decode pass so far. Its layout is the concrete
 next target, and the census keeps its stream counts out of the decoded totals.
+
+## `0xff25` carries an inline descriptor, not a chunk table (2026-11-23)
+
+The compact variant does not contain the four-record pattern at all, so every attempt to
+read it as a table was reading structure that is not there. Looking at the bytes
+instead, a `0xff25` container is small (20–28 KB), `count = 2`, `header_size = 64`, and
+inside the first 96 bytes there is a little descriptor ending:
+
+```
+... 07 00 | 80 bb | 0b | 01 | ff ff
+     flags  rate    codec chan  end
+```
+
+`0xbb80` is **48 000 Hz** as a little-endian `u16`, read as bytes `80 bb`. Measured over
+600 `0xff25` containers, that pair is followed by:
+
+| (codec, channels) | containers |
+| --- | ---: |
+| (0x0b, 2) — Opus stereo | 401 |
+| (0x0b, 1) — Opus mono | 171 |
+| other | 28 |
+
+So **95.3 %** of these containers declare Opus at 48 kHz with one or two channels,
+inline. That is why the chunk-table model produced nothing: `0xff25` describes its
+streams in place rather than through 8-byte chunk records.
+
+What is still open, stated as such: where each stream's payload begins and ends. The
+container is small, the data region starts at `header_size`, and with `count = 2` there
+are two streams — but the size split between them has not been located, so no `0xff25`
+stream has been decoded yet.
+
+The census counts these containers (3,008 in `audio.rpf`, the most common variant) but
+their streams are excluded from decoded totals, which is the correct accounting while
+the payload split is unknown.
