@@ -83,7 +83,7 @@ sequenceDiagram
 | `src/main.rs` | CLI dispatch, zlib decode, top-level reports | object semantics |
 | `src/range_map.rs` | byte partitioning, chain starts | archive index meaning |
 | `src/partition.rs` | candidate entries vs `+0x24` | directory-node proof |
-| `src/pack_report.rs` | header words, entropy, trailer bounds | trailer cipher |
+| `src/pack_report.rs` | header words, entropy, trailer bounds | trailer record meaning |
 | `src/range_extract.rs` | 16-byte aligned zlib continuation | payload semantics |
 | `tools/*.py` | names, records, arrays, experiments | canonical byte extraction |
 | `handoff/` | exchanged tables | source of truth for the format |

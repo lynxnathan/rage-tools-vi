@@ -1,8 +1,10 @@
 # Entry manifests
 
-The RPF9 index table is masked, so entries are identified from the **payload**
-instead: a pack's streams pair into entries, and the declared count N is used as
-an independent check rather than as the parser's driver.
+The RPF9 index records are unidentified, so entries are identified from the
+**payload** instead: a pack's streams pair into entries, and the declared count N
+is used as an independent check rather than as the parser's driver. The loader
+copies the metadata buffers verbatim, so a transform — if one exists — would sit
+in the stream's `Read`, not in the archive layer.
 
 ## Units
 

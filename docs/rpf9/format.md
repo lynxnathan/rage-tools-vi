@@ -49,11 +49,12 @@ classDiagram
         +payload_range() Range
     }
     class MetadataRegion {
-        +name: FrontA_FrontB_Trailer
+        +name: BufferA_BufferB_Trailer
         +start: usize
         +end: usize
         +alignment: 16
-        +cipher: unknown
+        +reading: verbatim copy
+        +layout: arena header + five regions
     }
     class Span {
         +kind: SpanKind
