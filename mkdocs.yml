@@ -112,6 +112,7 @@ nav:
       - Bus protocol: workstreams/bus.md
       - Roadmap: roadmap.md
   - Reference:
+      - The executable as a source: reference/executable.md
       - Recovered structures: reference/structures.md
       - Tool index: reference/tools.md
       - Report formats: reference/report-formats.md

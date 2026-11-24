@@ -8387,3 +8387,47 @@ portrait ones are phone-screen cutscenes. The archive's classified share goes fr
 
 The 1,030 rejected candidates are the interesting part of the method: a magic-only
 scan would have produced 1,545 "movies" and no way to know 1,030 of them were noise.
+
+## The executable, read from the other side (2026-11-23)
+
+Working from the binary outward instead of from the bytes inward produced three facts
+the corpus could not have given, all from the archive's own lookup path.
+
+### Buffer A *is* the header the code reads
+
+`0x1428ce080` and `0x1428ce0c0` are thin: they load `[obj+0x30]`, then read a `u16` at
+`+0x1a` (`p3`) or `+0x20` (`p5`) from it, and pass `[obj+0x38]` as a record array. So
+the fields the arena formula uses are the *copied file bytes*, not a parallel
+structure built from them. That closes the last doubt about the layout model: the
+header at `0x00..0x40` of buffer A is what the game reads.
+
+### Section 1 is a `u16` dispatch table, searched linearly
+
+`0x1428ce200` tail-calls `0x144e6f780`, and that function is six instructions of loop:
+
+```c
+for (i = 0; i != count; ++i)
+    if (*(short *)(records + i * 8) == key16) return i;
+return 0xffff;
+```
+
+A linear scan over `p3` records, comparing a **16-bit** key, `0xffff` meaning "not
+found". It only makes sense for a small table, and `p3` is 4–7 in the packs measured.
+So section 1 is a small dispatch table, and the archive's identity lookups go through
+a 16-bit id — not a 32-bit name hash, and not a hash table at all.
+
+That is a useful negative for the front region: the section the game indexes by is
+*not* the name table, so the name material (if any) is in section 2–5.
+
+### The class map is the archive's own
+
+`tools/vtable_scan.py --find` puts both factories (`+0x418`, `+0x420`) inside the
+archive vtable itself, which is why no external owner exists: archives nest over
+bounded sub-streams of their parent.
+
+### Documented
+
+`docs/reference/executable.md` collects the whole third category of evidence — binary
+provenance, harness, the function table (address → what it settles → status), the class
+map, what the executable *rules out* (AES, CNG, compression, the CBC reading), and what
+it still owes us. `docs/reference/structures.md` gained the in-memory object layout.

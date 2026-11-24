@@ -34,6 +34,21 @@ copies the header into it, so the first `0x10` bytes appear twice.
 | `+0x2d` | `u8` | flags; bit 0 selects 16-byte instead of 4-byte section alignment | code |
 | `+0x30` | `u32` | `+0x1c − 0x140` | measured, 4,306/4,373 |
 
+## Archive object (in memory)
+
+```
++0x00  vtable 0x1462fd480 (147 slots)     +0x28  arena descriptor
++0x08  file / stream object               +0x30  pointer to buffer A (the header)
++0x18  buffer A base                      +0x38  section 1 (p3 x 8 bytes)
++0x20  buffer A size
+```
+
+The lookup code reads `p3` from `[+0x30]+0x1a` and `p5` from `[+0x30]+0x20` — that
+is, straight out of the copied file header — and `0x144e6f780` scans the 8-byte
+records at `+0x38` comparing a `u16` key, returning `0xffff` for "not found".
+So **section 1 is a small `u16`-keyed dispatch table searched linearly**, not a name
+hash table. Status: **code**.
+
 ## Buffer A: the arena
 
 `FUN_14087aff0` turns the header fields into five section offsets:
