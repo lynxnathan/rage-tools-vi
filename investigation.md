@@ -8750,3 +8750,33 @@ shifted by one byte like the fields appear to be.
 
 Nothing is decoded for this variant, and the census continues to count its 3,008
 containers without counting their streams as decoded.
+
+### `0xff25` payload: not block-framed at any size or shift, and `0x860` is a marker (2026-11-23)
+
+Continuing from the descriptor, three tests and one identification.
+
+**Block framing is out.** Testing block sizes `0x100, 0x200, 0x400, 0x800, 0x1000,
+0x2000` at byte shifts 0–3 for the other variants' rule (packets until a zero length,
+then zero padding) gives **zero clean blocks in every combination**. So this variant is
+not block-framed like `0xff02`, and the one-byte-shift hypothesis fails for the payload
+even though three header signs pointed that way.
+
+**Packet chains are short.** A backward dynamic-programming pass (longest chain of valid
+size-prefixed packets) gives maxima of 12, 12 and 25 packets across three containers —
+not a continuous stream.
+
+**The repeated offset is a marker, not data.** Two different containers put their longest
+chain at `+0x860`, and the bytes there are `a0 00 f8 7f cf b3 01 cd 61 10 52 …`. The
+`a0 00 f8` triple is the marker this project already documented in
+`tools/awc_framing.py` ("repeated `a0 00 f8` markers"). So `0x860` is where a marker or
+seek region begins, which is why chains keep terminating near it.
+
+**Alternate prefix widths are out too:** at that offset, big-endian `u16` and
+little-endian `u32` length prefixes both yield a single packet.
+
+State of `0xff25`: body is compressed audio (H 7.74–7.79), the header's field offsets are
+odd, `header_size` is not the data offset, there is no chunk table, no size field in the
+first 64 bytes, no block framing at six sizes and four shifts, and packet chains stop
+near a documented marker. The remaining untested idea is that the two streams are
+**interleaved** between marker regions; everything else this pass tried is excluded and
+written down.

@@ -174,8 +174,10 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   (H 7.74–7.79), `header_size` is **not** the data offset, no table under any byte shift,
   no size field in the first 64 bytes, fields sit at odd offsets (three independent
   signs), payload is packet-framed (1,678 short runs) but **not** `0x800`-block framed.
-  Two live hypotheses: the two streams are interleaved, or the region is shifted by one
-  byte.
+  Payload not block-framed at six sizes × four shifts; chains stop after 12–25 packets;
+  `+0x860` is a documented `a0 00 f8` marker region; BE-`u16` and LE-`u32` prefixes fail.
+  The one live hypothesis left is that the two streams are interleaved between marker
+  regions.
 - [ ] Decode the remaining ~1.7 M Opus streams (5.2 % covered so far).
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.

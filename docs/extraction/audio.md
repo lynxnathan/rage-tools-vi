@@ -189,6 +189,12 @@ field in the first 64 bytes scales with the container size. The type-like bytes 
 *odd* offsets (`0x23`, `0x2b`, `0x2f`, `0x3f`), so the alignment is not the one the other
 variants use.
 
+Further tests, all negative except one identification: no block framing at sizes
+`0x100`–`0x2000` and shifts 0–3; packet chains stop after 12–25 packets; and the repeated
+payload offset `+0x860` holds the `a0 00 f8` **marker** already documented in
+`tools/awc_framing.py`, not packet data. Big-endian `u16` and little-endian `u32` length
+prefixes both fail there too.
+
 Three further measurements bound the problem:
 
 - the body entropy is 7.74–7.79 against 3.4–4.4 for the header, so the containers do hold
