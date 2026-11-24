@@ -206,6 +206,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] `levels.rpf` KB2 scan: 719 candidates, **0** valid containers (462 bad version byte,
   257 bad dimensions) — the raw `KB2` matches there are coincidence, and the pass is
   recorded as a negative rather than an empty index.
+- [x] `shaders.rpf`: largest span begins with an `SGD5` header at `+0x9000` (only 2 in the
+  archive), no `DXBC`/`DXIL`/`SHDR` magic, entropy 6.83 — raw program data, no per-shader
+  boundary yet.
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.

@@ -9029,3 +9029,20 @@ Recorded as a negative with its denominators: the same filter that accepts 515/1
 `movies.rpf` accepts 0/719 here, which is what a validation-by-structure filter should do.
 `output/index/levels-bink.tsv` was empty and has been removed rather than left as an
 index with no rows.
+
+### `shaders.rpf`: one 274 MB span, an `SGD5` header, and no DXBC magic (2026-11-23)
+
+The archive's largest `unclassified` span is `0x8640..0x10579000` (274,139,584 B, 66.6 %
+of the file). It begins with 2,496 zero bytes, then `SGD5` at `+0x8640+2496`, and only
+**two** `SGD5` occurrences exist in the whole archive (`0x9000`, `0x10287000`), so it is a
+whole-archive header rather than a per-shader container magic.
+
+There is **no** `DXBC`, `DXIL` or `SHDR` magic in the first 64 KB, and the span's byte
+entropy is 6.83 — high but not near-uniform, i.e. dense program data rather than
+compressed. That is consistent with the shaders being stored as raw program binaries whose
+container magic is either absent or stripped; the same observation `docs/` already makes
+about native RDNA2 code spans inside DXBC, which is what the `rdna2-spirv` submodule reads.
+
+Nothing to index here yet: there is no per-shader boundary to find without a length field,
+and inventing one would be guessing. Recorded with its numbers so the next attempt starts
+from the two `SGD5` sites.
