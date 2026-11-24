@@ -57,7 +57,7 @@ them empty. `unresolved_rpf9_header` carries only `start`.
 ## JSON
 
 The canonical Serde definitions and examples live in `format.md` at the
-repository root and are mirrored in [Source documents](source-format.md). The
+repository root and are documented at the repository root in `format.md`. The
 CLI report structs are drawn in [Rust CLI](../architecture/cli.md).
 
 !!! note "Status before parse"

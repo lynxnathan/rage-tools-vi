@@ -132,4 +132,4 @@ opaque.
   and most of `levels`, have one to four entries per pack whose descriptor is not
   where the stream window says it should be.
 
-See the [roadmap](roadmap.md) for the live list.
+See [plan.md](https://github.com/lynxnathan/rage-tools-vi/blob/main/plan.md) for the live list.

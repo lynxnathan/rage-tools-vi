@@ -8,6 +8,14 @@ crc32, not adler32, over the body, over the body prefix, or (tested here) over
 the compressed stream.  The trailing `7a 70 70 70` is `0x70` memset filler.
 
     python3 tools/chks_probe.py --archive /path/levels.rpf --index output/index/levels.tsv
+
+Excluded, measured over the first records of `levels.rpf`: crc32, crc32c, crc64(ECMA),
+adler32, joaat (seeds 0 and 0xffffffff), fnv1a-32, fnv1a-64 (low, high, folded), djb2,
+sdbm, murmur3-32, xxh32 and xxh64 (low, high, folded) over the body, the prefix before
+`CHKS`, the body with the trailer zeroed, the compressed stream with and without its
+zlib header, and the size word prefixed or appended — both byte orders, 300 records,
+zero matches. The tag is per record (294 distinct in 300) and the value `36375663`
+recurs seven times, so it is not a constant flag either.
 """
 
 import argparse

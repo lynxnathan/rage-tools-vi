@@ -126,6 +126,34 @@ rather than believed:
 | the front region is compressed | zlib, raw deflate, lzma and bz2 all fail at the region start; the loader also copies rather than inflates |
 | the "CBC" reading of the front region | identical plaintext prefixes explain the repeated-block statistic; there is no cipher call on the path |
 
+## Booting the console image under Wine
+
+The image is a console build: its import table names `xg_xs`, `d3d12_xs`, `xapu`, `xmem`,
+`AcpHal`, `XCRDAPI`, `XboxBvhBuilder` and `Bink2Scarlett`, and the package carries
+`gameos.xvd`. Wine loads the PE, and each missing library is a single line in its log. A
+generator reads the import table and writes stub DLLs for the 117 console symbols plus one
+runtime module the image loads by name, `xgameruntime.dll`, which never appears in its
+import table.
+
+| Stop | Call before it | What the stop was |
+| --- | --- | --- |
+| 1 | `XMemVirtualAlloc(0, 0x600000000, …)` | CRT `int 3` after initialisation returned `0x89240101` |
+| 2 | `InitializeApiImplEx2` | `xgameruntime.dll` absent |
+| 3 | `QueryApiImpl` | the out-slot is the third argument, not the second |
+| 4 | `GameInput!ordinal 1` | the image imports GameInput by ordinal only |
+| 5 | `DStorageGetFactory` | the caller asserts on a null factory |
+| 6 | — | abort at `game.exe+0x2237178`, engine threads running |
+
+Six interfaces are then queried by GUID, and slot 2 of each is called as
+`(object, buffer, 0x20)`. Filling those buffers with a repeated byte turns the abort into
+a stack overflow, which means the returned data reaches control flow: plausible bytes are
+not enough, the layouts are required.
+
+That is the measured boundary. Passing it means implementing the memory, GPU and storage
+semantics of the platform, not more signatures — a project, not an iteration. The
+reproduction is one command (`tools/rage.py play --stubs --game-dir <dump>`), and the
+stub generator is `tools/stub_dlls.py`.
+
 ## What it still owes us
 
 - the stream class behind `Read` (`+0x60`), which is the only link between the file

@@ -113,8 +113,6 @@ nav:
       - Report formats: reference/report-formats.md
       - Hash names: reference/names.md
       - Glossary: reference/glossary.md
-      - AGENTS: reference/source-agents.md
-      - Script status: reference/source-script-status.md
 
 strict: false
 validation:
