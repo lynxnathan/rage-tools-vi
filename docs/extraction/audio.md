@@ -71,6 +71,24 @@ Tools: `tools/awc_framing_ff02.py` (variant census) and
 The `0x76` descriptor is 32 bytes: sample count at `+0x00`/`+0x0c`, sample rate
 at `+0x08`, codec at `+0x1c`, and codec sub-ID at `+0x1d`.
 
+## Index coverage, and a correction
+
+The stream index for `audio.rpf` classifies **99.93 % of the file as `unclassified`**
+— it recognises compressions, and an AWC bank is neither compressed nor opaque. That
+is an *index* gap, not missing data: the extraction manifest accounts for **6,625
+banks / 23.51 GB (82.37 %)** with zero overlaps.
+
+`tools/adat_index.py --manifest` turns that validated manifest into `adat` index rows
+(`output/index/audio-adat.tsv`). The remaining **5.03 GB across 27 gaps are also
+`ADAT`**, but in the `0xff02` layout that the `0xff21` manifest does not cover — so
+they are extracted but not indexed. Closing that needs a variant-aware indexer; the
+`0xff02` table extent rule is not yet established.
+
+A caution for anyone reaching for a magic scan: `ADAT` occurs at 7,159 aligned
+offsets in `audio.rpf`, and **none** of them validate against the `awc_parse.py` tag
+model, because that model is the Leonida/story000 layout rather than the
+`0xff21`/`0xff02` one. Validating one layout with the other yields confident garbage.
+
 ## Codec status
 
 The corpus scan found 2,320 parsed streams:

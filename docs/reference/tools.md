@@ -12,11 +12,12 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-163 scripts.
+164 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
 | [`active_learning_queue.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/active_learning_queue.py) | Build a representative/uncertain label queue from ML binary clusters. |  |
+| [`adat_index.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/adat_index.py) | Index the `ADAT` containers inside an audio archive. | --limit --out --show |
 | [`annotate_handoff.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/annotate_handoff.py) | Join the name registry onto every handoff table that carries hashes. | --annotate` --coverage --out |
 | [`archive_inventory.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/archive_inventory.py) | Normalize Rust map output for the small local archives. |  |
 | [`array_inventory.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/array_inventory.py) | Export every valid typed array with its root context. |  |

@@ -8137,3 +8137,79 @@ project: **when the environment changes, re-read the guards.** A `| tail` hid a
 failing `check.sh`; a summed (not unioned) coverage hid gaps behind overlapping
 ranges; and an archive-only guard hid an index dependency. Each fix was one
 condition, and each was invisible until the environment moved.
+
+## `audio.rpf`: the index classifies 0.07 % of it, and that is an index gap (2026-11-23)
+
+The stream index for `audio.rpf` says:
+
+| kind | bytes | share |
+| --- | ---: | ---: |
+| `unclassified` | 28,524,186,677 | 99.93 % |
+| `zlib` | 19,210,407 | 0.07 % |
+| `zero_run` | 49,108 | 0.00 % |
+| `front` / `trailer` | 8,480 | — |
+
+That contradicts what the archive actually holds, and the extraction manifest proves
+it: `output/extracted/audio-awc/manifest.tsv` lists **6,625 banks / 23,510,392,992 B**
+= **82.37 %** of the file, with zero overlaps and zero out-of-order rows. That is
+exactly the 23.51 GB the docs have claimed all along. So the data was always there;
+the *index* simply never looked inside.
+
+### Why the index misses them
+
+The partitioner classifies stored bytes by recognising compressions and runs. An
+AWC bank is neither: it starts with `ADAT`, its tables are plain, and its payload is
+uncompressed. So 28.5 GB collapses into one opaque span.
+
+A naive fix — scan for `ADAT` on the 0x800 alignment — is **not** enough: of 7,159
+candidate offsets, zero pass structural validation. The reason is worth recording:
+`tools/awc_parse.py` implements the *Leonida/story000* layout (16-byte header, `u32`
+flags, tag table at a computed position), while `audio.rpf` uses the `0xff21`/`0xff02`
+layouts described in `docs/extraction/audio.md` (16-bit version/flags, chunk table at
+`0x50` or `0x10 + 4n`, records `offset:28 | size:28 | type:8`). Feeding one layout to
+the other produces plausible-looking garbage, which is exactly what the 7,159
+"banks" were.
+
+### What is indexed now
+
+`tools/adat_index.py --manifest` turns the validated extraction manifest into index
+rows — `kind=adat`, start, end, and the container's flags — written to
+`output/index/audio-adat.tsv`:
+
+```
+6,625 banks  23,510,392,992 B  82.37 % of the file  (0 overlaps)
+```
+
+### What is still not
+
+The complement is 27 gaps totalling **5.03 GB**, and every one of them **starts with
+`ADAT`** as well:
+
+```
++0xf2ee000..0x101372000   4,060,626,944 B  version 1  flags 0xff02  streams 1,885
++0x306966000..0x322a69000   470,822,912 B  version 1  flags 0xff02  streams 2,025
++0x345678000..0x34f8b1000   170,102,784 B  version 1  flags 0xff02  streams 1,601
+```
+
+So those are `0xff02` banks that the `0xff21` manifest does not cover. The extraction
+tree holds **7,766** `.awc` files against the 6,625 rows of that manifest, which is
+consistent with a second pass having handled them without writing back into the same
+manifest.
+
+Next concrete step: a variant-aware ADAT indexer, so the 5.03 GB stops being opaque.
+It needs the `0xff02` chunk-table extent rule, which this pass did **not** establish
+(reading 7 records per stream ran into non-chunk data, so the table is not a plain
+`7 × count` array).
+
+### A verifier caught a column misuse within minutes (2026-11-23)
+
+The first version of `tools/adat_index.py` wrote each container's `flags` into the
+`chain_start` column of the index. `tools/chain_start_verify.py` rejected the file
+immediately — `chain_start` must be a *range start* that a range continues, and
+`0x65313` is not one. The column now stays empty and the flags are dropped rather
+than smuggled into a field with a different meaning.
+
+This is the second time today that a guard caught a real mistake rather than sitting
+green: the index verifier here, and the tool index after adding a script. The pattern
+is consistent — the checks are worth more than they cost precisely because they
+encode a meaning that a hurried writer forgets.
