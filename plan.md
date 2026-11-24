@@ -155,9 +155,10 @@ Each needs a specific input, not more effort.
   region; the traced read→mount→entry-walk path holds no cipher. Wide (64/128-bit)
   hash layouts stay open because they are statistically indistinguishable from
   random bytes. Every entry here is payload-derived.
-- [ ] Cipher identity for the front region: not AES (forward S-box absent, the one
-  inverse S-box is CNG library code), not CNG (no `BCryptEncrypt`/`Decrypt`
-  imports), no Blowfish; ARX constants present (Murmur ×17, TEA delta ×11).
+- [ ] Transform, if any, sits in the *stream's* `Read` (`+0x60`): the archive
+  layer copies both buffers verbatim (`FUN_141fb2600`), so AES/CNG/Blowfish
+  exclusions apply to the image as a whole, not to this link. Reading the stream
+  implementation is the remaining step.
 - [ ] Front A milestone on `story000_bvh4.rpf` — needs independent table framing.
 - [ ] Exact end of the last `data.rpf` child — needs an independent trailer start.
 - [ ] Multi-mip texture tail — needs a multi-mip dictionary.

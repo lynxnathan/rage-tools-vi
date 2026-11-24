@@ -24,7 +24,7 @@ copies the header into it, so the first `0x10` bytes appear twice.
 | `+0x04` | `u32` | size of buffer A → `malloc` argument | code |
 | `+0x08` | `u32` | start offset of buffer B; `+0x04 − +0x08` is its size | code |
 | `+0x0c` | `u32` | trailer length | exact, 4,373/4,373 |
-| `+0x10` | `u64` | per-pack id | measured, unique in all 4,373 |
+| `+0x10` | `u64` | per-pack id | measured, unique across all 654 headers in the local mirror |
 | `+0x1a` | `u16` | arena field `p3`: count of 8-byte records | code |
 | `+0x1c` | `u32` | arena field `p4`: byte length of section 2 | code |
 | `+0x20` | `u16` | arena field `p5`: count of 24-byte records; also `[family][format]` | code |
