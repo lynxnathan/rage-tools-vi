@@ -101,3 +101,14 @@ classDiagram
 !!! note "No hidden RPC"
     Every cross-session message is a JSON line in `messages.jsonl`. The user can
     read, tail, or inject messages as `operator`.
+
+## Table provenance
+
+`handoff/README.md` lists every table in `handoff/`, its size and where it comes
+from, rendered from the committed `handoff/provenance.tsv`. The manifest separates
+**generated** (a tool writes it), **curated** (hand-maintained, with the reason),
+and **legacy** (produced before the tools convention, kept because pages cite it).
+`tools/check.sh` fails if a table exists that the manifest does not list.
+
+An artifact with no producer is how `handoff/psin-vocabulary.tsv` was once mistaken
+for generated output; the manifest exists so that question always has an answer.

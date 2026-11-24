@@ -1,124 +1,126 @@
-# handoff artifacts
+# Handoff tables
 
-Verified data products: manifests, name tables and measurements.
-Every file is regenerable from the committed tools plus the source
-archives, which stay local. `tools/check.sh` verifies that the tools
-still agree with these files.
+Every table here, its size, and where it comes from. Rendered from
+`handoff/provenance.tsv` by `tools/handoff_manifest.py`; that manifest is the
+source of truth and is checked by `tools/check.sh`.
 
-| File | Rows | Columns |
+**114 tables** — 105 generated, 4 curated, 5 legacy, 0 unclassified.
+
+## Curated (hand-maintained)
+
+| file | rows | why |
 | --- | ---: | --- |
-| `archive-inventory-summary.tsv` | 33 | `archive`, `kind`, `ranges`, `stored_bytes`, `decoded_bytes` |
-| `audio-ace1-decode.tsv` | 73 | `path`, `stream`, `rate`, `declared_taps`, `data_offset`, `data_bytes`, … (13 total) |
-| `audio-awc-framing.tsv` | 2,320 | `path`, `version`, `flags`, `streams`, `data_offset`, `stream`, … (18 total) |
-| `audio-full.tsv` | 95,162 | `container`, `stream`, `codec`, `channels`, `frames`, `declared`, … (10 total) |
-| `audio-opus-decode.tsv` | 2,081 | `path`, `stream`, `sub_id`, `source_rate`, `output_rate`, `declared_samples`, … (16 total) |
-| `audio-opus-trim-model.tsv` | 2,081 | `path`, `stream`, `channels`, `source_rate`, `decoded_frames`, `declared_samples`, … (10 total) |
-| `audio-variant-decode.tsv` | 4,704 | `container`, `stream`, `packets`, `channels`, `frames`, `declared`, … (9 total) |
-| `audio-xma2-decode.tsv` | 166 | `path`, `stream`, `codec`, `rate`, `samples`, `channels`, … (10 total) |
-| `bone-hash-names-curated.tsv` | 60 | `bone_hash`, `name`, `root_id`, `bone_index` |
-| `bone-hash-names.tsv` | 99 | `bone_hash`, `name`, `root_id`, `bone_index` |
-| `bulk-extraction-status.tsv` | 1 | `archive`, `streams`, `stored_bytes`, `decoded_bytes`, `workers`, `wall_s`, … (9 total) |
-| `bulk-extraction-verification-summary.tsv` | 2 | `archive`, `manifest`, `index`, `missing`, `extra`, `failures`, … (7 total) |
-| `core-bvh4-descriptors.tsv` | 269,106 | `stream`, `allocated`, `pair_lo`, `pair_hi`, `id0`, `id1`, … (15 total) |
-| `core-bvh4-entries.tsv` | 294,614 | `pack`, `entry`, `shape`, `declared_count`, `declared_ok`, `stream`, … (10 total) |
-| `corpus-pass.tsv` | 22 | `archive`, `ranges`, `zlib`, `declared`, `stored_bytes`, `packs`, … (9 total) |
-| `data-entries-chains.tsv` | 6,537 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
-| `data-skeleton-family-links.tsv` | 16 | `family`, `roots`, `core_bones`, `union_bones`, `root_resource_hits`, `core_part_hits`, … (8 total) |
-| `downloads-corpus-inventory.tsv` | 108 | `relative_path`, `stored_bytes`, `rpf_magic_hex`, `extraction_manifest` |
-| `entry-reconciliation.tsv` | 22 | `archive`, `packs`, `declared`, `continuations`, `items`, `nested`, … (7 total) |
-| `extraction-coverage-summary.tsv` | 8 | `archive`, `file_bytes`, `ranges`, `mapped_bytes`, `coverage`, `decoded_bytes`, … (8 total) |
-| `extraction-entry-verification.tsv` | 6 | `archive`, `kind`, `start`, `end`, `expected_bytes`, `actual_bytes`, … (8 total) |
-| `extraction-inventory-summary.tsv` | 127 | `archive`, `kind`, `ranges`, `stored_bytes`, `decoded_bytes`, `extracted` |
-| `header-census-full.tsv` | 4,373 | `archive`, `offset`, `mode`, `version`, `count`, `front_end`, … (10 total) |
-| `header-census.tsv` | 71 | `archive`, `offset`, `mode`, `version`, `count`, `front_end`, … (10 total) |
-| `header-words.tsv` | 4,373 | `archive`, `offset`, `mode`, `version`, `count`, `front_end`, … (34 total) |
-| `name-coverage.tsv` | 25 | `file`, `rows`, `hash_columns`, `columns_named`, `values_named`, `values_total`, … (7 total) |
-| `names.tsv` | 36,952 | `hash`, `name`, `kind`, `confidence`, `source`, `also_known_as`, … (7 total) |
-| `navmeshes-entries-chains.tsv` | 25,981 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
-| `navmeshes-entries.tsv` | 2,447 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
-| `pack-extents-leaves.tsv` | 45 | `archive`, `offset`, `count`, `units`, `end`, `unit` |
-| `pack-extents-textures.tsv` | 21 | `archive`, `offset`, `count`, `structs`, `children`, `direct`, … (9 total) |
-| `pack-model-fit.tsv` | 3,467 | `archive`, `pack`, `declared`, `streams`, `structs`, `chains`, … (7 total) |
-| `packs-0f000080-probe.tsv` | 62 | `metric`, `value`, `count` |
-| `packs-4042-classes.tsv` | 20 | `size`, `streams`, `entropy`, `zero_fraction`, `adjacent_equal` |
-| `packs-4042-probe.tsv` | 64 | `metric`, `value`, `count` |
-| `packs-binary-clusters.tsv` | 32 | `cluster`, `streams`, `avg_bytes`, `min_bytes`, `max_bytes`, `top_head`, … (8 total) |
-| `packs-label-queue.tsv` | 128 | `cluster`, `rank`, `start`, `decoded_bytes`, `head_after_zeros`, `zero_offset`, … (9 total) |
-| `packs-signature-summary.tsv` | 8 | `kind`, `streams`, `decoded_bytes` |
-| `psin-entries.tsv` | 4,968 | `psin`, `pair`, `field_a`, `value_a`, `field_b`, `value_b` |
-| `psin-names.tsv` | 544 | `kind`, `hash`, `name`, `records`, `types` |
-| `psin-segments.tsv` | 5,411 | `psin`, `start_row`, `rows`, `width`, `agreement` |
-| `psin-vocabulary.tsv` | 80 | `value`, `group`, `records` |
-| `remaining-archive-index-sha256.tsv` | 8 | `archive`, `index`, `index_bytes`, `sha256` |
-| `remaining-archive-index-summary.tsv` | 8 | `archive`, `stored_bytes`, `spans`, `zlib`, `decoded_bytes`, `unclassified`, … (10 total) |
-| `remaining-archive-index-verification.tsv` | 8 | `archive`, `source_bytes`, `index_stored_bytes`, `status`, `zlib`, `decoded_bytes`, … (7 total) |
-| `rig-names-corpus.tsv` | 12 | `hash`, `name`, `kind`, `root_id`, `index`, `shape` |
-| `script-array-inventory.tsv` | 7,960 | `root_record`, `root_id`, `root_name`, `root_class`, `root_type`, `array_record`, … (10 total) |
-| `script-bone-geometry.tsv` | 3,043 | `root_id`, `root_class`, `table_record`, `bone_index`, `bone_hash`, `points`, … (20 total) |
-| `script-bone-namespace-probe.tsv` | 16 | `family`, `roots`, `exact_templates`, `ordered_templates`, `core_bones`, `union_bones`, … (13 total) |
-| `script-bone-points.tsv` | 15,732 | `root_record`, `root_id`, `root_class`, `table_record`, `bone_index`, `bone_hash`, … (15 total) |
-| `script-bone-roots-named.tsv` | 44 | `root_id`, `bones`, `named`, `families` |
-| `script-bone-template-families.tsv` | 16 | `family_id`, `root_count`, `roots`, `min_bones`, `max_bones`, `core_bones`, … (11 total) |
-| `script-bone-templates.tsv` | 38 | `template_id`, `bone_count`, `root_count`, `roots`, `hash_signature` |
-| `script-bones-named.tsv` | 3,043 | `root_record`, `root_id`, `root_class`, `root_type`, `table_record`, `bone_index`, … (17 total) |
-| `script-bones.tsv` | 3,043 | `root_record`, `root_id`, `root_class`, `root_type`, `table_record`, `bone_index`, … (14 total) |
-| `script-pair-arrays.tsv` | 7,630 | `root_record`, `root_id`, `root_name`, `root_class`, `root_type`, `array_record`, … (9 total) |
-| `script-quadtree-summary.tsv` | 44 | `root_id`, `items`, `nodes`, `max_depth`, `x0`, `y0`, … (8 total) |
-| `script-quadtree-verification.tsv` | 8 | `metric`, `value`, `status` |
-| `script-skeleton-0x48dcbb01.tsv` | 34 | `bone_index`, `bone_hash`, `name` |
-| `script-vehicle-branch-relations.tsv` | 23 | `root_name`, `key_hash`, `key_name`, `array_record`, `points`, `t_end`, … (8 total) |
-| `script-vehicle-curve-join.tsv` | 1,935 | `root_id`, `root_name`, `key_hash`, `key_name`, `subtree_records`, `rotation_leaves`, … (8 total) |
-| `script-vehicle-curve-points.tsv` | 6,298 | `root_id`, `root_name`, `array_record`, `key_hash`, `key_name`, `point_index`, … (10 total) |
-| `script-vehicle-curve-quantization.tsv` | 147 | `axis`, `key_hash`, `grid_deg`, `samples`, `observed_lt_0.05`, `baseline_mean`, … (7 total) |
-| `script-vehicle-curves.tsv` | 1,935 | `root_id`, `root_name`, `array_record`, `key_hash`, `key_name`, `points`, … (12 total) |
-| `script-vehicles.tsv` | 385 | `root_record`, `root_id`, `root_name`, `flags`, `curve_count`, `channels` |
-| `shared-minigame000-bvh4-descriptors.tsv` | 1,233 | `stream`, `allocated`, `pair_lo`, `pair_hi`, `id0`, `id1`, … (15 total) |
-| `story000-awc-framing.tsv` | 245 | `path`, `version`, `flags`, `streams`, `data_offset`, `stream`, … (18 total) |
-| `story000-awc-variants.tsv` | 2,952 | `path`, `flags`, `streams`, `data_offset`, `chunks`, `seven_per_stream`, … (14 total) |
-| `story000-bvh4-control.tsv` | 4 | `start`, `end`, `stored_bytes`, `decoded_bytes`, `sha256`, `xml_root`, … (8 total) |
-| `struct-harvest.tsv` | 1,590 | `archive`, `stream`, `kind`, `decoded`, `self_pointers`, `external`, … (10 total) |
-| `struct-summary.tsv` | 22 | `archive`, `packs`, `streams`, `entries`, `streams_per_entry`, `sampled`, … (12 total) |
-| `textures-entries-chains.tsv` | 25 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
-| `textures-entries.tsv` | 1,349 | `pack`, `entry`, `declared_count`, `delta`, `struct_stream`, `struct_bytes`, … (8 total) |
-| `unclassified-summary.tsv` | 7 | `archive`, `ranges`, `bytes`, `largest_span`, `largest_start` |
-| `weight-hash-candidates.tsv` | 1 | `weight_hash`, `name`, `shape`, `roots`, `pairs`, `evidence`, … (7 total) |
-| `weight-hash-names.tsv` | 21 | `weight_hash`, `name` |
-| `anim-index-pilot.md` | — | notes |
-| `audio-awc-decode.md` | — | notes |
-| `audio-awc.md` | — | notes |
-| `data-awc-ace1-ir.md` | — | notes |
-| `data-awc-opus-exceptions.md` | — | notes |
-| `data-awc-opus.md` | — | notes |
-| `data-awc-trim-ace1.md` | — | notes |
-| `data-last-child.md` | — | notes |
-| `data-skeleton-family-status.md` | — | notes |
-| `extraction-coverage.md` | — | notes |
-| `extraction-pilot.md` | — | notes |
-| `packs-0f000080-probe.md` | — | notes |
-| `packs-4042-classes.md` | — | notes |
-| `packs-4042-probe.md` | — | notes |
-| `packs-binary-clusters.md` | — | notes |
-| `packs-semantic-log.md` | — | notes |
-| `remaining-archive-index.md` | — | notes |
-| `script-bone-namespace-probe.md` | — | notes |
-| `script-status.md` | — | notes |
-| `story000-bvh4-control.md` | — | notes |
-| `story000-bvh4-entry-proof.md` | — | notes |
-| `texture-bc7-control.md` | — | notes |
-| `texture-mip-tail-blocker.md` | — | notes |
-| `texture-trophy-control.md` | — | notes |
-| `unclassified-gaps.md` | — | notes |
+| `bone-hash-names-curated.tsv` | 60 | bones confirmed by hand against geometry |
+| `names.tsv` | 36,952 | JOAAT names from CodeWalker meta plus harvested corpus |
+| `packs-label-queue.tsv` | 128 | work queue, not a derived result |
+| `psin-vocabulary.tsv` | 80 | named PSIN values grouped by hand |
 
-## Producing tools
+## Generated
 
-| Product | Tool |
-| --- | --- |
-| names.tsv, name-coverage.tsv | `tools/name_registry.py --build, tools/annotate_handoff.py` |
-| psin-*.tsv | `tools/psin_extract.py, tools/psin_entries.py, tools/psin_segment.py` |
-| bone-hash-names*.tsv, rig-names-corpus.tsv | `tools/bone_name_probe.py, tools/rig_name_corpus_probe.py` |
-| weight-hash*.tsv | `tools/rig_name_corpus_probe.py` |
-| pack-model-fit.tsv | `tools/pack_model_fit.py` |
-| entry manifests (*-entries*.tsv) | `tools/pair_entry_manifest.py` |
-| index and extents tables | `tools/stream_index.py, tools/pack_extents.py, tools/frontb_stride.py` |
-| audio tables | `tools/awc_framing_ff02.py, tools/extract_awc_ff02.py` |
-| header census | `tools/header_census.py` |
+| file | rows | cols | producer |
+| --- | ---: | ---: | --- |
+| `archive-inventory-summary.tsv` | 33 | 5 | exact name in a tool |
+| `audio-ace1-decode.tsv` | 73 | 13 | exact name in a tool |
+| `audio-awc-framing.tsv` | 2,320 | 18 | exact name in a tool |
+| `audio-full.tsv` | 95,162 | 10 | exact name in a tool |
+| `audio-opus-decode.tsv` | 2,081 | 16 | exact name in a tool |
+| `audio-opus-trim-model.tsv` | 2,081 | 10 | exact name in a tool |
+| `audio-variant-decode.tsv` | 4,704 | 9 | exact name in a tool |
+| `audio-xma2-decode.tsv` | 166 | 10 | exact name in a tool |
+| `bone-hash-names.tsv` | 99 | 4 | exact name in a tool |
+| `bulk-extraction-status.tsv` | 1 | 9 | tool name appears in the table name: tools/bulk_extract.py |
+| `bulk-extraction-verification-summary.tsv` | 2 | 7 | exact name in a tool |
+| `core-bvh4-descriptors.tsv` | 269,106 | 15 | family: bvh4 descriptor manifests |
+| `core-bvh4-entries.tsv` | 294,614 | 10 | exact name in a tool |
+| `corpus-pass.tsv` | 22 | 9 | exact name in a tool |
+| `data-entries-chains.tsv` | 6,537 | 8 | family: entry reconciliation |
+| `downloads-corpus-inventory.tsv` | 108 | 4 | family: inventory reports |
+| `entry-reconciliation.tsv` | 22 | 7 | exact name in a tool |
+| `extraction-coverage-summary.tsv` | 8 | 8 | exact name in a tool |
+| `extraction-entry-verification.tsv` | 6 | 8 | exact name in a tool |
+| `extraction-inventory-summary.tsv` | 127 | 6 | exact name in a tool |
+| `header-census-full.tsv` | 4,373 | 10 | exact name in a tool |
+| `header-census.tsv` | 71 | 10 | stem in a tool: header-census |
+| `header-words.tsv` | 4,373 | 34 | tool name appears in the table name: tools/header_words.py |
+| `name-coverage.tsv` | 27 | 7 | exact name in a tool |
+| `navmeshes-entries-chains.tsv` | 25,981 | 8 | family: entry reconciliation |
+| `navmeshes-entries.tsv` | 2,447 | 8 | family: entry manifests (tools/corpus_pass.sh) |
+| `pack-extents-leaves.tsv` | 45 | 6 | tool name appears in the table name: tools/pack_extents.py |
+| `pack-extents-textures.tsv` | 21 | 9 | tool name appears in the table name: tools/pack_extents.py |
+| `pack-model-fit.tsv` | 3,467 | 7 | exact name in a tool |
+| `packs-0f000080-probe.tsv` | 62 | 3 | exact name in a tool |
+| `packs-4042-classes.tsv` | 20 | 5 | exact name in a tool |
+| `packs-4042-probe.tsv` | 64 | 3 | exact name in a tool |
+| `packs-binary-clusters.tsv` | 32 | 8 | exact name in a tool |
+| `packs-signature-summary.tsv` | 8 | 3 | exact name in a tool |
+| `psin-entries.tsv` | 4,969 | 6 | exact name in a tool |
+| `psin-names.tsv` | 544 | 5 | exact name in a tool |
+| `psin-rows.tsv` | 63,288 | 7 | exact name in a tool |
+| `psin-segments.tsv` | 5,496 | 5 | exact name in a tool |
+| `remaining-archive-index-summary.tsv` | 8 | 10 | family: report summaries |
+| `rig-names-corpus.tsv` | 12 | 6 | exact name in a tool |
+| `script-array-inventory.tsv` | 7,960 | 10 | exact name in a tool |
+| `script-bone-geometry.tsv` | 3,043 | 20 | exact name in a tool |
+| `script-bone-namespace-probe.tsv` | 16 | 13 | tool name appears in the table name: tools/script_bone_namespace_probe.py |
+| `script-bone-points.tsv` | 15,732 | 15 | exact name in a tool |
+| `script-bone-template-families.tsv` | 16 | 11 | exact name in a tool |
+| `script-bone-templates.tsv` | 38 | 5 | exact name in a tool |
+| `script-bones-named.tsv` | 3,043 | 17 | exact name in a tool |
+| `script-bones.tsv` | 3,043 | 14 | exact name in a tool |
+| `script-pair-arrays.tsv` | 7,630 | 9 | exact name in a tool |
+| `script-quadtree-summary.tsv` | 44 | 8 | exact name in a tool |
+| `script-quadtree-verification.tsv` | 8 | 3 | exact name in a tool |
+| `script-sections.tsv` | 4,901 | 8 | exact name in a tool |
+| `script-vehicle-branch-relations.tsv` | 23 | 8 | exact name in a tool |
+| `script-vehicle-curve-join.tsv` | 1,935 | 8 | exact name in a tool |
+| `script-vehicle-curve-points.tsv` | 6,298 | 10 | exact name in a tool |
+| `script-vehicle-curve-quantization.tsv` | 147 | 7 | exact name in a tool |
+| `script-vehicle-curves.tsv` | 1,935 | 12 | exact name in a tool |
+| `script-vehicles.tsv` | 385 | 6 | exact name in a tool |
+| `shared-minigame000-bvh4-descriptors.tsv` | 1,233 | 15 | family: bvh4 descriptor manifests |
+| `story000-awc-framing.tsv` | 245 | 18 | exact name in a tool |
+| `story000-awc-variants.tsv` | 2,952 | 14 | exact name in a tool |
+| `story000-bvh4-control.tsv` | 4 | 8 | exact name in a tool |
+| `struct-harvest.tsv` | 1,590 | 10 | exact name in a tool |
+| `struct-summary.tsv` | 22 | 12 | exact name in a tool |
+| `textures-entries-chains.tsv` | 25 | 8 | family: entry reconciliation |
+| `textures-entries.tsv` | 1,349 | 8 | family: entry manifests (tools/corpus_pass.sh) |
+| `unclassified-summary.tsv` | 7 | 5 | exact name in a tool |
+| `weight-hash-candidates.tsv` | 1 | 7 | exact name in a tool |
+| `weight-hash-names.tsv` | 21 | 2 | exact name in a tool |
+| `corpus-pass/entries-anim.tsv` | 5,826 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-common.tsv` | 0 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-core_bvh4.tsv` | 109,301 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-core_restofworld.tsv` | 801 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-core_restofworld001.tsv` | 0 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-data.tsv` | 2,063 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-levels.tsv` | 29,117 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-navmeshes.tsv` | 23,530 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-packs.tsv` | 15,983 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-shaders.tsv` | 0 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-shared_minigame000.tsv` | 210 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-shared_minigame000_bvh4.tsv` | 128 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-story000_restofworld.tsv` | 13 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/entries-textures.tsv` | 1,326 | 8 | tools/corpus_pass.sh — per-archive entry manifests |
+| `corpus-pass/pack-model-anim.tsv` | 235 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-appdata0.tsv` | 0 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-audio.tsv` | 1 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-common.tsv` | 1 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-core_bvh4.tsv` | 1,261 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-core_licenses_data.tsv` | 1 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-core_restofworld.tsv` | 10 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-core_restofworld001.tsv` | 1 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-data.tsv` | 40 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-levels.tsv` | 2,044 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-movies.tsv` | 0 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-navmeshes.tsv` | 28 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-packs.tsv` | 59 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-script.tsv` | 2 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-shaders.tsv` | 1 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-shared_minigame000.tsv` | 44 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-shared_minigame000_bvh4.tsv` | 8 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-story000.tsv` | 419 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-story000_bvh4.tsv` | 1 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-story000_restofworld.tsv` | 16 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-story000_script.tsv` | 1 | 7 | tools/corpus_pass.sh — per-archive model fits |
+| `corpus-pass/pack-model-textures.tsv` | 20 | 7 | tools/corpus_pass.sh — per-archive model fits |

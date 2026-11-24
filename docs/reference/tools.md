@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-162 scripts.
+163 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -94,6 +94,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`front_hash_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_hash_probe.py) | Search RPF front-region words for any hash of any known name. | --source |
 | [`frontb_stride.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/frontb_stride.py) | Recover the Front B row stride and the count at which it changes. | --census |
 | [`handoff_index.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/handoff_index.py) | Regenerate `handoff/README.md`: what each artifact is and what makes it. |  |
+| [`handoff_manifest.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/handoff_manifest.py) | Maintain `handoff/provenance.tsv` and `handoff/README.md`. | --check |
 | [`harvest_names.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/harvest_names.py) | Harvest a name corpus from decoded archive streams. |  |
 | [`hash_corpus_test.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/hash_corpus_test.py) | Test candidate hash algorithms and name variants against project targets. |  |
 | [`header_census.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/header_census.py) | Census every RPF9 header in a set of archives and fit Front B size laws. | --tsv, |

@@ -49,6 +49,12 @@ else
     note "tool index" "FAIL"; tail -3 /tmp/check-toolsindex.log | sed 's/^/    /'; fail=1
 fi
 
+if $PY tools/handoff_manifest.py --check >/tmp/check-handoff.log 2>&1; then
+    note "handoff provenance" "PASS ($(sed 's/.*listed, //' /tmp/check-handoff.log))"
+else
+    note "handoff provenance" "FAIL"; tail -5 /tmp/check-handoff.log | sed 's/^/    /'; fail=1
+fi
+
 if $PY tools/claims_check.py >/tmp/check-claims.log 2>&1; then
     note "published counts" "PASS ($(grep -c . /tmp/check-claims.log) line)"
 else

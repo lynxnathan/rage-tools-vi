@@ -8081,3 +8081,36 @@ Verification after the rewrite:
 So the index no longer contains a range owned by two packs, and the pack model has
 no exceptions left to explain: everything classified stays inside its pack, and the
 formerly-crossing opaque spans have been cut at the boundary.
+
+## Structural change: `handoff/` now carries its own provenance (2026-11-23)
+
+The directory had 114 tables from three different origins and nothing said which was
+which. That already cost us one wrong move — `psin-vocabulary.tsv` was taken for
+generated output, a regeneration attempt produced 16 values against the curated 80,
+and the only reason it did not land was a manual revert.
+
+Now `handoff/provenance.tsv` is committed and lists every table with `rows`,
+`columns`, `status` and `producer`:
+
+| status | tables | meaning |
+| --- | ---: | --- |
+| generated | 105 | a tool in `tools/` writes it |
+| curated | 4 | hand-maintained, with the reason recorded |
+| legacy | 5 | produced before the tools convention; kept because pages cite them |
+| unclassified | 0 | — |
+
+`tools/handoff_manifest.py` renders `handoff/README.md` from that file, and
+`--check` (wired into `tools/check.sh`) **fails if a table exists that the manifest
+does not list, or if the manifest lists a table that is gone**. Correcting a wrong
+producer is a one-line edit of a committed TSV rather than a code change.
+
+Two smaller structural fixes came with it:
+
+- `FAMILY_PREFIXES`/`FAMILY_SUFFIXES` in the manifest name the bulk families
+  (`corpus-pass/entries-*`, `corpus-pass/pack-model-*`, `*-entries-chains.tsv`,
+  `*-descriptors.tsv`) that a driver writes in a loop, which is why a naive
+  "search the file name in the tools" found 46 orphans where there are none.
+- the five legacy tables are labelled as such instead of pretending to have a
+  producer, so "unknown" is a state nobody sits in.
+
+Verified: 114 tables listed, 0 unclassified, `check.sh` green.
