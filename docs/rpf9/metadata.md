@@ -55,7 +55,7 @@ classDiagram
 | Region | Bounds | Observed property | Status |
 | --- | --- | --- | --- |
 | Buffer A | `0x00 .. word_04` | copied verbatim into `malloc(word_04)`; first 16 bytes are the header | read straight from the stream |
-| Buffer B | `word_08 .. word_04` | copied verbatim into `malloc(word_04 - word_08)` | read straight from the stream |
+| Buffer B | `word_08 .. word_04` | the **tail of buffer A**, re-read into its own allocation | read straight from the stream |
 | Trailer | `end - word_0c .. end` | `word_0c` equals the trailer length in all 4,373 headers | unidentified |
 
 ## What the binary does
@@ -76,9 +76,9 @@ if u32(buf16) == '9FPR':
         read(stream, header[+8], buf2, size_b)
 ```
 
-So both metadata buffers are **plain copies of stream bytes**. There is no
-decryption call on this path, and the second buffer is exactly
-`file[word_08 .. word_04)`.
+So both metadata buffers are **plain copies of stream bytes**, and the second one
+is not a separate region: it is `file[word_08 .. word_04)`, which is the *tail* of
+the first buffer. There is no decryption call on this path.
 
 Buffer A then starts with a 0x40-byte header whose fields drive an arena layout of
 four sections:
