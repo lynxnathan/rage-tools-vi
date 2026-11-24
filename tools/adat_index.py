@@ -27,10 +27,15 @@ import sys
 from pathlib import Path
 
 ALIGN = 0x800
+# Banks are 0x800-aligned almost everywhere, but a handful sit on a 16-byte
+# boundary only. Scan at 16 and let validation reject the noise.
+SCAN_ALIGN = 4
 CHUNK = 1 << 26
 # Chunk/descriptor types seen in validated AWC banks. A random "ADAT" inside binary
 # data produces arbitrary types, so this is the cheapest reliable filter.
 KNOWN_TYPES = {0x55, 0x36, 0x76, 0xA3, 0xFA, 0x48, 0x5C, 0x68, 0x2B, 0x5A, 0xD9, 0xBD}
+# Variants whose table has no computable position and must be found by suffix scan.
+SCANNED_FLAGS = {0xFF25, 0xFF61}
 MAX_BANK = 256 << 20     # no validated bank is larger than this
 MAX_STREAMS = 4096
 
@@ -58,7 +63,7 @@ def find_banks(path, limit=0, start=0, stop=None):
                 absolute = position - len(carry) + index
                 if end_limit is not None and absolute >= end_limit:
                     return offsets
-                if absolute % ALIGN == 0:
+                if absolute % SCAN_ALIGN == 0:
                     offsets.append(absolute)
                     if limit and len(offsets) >= limit:
                         return offsets
@@ -122,6 +127,52 @@ def bank_extent(handle, offset):
 # the optional per-stream table would end; 0x50 is a fixed offset for 0xff21.
 TABLE_AT = {0xFF21: lambda count: 0x50, 0xFF02: lambda count: 0x10 + 4 * count}
 
+# Chunk/record types that appear in a real table. Used to validate a table whose
+# position is not computable.
+KNOWN_TYPES = {0x55, 0x36, 0x76, 0xA3, 0xFA, 0x48, 0x5C, 0x68, 0x2B, 0x5A, 0xD9, 0xBD}
+# Variants whose table has no computable position and must be found by suffix scan.
+SCANNED_FLAGS = {0xFF25, 0xFF61}
+
+
+def scanned_table(handle, offset, data_offset, count):
+    """Longest valid aligned record table ending at `data_offset`.
+
+    `0xff25` and `0xff61` do not compute their table position, so it is recovered
+    the way the published notes describe: the table is the longest run of valid
+    8-byte records that ends exactly at the data offset. Records are
+    `type:8 | size:28 | offset:28`, and a record is invalid when its type is unknown
+    or its extent leaves the largest plausible bank.
+    """
+    handle.seek(offset)
+    header = handle.read(data_offset)
+    if len(header) < data_offset:
+        return None, "short header region"
+    if count and data_offset and (data_offset - 16) // (8 * count) > 16:
+        # a table far longer than 16 records per stream is almost certainly padding
+        pass
+    best = None
+    for start in range(16, data_offset):
+        if (data_offset - start) % 8:
+            continue
+        ok = True
+        extent = 0
+        for position in range(start, data_offset, 8):
+            (record,) = struct.unpack_from("<Q", header, position)
+            kind = record >> 56
+            size = (record >> 28) & 0x0FFFFFFF
+            record_offset = record & 0x0FFFFFFF
+            if kind not in KNOWN_TYPES or size == 0 or record_offset + size > MAX_BANK:
+                ok = False
+                break
+            extent = max(extent, record_offset + size)
+        if ok and extent:
+            length = (data_offset - start) // 8
+            if best is None or length > best[1]:
+                best = (start, length, extent)
+    if best is None:
+        return None, "no valid table suffix"
+    return best, None
+
 
 def extent_bank(handle, offset, limit=MAX_BANK):
     """(end, count, error) for an AWC bank in a known variant.
@@ -137,7 +188,14 @@ def extent_bank(handle, offset, limit=MAX_BANK):
         return None, 0, "no magic"
     version, flags, count, header_size = struct.unpack_from("<HHII", head, 4)
     if flags not in TABLE_AT:
-        return None, count, f"unsupported flags 0x{flags:04x}"
+        if flags not in SCANNED_FLAGS:
+            return None, count, f"unsupported flags 0x{flags:04x}"
+        # no computable table position: recover it by suffix scan
+        found, error = scanned_table(handle, offset, header_size, count)
+        if error:
+            return None, count, f"0x{flags:04x}: {error}"
+        start, length, extent = found
+        return offset + ((extent + ALIGN - 1) // ALIGN) * ALIGN, count, None
     if count == 0 or count > MAX_STREAMS:
         return None, count, "implausible stream count"
     table_at = TABLE_AT[flags](count)
@@ -145,7 +203,13 @@ def extent_bank(handle, offset, limit=MAX_BANK):
     # header_size, which is an integer constraint on records-per-stream.
     span = header_size - table_at
     if span <= 0 or span % (8 * count):
-        return None, count, "table does not end at header_size"
+        # The computed position is the common case, not a law: a few banks carry an
+        # extra per-stream table that shifts it. Fall back to the suffix scan.
+        found, error = scanned_table(handle, offset, header_size, count)
+        if error:
+            return None, count, "table does not end at header_size"
+        _start, _length, extent = found
+        return offset + ((extent + ALIGN - 1) // ALIGN) * ALIGN, count, None
     records_per_stream = span // (8 * count)
     if not 1 <= records_per_stream <= 16:
         return None, count, "implausible records per stream"

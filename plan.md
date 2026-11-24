@@ -152,8 +152,11 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 
 - [x] Variant-aware ADAT index: `audio.rpf` is **99.485 %** indexed as ADAT
   (7,153 banks), one rule for `0xff21` and `0xff02`, table ending at `header_size`.
-- [ ] The residual 0.52 % of `audio.rpf`: five `0xff61` banks (table offset unknown),
-  one bank whose table misses `header_size`, and `0x800` padding.
+- [x] `audio.rpf` is **99.687 %** indexed as ADAT (7,159 banks). Three rules cover
+  the variants: computable table position, suffix scan for `0xff25`/`0xff61`, and a
+  suffix-scan fallback when the computed rule does not close.
+- [ ] The residual 0.313 % of `audio.rpf`: 19.5 MB front region plus 70 MB where
+  `ADAT` bytes do not validate as a container at any offset shift.
 - [ ] ACE1 trailer pairs (15 u32 fields; 73 streams, all decoded).
 - [ ] Map the script type/class IDs and transforms.
 - [ ] Resolve the unnamed object roots.

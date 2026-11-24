@@ -8262,3 +8262,34 @@ because validation used `awc_parse.py`'s tag-table model (the Leonida/story000
 layout). The `0xff21`/`0xff02` containers keep their records in a flat table at a
 different offset with a fixed record count. Two layouts, one magic — the scan could
 not tell them apart, and so it rejected the truth along with the noise.
+
+### `audio.rpf` finished at 99.687 % — and how the last 0.31 % was classified (2026-11-23)
+
+Final numbers, after three rules in order:
+
+```
+computable position   0xff21 -> 0x50          0xff02 -> 0x10 + 4*count
+record count          derived from header_size, not assumed to be 4
+suffix scan           0xff25 / 0xff61, and as a fallback if the rule does not close
+scan alignment        4 bytes (not 0x800: a handful of banks are only 4-aligned)
+```
+
+`output/index/audio-adat.tsv`: **7,159 banks, 28,453,992,608 B = 99.687 %**, zero
+overlaps, accepted by `chain_start_verify`.
+
+Residual **89,462,064 B (0.313 %) in 275 gaps**:
+
+| part | bytes |
+| --- | ---: |
+| the archive's own front region (`0x0..0x129b000`) | 19,509,248 |
+| regions where `ADAT` bytes do not validate at any header shift | 69,952,816 |
+
+The second group was probed at three header offsets (`+0`, `+4`, `+8`) and produces
+nonsense fields at all of them — version, flags, count and header size all land in
+the billions. So those are not container starts, they are `ADAT` byte sequences
+inside other data. Recorded as such rather than left as "unknown".
+
+One near-miss worth noting: the counts in the docs (`23.51 GB`) were right all along.
+What was wrong was the *index* that failed to see them, and my first attempt at fixing
+it, which scanned for a magic and validated against the wrong variant's layout. The
+publishable lesson is that a magic identifies a family, never a layout.

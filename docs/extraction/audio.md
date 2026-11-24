@@ -80,16 +80,30 @@ was an *index* gap, not missing data, and it is now closed:
 | source | banks | bytes |
 | --- | ---: | ---: |
 | extraction manifest (`0xff21` pass) | 6,625 | 23,510,392,992 |
-| gaps between them (`0xff21` + `0xff02`) | 528 | 4,886,024,192 |
-| **total** | **7,153** | **28,396,417,184 = 99.485 %** |
+| gaps between them (`0xff21`, `0xff02`, `0xff61`) | 534 | 4,943,599,616 |
+| **total** | **7,159** | **28,453,992,608 = 99.687 %** |
 
 Both variants share one rule: the chunk table holds four records per stream and ends
 exactly at `header_size`, with `type:8 | size:28 | offset:28` per record. Only the
 table's start differs — `0x50` for `0xff21`, `0x10 + 4·count` for `0xff02`. A bank
 ends where its furthest record ends, rounded up to `0x800`.
 
-The residual **0.52 %** is five `0xff61` banks (table offset not established), one
-bank whose table does not end at `header_size`, and inter-bank padding.
+Three rules finish the job, applied in this order:
+
+1. a computable table position (`0xff21` at `0x50`, `0xff02` at `0x10 + 4·count`),
+   with records-per-stream derived from `header_size` rather than assumed;
+2. a suffix scan — the longest valid 8-byte record run ending at `header_size` — for
+   `0xff25`/`0xff61`, which carry no computable position;
+3. the same suffix scan as a fallback when the computable rule does not close, which
+   catches banks carrying an extra per-stream table (one bank needed exactly this).
+
+Scan alignment is 4 bytes, not `0x800`: most banks are `0x800`-aligned but a handful
+sit on a 4-byte boundary. Validation is what keeps the looser scan honest.
+
+The residual **0.313 % (89,462,064 B, 275 gaps)** is accounted for: **19,509,248 B**
+is the archive's own front region, and the other **69,952,816 B** are regions where
+`ADAT` bytes exist but no candidate validates at any offset shift — the bytes are not
+a container header there.
 
 A caution for anyone reaching for a magic scan: `ADAT` occurs at 7,159 aligned
 offsets in `audio.rpf`, and **none** validate against `awc_parse.py`'s tag model,
