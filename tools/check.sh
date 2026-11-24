@@ -28,6 +28,12 @@ else
     note "tool syntax" "FAIL"; tail -5 /tmp/check-compile.log | sed 's/^/    /'; fail=1
 fi
 
+if $PY tests/test_extraction_tools.py >/tmp/check-extract.log 2>&1; then
+    note "extraction tests" "PASS ($(grep -c '  ok' /tmp/check-extract.log) checks)"
+else
+    note "extraction tests" "FAIL"; tail -6 /tmp/check-extract.log | sed 's/^/    /'; fail=1
+fi
+
 if $PY tests/test_analysis_tools.py >/tmp/check-tools.log 2>&1; then
     note "analysis tools" "PASS ($(grep -c '  ok' /tmp/check-tools.log) checks)"
 else

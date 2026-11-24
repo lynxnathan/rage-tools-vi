@@ -9182,3 +9182,19 @@ definition.
 
 The `0xff25` corpus is therefore "decodable per container by search", not "solved by a
 formula", and the ~50 h estimate inherits that uncertainty.
+
+### In-place replacement works, and it is the minimum (2026-11-23)
+
+```
+asset 65,536 B -> replacement 6 B
+stored room 4,430 B, recompressed 14 B, 4,416 B of padding
+read back matches, archive size unchanged
+```
+
+A `zlib` range can be replaced without moving a single offset: deflate the new payload,
+pad to the original stored length (a deflate stream ends before its trailing bytes), write
+over the range. `tools/mod_replace.py`. No writer, no repack.
+
+Tests added: `tests/test_extraction_tools.py` — 27 checks over synthetic fixtures for the
+ADAT extent rules, the Bink2 header, coverage union, the script-chain solver, `0xff25`
+framing and the replacement path. Wired into `tools/check.sh`.

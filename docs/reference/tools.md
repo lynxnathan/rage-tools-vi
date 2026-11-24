@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-171 scripts.
+172 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -115,6 +115,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`metadata_regions.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/metadata_regions.py) | Compare the three RPF9 metadata regions across the observed controls. |  |
 | [`ml_binary_clusters.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/ml_binary_clusters.py) | Cluster packs binary streams from byte-level features (proposal engine only). |  |
 | [`mmap_extract.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/mmap_extract.py) | Bounded-memory selective zlib extraction using a read-only mmap. |  |
+| [`mod_replace.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/mod_replace.py) | Replace an asset inside an RPF without touching any other byte. | --dry-run --end --find --index --marker --payload |
 | [`name_hash_game.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/name_hash_game.py) | The game's own name hash, as read out of the executable. | --hash --probe |
 | [`name_registry.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/name_registry.py) | One name registry, and the two things anyone actually needs from it. | --annotate --build --column --lookup --out |
 | [`native_texture_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/native_texture_scan.py) | Scan decoded data.rpf resources for native texture dictionaries. |  |
