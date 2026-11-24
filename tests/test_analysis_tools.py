@@ -111,6 +111,12 @@ def main():
         check("script_meta walks a record", result.returncode == 0, result.stderr[:120])
         check("every record reaches LRSC",
               "LRSC" in result.stdout and "PSIN" in result.stdout)
+        result = run("tools/script_meta.py", "--verify")
+        check("the chain covers every body exactly", result.returncode == 0,
+              result.stdout[-160:] if result.returncode else "")
+        check("no record is short of chunks",
+              "chain covers the body exactly: 1012/1012" in result.stdout,
+              result.stdout[-160:])
     else:
         print("script_meta over the archive: skipped (script.rpf not present)")
 

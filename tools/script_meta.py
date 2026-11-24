@@ -223,6 +223,8 @@ def main():
     parser.add_argument("--index", type=Path, default=Path("output/index/script.tsv"))
     parser.add_argument("--dump", type=int, default=0, help="rows to print per record")
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--verify", action="store_true",
+                        help="require the chain to cover each body exactly")
     args = parser.parse_args()
 
     if not args.archive.is_file():
@@ -232,6 +234,8 @@ def main():
 
     total = 0
     complete = 0
+    exact = 0
+    slack = {}
     chunk_counts = {}
     dumped = 0
     problem = []
@@ -247,6 +251,12 @@ def main():
         expected = ["PSIN", "LSCH", "LENM", "LSNS", "LGID", "LRSC"]
         if names == expected or names == expected + ["CHKS"]:
             complete += 1
+        if chunks:
+            end = chunks[-1]["offset"] + chunks[-1]["next"]
+            if end == len(body):
+                exact += 1
+            else:
+                slack[len(body) - end] = slack.get(len(body) - end, 0) + 1
         elif len(problem) < 6:
             problem.append((position, names))
         if args.dump and dumped < args.dump:
@@ -269,6 +279,13 @@ def main():
                           f"prop 0x{prop:08x} field 0x{field:08x}")
 
     print(f"\nrecords: {total}  full PSIN→LRSC chain: {complete}")
+    print(f"chain covers the body exactly: {exact}/{total}")
+    if slack:
+        print("slack (body length minus chain end):",
+              ", ".join(f"{value:+d}×{count}" for value, count in
+                        sorted(slack.items(), key=lambda item: -item[1])[:6]))
+        if args.verify:
+            return 1
     print("chunks seen:", ", ".join(f"{name}={count}" for name, count in
                                     sorted(chunk_counts.items(), key=lambda kv: -kv[1])))
     if problem:

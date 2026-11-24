@@ -162,8 +162,12 @@ uv run python tools/levels_paths.py --archive "$SRC/levels.rpf" \
     --index output/index/levels.tsv
 ```
 
-Validation: **1,012 / 1,012** records produce the complete six-chunk chain with
-zero failures, and the typed-word count agrees with the older independent
+Validation: **1,012 / 1,012** records produce the complete seven-chunk chain, and
+the chain covers each decompressed body **exactly** — the last chunk's distance ends
+on the final byte, with zero slack. That is the check that would have caught an
+unlisted magic: a missing chunk type would leave the body longer than the chain. It
+is enforced by `tools/script_meta.py --verify`, and the earlier six-chunk reading in
+this project's history was exactly that bug, and the typed-word count agrees with the older independent
 heuristic scan to 0.6 % (63,290 vs 62,910).
 
 ## Open questions
