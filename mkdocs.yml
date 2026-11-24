@@ -86,6 +86,7 @@ nav:
   - RPF9:
       - Container format: rpf9/format.md
       - Metadata regions: rpf9/metadata.md
+      - Pack layout: rpf9/layout.md
       - Extraction pipeline: rpf9/pipeline.md
   - Extraction:
       - Inventory and entry point: extraction/inventory.md

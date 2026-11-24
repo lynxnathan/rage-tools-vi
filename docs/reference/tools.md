@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-159 scripts.
+160 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -112,6 +112,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`native_texture_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/native_texture_scan.py) | Scan decoded data.rpf resources for native texture dictionaries. |  |
 | [`object_names.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/object_names.py) | Map JOAAT name fields across the script.rpf object tree. |  |
 | [`pack_extents.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_extents.py) | Resolve RPF9 pack extents from zero padding, in index-only mode. |  |
+| [`pack_layout.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_layout.py) | Draw one pack's front-region map from its own header, using the loader's formula. | --offset --scan |
 | [`pack_model_fit.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_model_fit.py) | Which simple entry model fits each pack exactly? | --out |
 | [`pair_arrays.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pair_arrays.py) | Export every 0x8f18aff0 (u32 hash, f32) pair array with root context. |  |
 | [`pair_entry_manifest.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pair_entry_manifest.py) | Emit entry manifests for packs whose entry count verifies exactly. |  |
