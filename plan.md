@@ -54,7 +54,9 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
 - [x] Remaining PSIN derivatives on the corrected pairing: `property tree` now
   reads through `script_meta`/`psin_blocks` (63,288 rows / 164 properties /
   14,530 keys), `table width` re-run with `--properties`.
-- [ ] Rebuild `vocabulary` (the last derivative still on the old pairing).
+- [x] `vocabulary` provenance settled: it is curated, not generated, and is now
+  documented as such. A rule tried from the corrected rows produced 16 values
+  against the curated 80, so regenerating it would be a regression.
 - [ ] Settle whether the typed row's `c` word is a declaration index or a value:
   `Decay` carries a shared `300000` while byte rows count 0..6. Needs the script
   data section.

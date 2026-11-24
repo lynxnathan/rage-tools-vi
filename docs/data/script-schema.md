@@ -133,6 +133,16 @@ in 60/60 records) followed by a 4-byte tag we have not identified. Candidates
 joaat32, fnv1a, crc32 and adler32 over the body, the body prefix and the
 compressed stream are all excluded.
 
+## Artifact provenance
+
+`handoff/psin-rows.tsv` (63,288 rows) and `handoff/script-sections.tsv` (4,901
+sections) are generated — by `tools/psin_blocks.py --rows` and
+`tools/script_sections.py` respectively. `handoff/psin-vocabulary.tsv` is **curated
+by hand**: it lists named PSIN values grouped by a lower-cased English property
+name (`flag`, `name`, `weapon_group`, `vehicle_class`), and no rule we have tried
+reproduces it from the rows alone. Treat it as a vocabulary table, not as output,
+and do not overwrite it from a script.
+
 ## Running the parser
 
 ```bash
