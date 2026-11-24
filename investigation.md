@@ -8980,3 +8980,41 @@ and the descriptor is the same shape as the Bink2 header fields measured in `mov
 
 Open, and now narrowly: what `[0]`, `[1] == [3]` and `[2]` measure, and whether the payload
 after the descriptor is Bink2 or another codec.
+
+### Resolved: the `restofworld` descriptor is a Bink2 header (2026-11-23)
+
+The odd-offset "descriptor" is a **Bink2 container header**, found by searching for the
+`KB2` magic in the first megabyte of each span:
+
+| archive | `KB2` at | version | payload | frames | resolution | fps |
+| --- | ---: | --- | ---: | ---: | --- | ---: |
+| `core_restofworld` | `+0x927` | `n` | 33,312,060 | 1,364 | 1920×1080 | 30 |
+| `story000_restofworld` | `+0xccf` | `n` | 10,614,532 | 1,065 | 1920×1080 | 30 |
+
+So the eight fields recorded earlier are the Bink2 header itself: payload size, frame
+count, largest frame size, frame count again, width, height, fps. That explains every
+anomaly from the previous attempts:
+
+- `[1] == [3]` is not a coincidence — Bink2 stores the frame count **twice** (`+0x08` and
+  `+0x10`), exactly as measured in `movies.rpf` earlier;
+- the "sorted table" was those fields read at a 4-byte stride: payload, frames, largest,
+  frames-again ascend, then width/height/fps follow;
+- the "recurring constants" `1080`, `1364`, `1920` were a height, a frame count and a
+  width, which is why they appeared in two unrelated archives;
+- the odd offset is simply where the first movie starts inside the span.
+
+### Both archives index as movie archives
+
+Running `tools/bink_index.py` on them:
+
+| archive | movies | covered | share | frames |
+| --- | ---: | ---: | ---: | ---: |
+| `core_restofworld` | 11 | 1,241,526,272 B | **95.814 %** | 62,001 |
+| `story000_restofworld` | 7 | 120,193,024 B | 60.595 % | 7,630 |
+
+`core_restofworld` is 11 movies, all 1920×1080@30. `story000_restofworld` mixes 1920×1080
+with 720×1280 portrait — the phone-screen cutscenes seen in `movies.rpf` too.
+
+Classified share after the pass: `core_restofworld` **4.17 % → 99.98 %**,
+`story000_restofworld` **34.70 % → 95.29 %**. Nothing here was decoded; these are container
+extents and header fields, which is what the index needs.

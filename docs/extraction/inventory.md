@@ -35,7 +35,7 @@ per archive, the share of bytes assigned a known kind — merging side indexes s
 | `shared_minigame000` | 0.81 GB | 55.33 % | 55.33 % |
 | `story000` | 20.0 GB | 35.39 % | **81.40 %** |
 | `story000_script` | 0.08 GB | 32.04 % | 32.04 % |
-| `core_restofworld` | 1.30 GB | 4.17 % | 4.17 % |
+| `core_restofworld` | 1.30 GB | 4.17 % | **99.98 %** |
 | `movies` | 8.83 GB | 0.00 % | **99.99 %** |
 
 Every index tiles its archive (union coverage 100 %), but the *classification* is

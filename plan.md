@@ -153,9 +153,12 @@ Last updated: 2026-11-23 (script metadata format recovered from the writer).
   **offset-table reading is retracted**: four base candidates give ≤3/998 structural
   hits, the small values `30/1080/1364/1920` recur in both archives, and there is no
   DDS/PNG/RSC7 magic. Five interpretations tested and excluded.
-- [x] `restofworld` structure identified as a **media descriptor**: `… , 1920, 1080, 30, 1`
-  (1080p30) at an odd offset (`+0x92b` / `+0xcd3`), with `[1] == [3]` in both archives.
-  Explains the recurring `1080/1364/1920` values and the failed 4-byte-aligned search.
+- [x] `restofworld` descriptor **is a Bink2 header** (`KB2n` at `+0x927` / `+0xccf`), and
+  both archives index as movie archives: `core_restofworld` 11 movies / 95.814 %,
+  `story000_restofworld` 7 movies / 60.595 %. Classified share 4.17 → 99.98 % and
+  34.70 → 95.29 %.
+- [x] The `[1] == [3]` mystery is Bink2 storing the frame count twice (`+0x08`, `+0x10`),
+  as already measured in `movies.rpf`.
 - [ ] What `[0]`, `[1] == [3]` and `[2]` measure, and whether the payload after the
   descriptor is Bink2 (the `movies.rpf` header has the same width/height/fps shape).
 - [ ] What the 16 MiB window holds, and what the tags mean (mostly `0`; `1` in 214
