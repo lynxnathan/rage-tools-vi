@@ -189,9 +189,18 @@ field in the first 64 bytes scales with the container size. The type-like bytes 
 *odd* offsets (`0x23`, `0x2b`, `0x2f`, `0x3f`), so the alignment is not the one the other
 variants use.
 
-What is not yet located is the **payload split between the streams**; until it is, no
-`0xff25` stream is decoded, and the census keeps its 3,008 containers' streams out of the
-decoded totals.
+Three further measurements bound the problem:
+
+- the body entropy is 7.74–7.79 against 3.4–4.4 for the header, so the containers do hold
+  audio;
+- **`header_size` is not the data start** — one container with `header_size = 64` has the
+  `… 80 bb 0b 01 ff ff` descriptor sitting *at* offset 64, so the descriptor block extends
+  past it;
+- no valid Opus packet framing exists at `header_size` or in the 512 bytes after it.
+
+What is not yet located is the **payload start and the split between streams**; until
+both exist, no `0xff25` stream is decoded, and the census keeps its 3,008 containers'
+streams out of the decoded totals.
 
 ## Codec status
 

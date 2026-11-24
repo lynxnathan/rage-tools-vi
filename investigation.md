@@ -8693,3 +8693,29 @@ The useful part of these two probes is negative and cheap to keep: it is now est
 that `0xff25` is neither the four-record table model at a different offset, nor that model
 with a different alignment, nor a header with a per-stream size field — so the next
 attempt should start from the descriptor itself rather than from a table hypothesis.
+
+### `0xff25`: the header size is not the data offset (2026-11-23)
+
+Three measurements that move this variant forward without pretending to solve it.
+
+**The body is audio.** Over four sampled containers the body entropy is 7.74–7.79 and
+the header's is 3.4–4.4, with the printability of compressed data. So these containers
+do hold payload, and the question is only where it begins.
+
+**`header_size` is not the data start.** A container at `+0x548f000` has `header_size =
+64`, yet at offset 64 its bytes are
+
+```
+00 00 00 00 01 00 00 00 00 00 08 00 01 00 00 00 2b 16 47 1d 00 9f 2c 00 f9 ff 80 bb 0b 01 ff ff
+```
+
+— the same `… 80 bb 0b 01 ff ff` descriptor seen earlier. So the descriptor block extends
+past `header_size` for this variant, and `header_size` describes the fixed part only.
+
+**The record alignment is neither of the other variants'.** Type-like bytes appear at odd
+offsets inside the body (`… 00 48 c0 00 00 00 80 a2 00 55 5e 00 00 80 00 00 00 a3 …`),
+and no valid Opus packet framing exists at `header_size` or in the 512 bytes after it.
+
+Open, precisely: the offset where payload begins, and how `count` streams divide it.
+3,008 `audio.rpf` containers remain outside the decoded totals until those two numbers
+exist — and the checks in place keep them out rather than estimating.
