@@ -9231,3 +9231,30 @@ per container ~9.8 s   3,008 containers -> 8.2 h
 
 So the single container was far above average, and the corpus estimate drops by a factor
 of six. `tools/rage.py measure` reproduces the number.
+
+### The `0xff25` corpus decodes: 3,008 containers, 100.96 h, 65.0 GiB (2026-11-23)
+
+Two earlier estimates were wrong for a measurable reason. The 50 h figure came from one
+container; then a 30-container sample gave 8.2 h — but that sample ran the `0x860` fast
+path, which finds **no packets at all** in most containers. The sample measured its own
+blind spot.
+
+The payload phase inside each `0x800` block is per container, not global. Measured phases:
+`0x60`, `0x80`, `0xc0`, and `0x170` in the largest container. `ff25_auto` scores every
+16-byte phase by counting parseable packets and takes the best; the run restarts in every
+block, so trailing padding does not end the stream.
+
+```
+containers 3,008   decoded 3,008   empty 0
+audio 100.96 h      65.0 GiB WAV     rejected packets 1 of ~2.4 M (0.00004%)
+```
+
+The single rejection is one packet of the 37.1 MB container at `0x2fd0ca000`, which decodes
+to 71.7 min, RMS 0.0535. A rejected packet is counted and skipped rather than aborting the
+container: the other 214,953 packets in it are audio.
+
+Reproducibility: three containers decoded twice, `cmp` identical. Rebuild with
+`tools/rage.py decode <audio.rpf> --out <dir>`.
+
+Correction of the correction: the fast path was not a rule and not even a majority path —
+`0x860` parses 1 container in 5; the phase search parses all 3,008.

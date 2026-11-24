@@ -117,6 +117,49 @@ def ff25_packets(blob, first=0x860, block=0x800, payload=0x60):
     return packets
 
 
+def ff25_auto(blob, block=0x800, step=16):
+    """Best payload phase for a `0xff25` container.
+
+    The payload sits at a fixed offset inside each `0x800` block, but that offset is not
+    the same for every container: sampled containers use 0x60, 0x80 and 0xc0. The phase
+    with the most parseable packets wins; the run restarts in every block, so padding
+    after the packets does not end the stream.
+    """
+    best = (0, 0)
+    for phase in range(0, block, step):
+        total = 0
+        for start in range(phase, len(blob), block):
+            position = start
+            while position + 2 <= len(blob):
+                size = struct.unpack_from("<H", blob, position)[0]
+                if not 1 <= size <= 1275 or position + 2 + size > len(blob):
+                    break
+                if (blob[position + 2] >> 3) == 0 or (blob[position + 2] & 3) == 3:
+                    break
+                total += 1
+                position += 2 + size
+        if total > best[1]:
+            best = (phase, total)
+    return best
+
+
+def ff25_packets_auto(blob, block=0x800, step=16):
+    """Packets of the best phase of a `0xff25` container."""
+    phase, _total = ff25_auto(blob, block, step)
+    packets = []
+    for start in range(phase, len(blob), block):
+        position = start
+        while position + 2 <= len(blob):
+            size = struct.unpack_from("<H", blob, position)[0]
+            if not 1 <= size <= 1275 or position + 2 + size > len(blob):
+                break
+            if (blob[position + 2] >> 3) == 0 or (blob[position + 2] & 3) == 3:
+                break
+            packets.append(blob[position + 2:position + 2 + size])
+            position += 2 + size
+    return packets
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)

@@ -162,10 +162,92 @@ def cmd_demo(args):
     return 0 if ok else 1
 
 
+def load_opus():
+    import ctypes
+    from ctypes.util import find_library
+    name = find_library("opus")
+    if not name:
+        raise RuntimeError("libopus is required")
+    lib = ctypes.CDLL(name)
+    lib.opus_decoder_create.argtypes = [ctypes.c_int32, ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+    lib.opus_decoder_create.restype = ctypes.c_void_p
+    lib.opus_decoder_destroy.argtypes = [ctypes.c_void_p]
+    lib.opus_decode.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int32,
+                                ctypes.POINTER(ctypes.c_int16), ctypes.c_int, ctypes.c_int]
+    lib.opus_decode.restype = ctypes.c_int
+    return lib, ctypes
+
+
+def decode_packets(lib, ctypes, packets, channels=2, rate=48000, frame=5760):
+    error = ctypes.c_int()
+    state = lib.opus_decoder_create(rate, channels, ctypes.byref(error))
+    if not state or error.value:
+        raise RuntimeError(f"opus_decoder_create failed: {error.value}")
+    buffer = (ctypes.c_int16 * (frame * channels))()
+    pcm = bytearray()
+    skipped = 0
+    try:
+        for packet in packets:
+            got = lib.opus_decode(state, packet, len(packet), buffer, frame, 0)
+            if got < 0:
+                # A packet the framing guessed but libopus rejects is a measurement, not
+                # a reason to lose the other thousands of packets in the container.
+                skipped += 1
+                continue
+            pcm += bytes(memoryview(buffer).cast("B")[: got * channels * 2])
+    finally:
+        lib.opus_decoder_destroy(state)
+    return bytes(pcm), skipped
+
+
+def cmd_decode(args):
+    """Decode a container variant to WAV, one file per container."""
+    import csv
+    import wave
+    from decode_adat_stream import ff25_packets_auto
+    lib, ctypes = load_opus()
+    rows = [r for r in csv.DictReader(open(args.census), delimiter="\t")
+            if r["flags"].lower().endswith(args.suffix)]
+    if args.limit:
+        rows = rows[: args.limit]
+    args.out.mkdir(parents=True, exist_ok=True)
+    decoded = failed = rejected = 0
+    frames = 0
+    with args.archive.open("rb") as handle:
+        for index, row in enumerate(rows, 1):
+            start, end = int(row["start"], 16), int(row["end"], 16)
+            handle.seek(start)
+            blob = handle.read(end - start)
+            target = args.out / f"{index:05d}-{start:09x}.wav"
+            if target.exists() and not args.force:
+                decoded += 1
+                continue
+            try:
+                pcm, skipped = decode_packets(lib, ctypes, ff25_packets_auto(blob),
+                                              channels=args.channels)
+            except Exception as error:  # noqa: BLE001 - a failure is a measurement
+                failed += 1
+                print(f"{target.name}: {error}", flush=True)
+                continue
+            with wave.open(str(target), "wb") as wav:
+                wav.setnchannels(args.channels)
+                wav.setsampwidth(2)
+                wav.setframerate(48000)
+                wav.writeframes(pcm)
+            decoded += 1
+            rejected += skipped
+            frames += len(pcm) // (2 * args.channels)
+            if not args.quiet and index % 100 == 0:
+                print(f"{index}/{len(rows)} containers, {frames / 48000 / 60:.1f} min", flush=True)
+    print(f"decoded {decoded}  failed {failed}  rejected packets {rejected}  "
+          f"audio {frames / 48000 / 3600:.2f} h  -> {args.out}")
+    return 0 if failed == 0 else 1
+
+
 def cmd_measure(args):
     """Audio duration of the 0xff25 corpus, from a sample of containers."""
     import csv
-    from decode_adat_stream import ff25_packets
+    from decode_adat_stream import ff25_packets_auto
     rows = [r for r in csv.DictReader(open(args.census), delimiter="\t")
             if r["flags"].lower().endswith(args.suffix)]
     if not rows:
@@ -181,7 +263,7 @@ def cmd_measure(args):
             handle.seek(start)
             blob = handle.read(end - start)
             sampled_bytes += len(blob)
-            total_packets += len(ff25_packets(blob))
+            total_packets += len(ff25_packets_auto(blob))
     seconds = total_packets * 960 / 48000
     per_container = seconds / len(sample)
     print(f"containers sampled {len(sample)}  bytes {sampled_bytes:,}  "
@@ -243,6 +325,17 @@ def main(argv=None):
     mod_p.add_argument("--marker")
     mod_p.add_argument("--dry-run", action="store_true")
     mod_p.set_defaults(func=cmd_mod)
+
+    decode_p = sub.add_parser("decode", help="decode a container variant to WAV")
+    decode_p.add_argument("archive", type=Path)
+    decode_p.add_argument("--census", type=Path, default=ROOT / "handoff/audio-full-census.tsv")
+    decode_p.add_argument("--suffix", default="ff25")
+    decode_p.add_argument("--out", type=Path, default=ROOT / "output/audio-ff25")
+    decode_p.add_argument("--channels", type=int, default=2)
+    decode_p.add_argument("--limit", type=int, default=0)
+    decode_p.add_argument("--force", action="store_true")
+    decode_p.add_argument("--quiet", action="store_true")
+    decode_p.set_defaults(func=cmd_decode)
 
     measure_p = sub.add_parser("measure", help="duration of a container variant, sampled")
     measure_p.add_argument("archive", type=Path)

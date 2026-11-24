@@ -141,6 +141,26 @@ def main():
     check("two blocks of three packets are collected", len(packets) == 6, len(packets))
     check("packet payloads survive the walk", packets[0] == b"\xAA" * 4, packets[0])
 
+    print("ff25 phase detection")
+    from decode_adat_stream import ff25_auto, ff25_packets_auto
+
+    def phased(phase, blocks=6, per_block=4):
+        blob = bytearray(b"\x11" * (0x800 * blocks))
+        for block in range(blocks):
+            position = block * 0x800 + phase
+            for _ in range(per_block):
+                packet = b"\x78" + b"\x22" * 40
+                struct.pack_into("<H", blob, position, len(packet))
+                blob[position + 2:position + 2 + len(packet)] = packet
+                position += 2 + len(packet)
+        return bytes(blob)
+
+    for phase in (0x60, 0x80, 0xC0, 0x170):
+        got, count = ff25_auto(phased(phase))
+        check(f"finds the 0x{phase:x} phase", got == phase, f"(got {got:#x})")
+        check(f"counts the packets at 0x{phase:x}", count == 24, f"({count})")
+    check("returns packet bodies", ff25_packets_auto(phased(0xC0))[0][:1] == b"\x78")
+
     print("in-place mod")
     from rage import pack_replacement
     import zlib
