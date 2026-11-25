@@ -10376,3 +10376,22 @@ reports missing archives or an empty `G:` should be treated as an environment fa
 Also carried out in this window and worth keeping: `xmem` now reserves (not commits) anything
 over 1 GiB, which keeps the address the title asked for instead of letting Wine relocate a
 24 GiB commit, and installs a commit-on-touch vectored handler for the rest.
+
+### Wine's own thread table confirms it: three threads, one of them ours (2026-11-25)
+
+`WINEDEBUG=+server` prints every thread the server starts, with its entry point:
+
+```
+00f4: init_first_thread  (the image's main thread)
+00f8: entry=0x6ffff2ea1be0   <- d3d12_xs+0x1be0, the app-state hook thread this session added
+00fc: entry=0x6ffffff5db00   <- ntdll, a Wine thread-pool worker
+0100: entry=0x6ffffff5e060   <- ntdll, a Wine thread-pool worker
+```
+
+So the process is the image's main thread, one thread of ours and two of Wine's — the image
+starts none. Its main thread sits in `server_wait`, i.e. blocked on a Wine object through
+`NtWaitForSingleObject`, which is below the import-table hooks and therefore invisible to them.
+
+That closes the loop on the earlier question: the wait is real, it is not served by any worker,
+and the code that would serve it is the platform layer this session has been adding to — not a
+thread the image was supposed to start.
