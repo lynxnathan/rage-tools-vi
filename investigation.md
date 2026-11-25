@@ -9513,3 +9513,14 @@ dereferences a field the stub never filled.
 Fixed on the way: the address in the log is uppercase hex, so `[0-9a-f]` truncated it to
 `00006`; the `/proc` base is only a hint because the process is gone by the time it is
 read; and the trap byte is one before the reported address.
+
+### GameInput: returning the object in `rax` changes nothing (2026-11-24)
+
+Tested the other call shape — `GameInputCreate` returning the interface pointer in `eax`
+instead of filling an out-slot: the stop is identical, `read from 0x0` at
+`image+0x5925903`. So the null the code dereferences is not that return value; the object
+is reached and one of its fields is zero. Reverted to the measured shape.
+
+That leaves the field itself. `FUN_1459258a0` caches the object in `DAT_149ab15e8`, calls
+vtable slot `+0x10`, and the caller then reads a field from it. Filling that field requires
+its offset, which is one decompilation of the caller at `image+0x5925903`.
