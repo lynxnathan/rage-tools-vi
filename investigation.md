@@ -9918,3 +9918,21 @@ further attempts to satisfy its failed lookup are recorded as negative: setting 
 `LocalDumps` `DumpFolder` to the `D:\LocalDumps` the image names (it still stops), and
 starting the image as `D:\run\game.exe` so the game might mount that drive (the loader then
 exits 53 before the image runs at all).
+
+### The five missing interfaces have names, and the runtime answers only one class (2026-11-25)
+
+The ids from the Xodus run are declared in that runtime's own IDLs, so the gap is named
+rather than guessed:
+
+| interface id | declared in |
+| --- | --- |
+| `973a344e-24bf-4d0f-8457-56c534892b29` | `include/xgame.idl` |
+| `e349bd1a-fc20-4e40-b99c-4178cc6b409f` | `include/xsystem.idl` (the `IXSystem` block) |
+| `b884675d-b738-4a9c-815d-9a9a1e0c6c9b` | `include/xsystem.idl` |
+| `37e56907-2f10-41e8-b72f-36edb185331a` | `include/xnetworking.idl` |
+| `01acd177-91f9-4763-a38e-ccbb55ce32e0` | `include/xuser.idl` |
+
+`src/main.cpp` answers `CLSID_XThreadingImpl` and returns `REGDB_E_CLASSNOTREG` for every
+other class, with a comment that the interface order has to be recovered by querying each class
+and watching what the game calls. That is the work: the image names five classes it expects and
+the runtime has one.
