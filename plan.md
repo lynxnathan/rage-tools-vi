@@ -50,23 +50,23 @@ Last updated: 2026-11-24.
 - [ ] Name the remaining ped-rig bones and weight hashes — needs a new vocabulary
   source, not a wider search.
 
-## Route to running the game
+## Running the game
 
-The console image does not need the runtime reimplemented by hand: static recompilation
-does it once, on the user's own copy. Project Leonida ({GPL-3.0}) reimplements the console
-system software and translates the precompiled RDNA2 programs to SPIR-V for Vulkan; its
-own status page says the game does not boot yet, `26,503 / 26,503` shaders translated and
-validated.
+The path is static recompilation: the Xbox Series CPU is x86-64, so the game's own code
+runs natively once the console system software is reimplemented, and the precompiled RDNA2
+programs are translated to SPIR-V for Vulkan. Project Leonida is that project, on the
+user's own copy; its status page reports 26,503 / 26,503 shaders translated and validated,
+and boot still open.
 
-Two pieces of this repository are the parts of that route that are already measured:
+This repository is the reverse-engineering side of that same effort, and the two parts
+already measured here are the two the boot needs:
 
-- the RPF9 layout and index (`handoff/`, `output/index/`), which finds and checks a copy
-  and reads the archives without the game;
-- `rdna2-spirv/`, the RDNA2 → SPIR-V translator, which is the same translation step.
+- the RPF9 layout and index — finding a copy, reading its archives without the game;
+- `rdna2-spirv/` — the RDNA2 → SPIR-V translation step.
 
-What is *not* on that route: hand-written stubs for the GDK surface. Measured here to stop
-at `game.exe+0x2237178` because interface slots need real layouts, which is exactly the
-work a recompilation project has to do once and share.
+What stays off this path: hand-written stubs for the GDK surface. Measured to stop at
+`game.exe+0x2237178` because interface slots need real layouts, and those layouts are the
+recompilation's work, not a side experiment.
 
 ## Blocked
 
