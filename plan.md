@@ -50,6 +50,24 @@ Last updated: 2026-11-24.
 - [ ] Name the remaining ped-rig bones and weight hashes — needs a new vocabulary
   source, not a wider search.
 
+## Route to running the game
+
+The console image does not need the runtime reimplemented by hand: static recompilation
+does it once, on the user's own copy. Project Leonida ({GPL-3.0}) reimplements the console
+system software and translates the precompiled RDNA2 programs to SPIR-V for Vulkan; its
+own status page says the game does not boot yet, `26,503 / 26,503` shaders translated and
+validated.
+
+Two pieces of this repository are the parts of that route that are already measured:
+
+- the RPF9 layout and index (`handoff/`, `output/index/`), which finds and checks a copy
+  and reads the archives without the game;
+- `rdna2-spirv/`, the RDNA2 → SPIR-V translator, which is the same translation step.
+
+What is *not* on that route: hand-written stubs for the GDK surface. Measured here to stop
+at `game.exe+0x2237178` because interface slots need real layouts, which is exactly the
+work a recompilation project has to do once and share.
+
 ## Blocked
 
 Each needs a specific input, not more effort.
