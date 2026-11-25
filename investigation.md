@@ -10606,3 +10606,14 @@ and it is not the allocation size, not the free semantics, not the range trackin
 handler's scope. The next thing to copy from the public harness is its *physical page* model:
 `XMemAllocatePhysicalPages` is called with arguments this stub ignores, and the title's heap
 appears to be laid out over pages it asked for explicitly.
+
+### XMemAllocatePhysicalPages takes one value (2026-11-25)
+
+Found from the call site rather than the log: at `image+0x221648e` the code loads a single value
+into `ecx` (`0x180` there; `0x280` in the other caller) and calls the import, then asserts unless
+the result is 1. So the signature is one argument, not `(address, size, …)` as this stub guessed,
+and the answer the title wants is simply "granted". The stub now reports the value and returns 1
+(`xmem!XMemAllocatePhysicalPages(280) -> 1`), and the assert that used to follow is gone.
+
+The heap fault at `image+0x69fe5` survives it (34 faults, exit 5), so the remaining gap is the
+backing itself — the harness's pagefile-section pool — not the entry point's contract.

@@ -190,16 +190,16 @@ unsigned long long XMemGetWorkingSetStatistics(void *out, unsigned long long siz
 /* Called with (address, size, ...) and checked for a truthy result: the image asserts
  * (image+0x5eb27be) when it comes back false. Back it with a real reservation so the caller's
  * expectation holds, and report the arguments that were passed. */
-unsigned long long XMemAllocatePhysicalPages(unsigned long long address, unsigned long long size,
-                                             unsigned long long a, unsigned long long b)
+/* One argument only: the call site at image+0x221648e loads a single value into ecx (0x180
+ * there, 0x280 elsewhere) and asserts unless the result is 1. On a console this hands the title
+ * physical pages the GPU can map; here backing is the pool this stub already provides, so the
+ * answer is "granted" and the value is logged for the record. */
+unsigned long long XMemAllocatePhysicalPages(unsigned long long count)
 {
-    void *p;
-    (void)a; (void)b;
     if (getenv("STUB_TRACE"))
-        fprintf(stderr, "[%lx] xmem!XMemAllocatePhysicalPages(%p, %llx, %llx, %llx)\n",
-                GetCurrentThreadId(), (void *)(uintptr_t)address, size, a, b);
-    p = reserve((void *)(uintptr_t)address, (size_t)size);
-    return p != NULL ? 1 : 0;
+        fprintf(stderr, "[%lx] xmem!XMemAllocatePhysicalPages(%llx) -> 1\n",
+                GetCurrentThreadId(), count);
+    return 1;
 }
 unsigned long long XMemFreePhysicalPages(void) { return 0; }
 unsigned long long XMemMapPhysicalPages(void) { return 0; }
