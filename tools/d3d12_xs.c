@@ -296,6 +296,8 @@ static appstate_routine g_constrained_routine;
 static PVOID g_constrained_context;
 static HANDLE g_semaphores[8];
 static int g_semaphore_count;
+static HANDLE g_events[16];
+static int g_event_count;
 
 static long long WINAPI hook_RegisterAppStateChangeNotification(appstate_routine routine,
                                                                 PVOID context, PVOID registration)
@@ -401,6 +403,32 @@ static void patch_import(HMODULE image, const char *wanted, void *replacement)
 static DWORD (WINAPI *real_WaitForMultipleObjects)(DWORD, const HANDLE *, BOOL, DWORD);
 static DWORD (WINAPI *real_WaitForSingleObject)(HANDLE, DWORD);
 static HANDLE (WINAPI *real_CreateSemaphoreW)(void *, LONG, LONG, LPCWSTR);
+static HANDLE (WINAPI *real_CreateEventW)(void *, BOOL, BOOL, LPCWSTR);
+static HANDLE (WINAPI *real_CreateEventA)(void *, BOOL, BOOL, LPCSTR);
+
+static void remember_event(HANDLE handle, BOOL manual, BOOL initial)
+{
+    if (handle && handle != INVALID_HANDLE_VALUE && manual && !initial && g_event_count < 16)
+    {
+        g_events[g_event_count++] = handle;
+        note("event: manual-reset %p created (initial 0)", handle);
+    }
+}
+
+static HANDLE WINAPI hook_CreateEventW(void *a, BOOL manual, BOOL initial, LPCWSTR name)
+{
+    HANDLE handle = real_CreateEventW(a, manual, initial, name);
+    remember_event(handle, manual, initial);
+    return handle;
+}
+
+static HANDLE WINAPI hook_CreateEventA(void *a, BOOL manual, BOOL initial, LPCSTR name)
+{
+    HANDLE handle = real_CreateEventA(a, manual, initial, name);
+    remember_event(handle, manual, initial);
+    return handle;
+}
+
 static HANDLE (WINAPI *real_CreateThread)(void *, SIZE_T, DWORD (WINAPI *)(void *), void *,
                                           DWORD, DWORD *);
 static int g_threads_logged;
@@ -465,6 +493,22 @@ static void describe_handle(HANDLE handle)
 
 /* Probe knob: STUB_KICK=1 releases a semaphore the image waits on forever, one signal per
  * wait, so a "wait for N workers" loop can be drained and the next wall becomes visible. */
+static DWORD WINAPI event_kick_thread(LPVOID unused)
+{
+    const char *kick = getenv("STUB_EVENT_KICK");
+    int index;
+    (void)unused;
+    if (kick == NULL)
+        return 0;
+    Sleep((DWORD)atoi(kick));
+    for (index = 0; index < g_event_count; index++)
+    {
+        SetEvent(g_events[index]);
+        note("event: signalled %p", g_events[index]);
+    }
+    return 0;
+}
+
 static DWORD WINAPI kick_thread(LPVOID parameter)
 {
     LONG previous = -1;
@@ -554,6 +598,8 @@ static void install_wait_hooks(HMODULE image)
     real_WaitForSingleObject = (void *)GetProcAddress(kernel, "WaitForSingleObject");
     real_CreateSemaphoreW = (void *)GetProcAddress(kernel, "CreateSemaphoreW");
     real_CreateThread = (void *)GetProcAddress(kernel, "CreateThread");
+    real_CreateEventW = (void *)GetProcAddress(kernel, "CreateEventW");
+    real_CreateEventA = (void *)GetProcAddress(kernel, "CreateEventA");
     real_PeekMessageA = (void *)GetProcAddress(user, "PeekMessageA");
     real_DispatchMessageA = (void *)GetProcAddress(user, "DispatchMessageA");
     if (real_WaitForMultipleObjects)
@@ -564,6 +610,10 @@ static void install_wait_hooks(HMODULE image)
         patch_import(image, "CreateSemaphoreW", (void *)hook_CreateSemaphoreW);
     if (real_CreateThread)
         patch_import(image, "CreateThread", (void *)hook_CreateThread);
+    if (real_CreateEventW)
+        patch_import(image, "CreateEventW", (void *)hook_CreateEventW);
+    if (real_CreateEventA)
+        patch_import(image, "CreateEventA", (void *)hook_CreateEventA);
     if (real_PeekMessageA)
         patch_import(image, "PeekMessageA", (void *)hook_PeekMessageA);
     if (real_DispatchMessageA)
@@ -581,6 +631,8 @@ static void install_appstate_hooks(void)
                  (void *)hook_RegisterAppConstrainedChangeNotification);
     CloseHandle(CreateThread(NULL, 0, appstate_thread, NULL, 0, NULL));
     install_wait_hooks(image);
+    if (getenv("STUB_EVENT_KICK") != NULL)
+        CloseHandle(CreateThread(NULL, 0, event_kick_thread, NULL, 0, NULL));
 }
 
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)

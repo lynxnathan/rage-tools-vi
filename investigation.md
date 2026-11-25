@@ -10395,3 +10395,41 @@ starts none. Its main thread sits in `server_wait`, i.e. blocked on a Wine objec
 That closes the loop on the earlier question: the wait is real, it is not served by any worker,
 and the code that would serve it is the platform layer this session has been adding to — not a
 thread the image was supposed to start.
+
+### The wait is one manual-reset event, and signalling it starts the engine (2026-11-25)
+
+Wine's server log names the wait exactly:
+
+```
+00f4: create_event( access=001f0003, manual_reset=0, initial_state=0 ) -> 04e4
+00f4: create_event( access=001f0003, manual_reset=0, initial_state=0 ) -> 04e8
+00f4: create_event( access=001f0003, manual_reset=1, initial_state=0 ) -> 04ec
+00f4: select( flags=2, timeout=infinite, size=8, data={WAIT,handles={04ec}} )
+00f4: select() = PENDING { signaled=0 }
+```
+
+The main thread creates two auto-reset events and one **manual-reset** event, then waits on the
+manual one with no timeout. Nothing in the image signals it.
+
+Signalling it (probe: `STUB_EVENT_KICK=<ms>` sets every manual-reset event the image creates)
+changes the run completely:
+
+```
+event: signalled 0x4ec
+semaphore: created 0x4e0 (count 0, max 1)
+semaphore: created 0x4e8 (count 0, max 1)
+thread: created 0x4ec start 0x6ffff8538b00
+thread: created 0x510 start 0x6ffff5165ea0   (x3 more)
+…
+16 threads created, 8,101 handled access violations, 78 debug prints
+exit 5, crash reporter uploads a minidump
+```
+
+So the engine **does** start worker threads — after that event. Everything measured earlier
+about "the image never creates threads" was measured while it was blocked in front of this
+barrier, and should be read that way.
+
+The next questions, in order: who is supposed to signal that manual-reset event (it is the
+barrier the whole session has been sitting behind), and then the faults that appear once the
+engine runs — 8,101 of them, spread across image addresses, with the crash context still at
+`System Init`, frame 0.
