@@ -57,7 +57,10 @@ Each needs a specific input, not more effort.
 - [ ] **Play the game.** Parked by decision (2026-11-24). Measured to the boundary:
   engine threads start and execution stops at `game.exe+0x2237178` on a zeroed 32-byte
   structure from interface slot 2. Not to be reopened without a PC build or a public
-  layout source for the six queried interfaces.
+  layout source for the six queried interfaces. Re-entry is one command
+  (`tools/rage.py play --stubs --game-dir <dump>`): it rebuilds the stubs, prints the last
+  calls and the fault, and `tools/rage.py play` alone re-classifies the image, so a PC
+  build is detected without any other change.
 - [ ] RPF9 table of contents — content unidentified. `Front B` is a per-entry table for
   206 of 654 packs and composite for the other 448; no 32-bit hash of 36,952 names
   appears in either region.
