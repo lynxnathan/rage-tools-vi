@@ -10168,3 +10168,19 @@ image, so the scoreboard cannot rot silently.
 
 The acceptance run itself is unchanged and still fails: the image exits in `System Init` before
 any window exists.
+
+### Correction: the path handed to the resolver is an empty buffer, not `D:\LocalDumps` (2026-11-25)
+
+Measured at the call (`image+0x2236e6e`): `r8 = 0x6ffff96dd1bb`, which is `image+0x678d1bb` — nine
+bytes **before** the `D:\LocalDumps` text at `image+0x678d1c4`, and the bytes there decode as a
+small table (`w`, `%llu`, then the path). `r8` is a format/auxiliary table, not the path.
+
+The path is the second argument, `rdx = 0x1474539f6` → `image+0x74539f6`, which is in `.bss`
+and **empty**. The engine formats its dump path into that global before the call, and nothing
+has written it, so the resolver is asked to resolve an empty string and returns 0 — which is
+what trips the postcondition at `image+0x2237178`.
+
+So the guard's cause is not the file system, the registry, the drive letter or the caller's
+directory: a platform-provided base path is missing from a `.bss` buffer. The earlier entries
+that read `D:\LocalDumps` at this call site were reading the neighbouring table; the debugger
+values above supersede them.

@@ -1,16 +1,18 @@
 diff --git a/src/main.cpp b/src/main.cpp
-index c51613d..9e724c8 100644
+index c51613d..f531b35 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -20,6 +20,7 @@
+@@ -20,6 +20,9 @@
  
  #include <initguid.h>
  #include "private.h"
 +#include <xgame.h>
++#include <xpersistentlocalstorage.h>
++#include <xpackage.h>
  
  #ifdef __cplusplus
  extern "C" {
-@@ -70,6 +71,138 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
+@@ -70,6 +73,206 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
      return InitializeApiImplEx2( gdkVer, gsVer, 0, NULL );
  }
  
@@ -120,6 +122,74 @@ index c51613d..9e724c8 100644
 +
 +/* XGame: the title id. From the package's own MicrosoftGame.Config (TitleId 7952987A), which
 + * is what the console's service would report. */
++/* XPersistentLocalStorage: the title's own storage. The package declares 2048 MB of it, and
++ * the engine wants a path it can mount; without this class the query fails and the engine has
++ * no storage device of its own. */
++class XPersistentLocalStorageObject : public IXPersistentLocalStorageImpl3
++{
++public:
++    HRESULT STDMETHODCALLTYPE QueryInterface( REFIID iid, void **out ) override
++    {
++        if ( !out ) return E_POINTER;
++        if ( IsEqualIID( iid, IID_IUnknown ) || IsEqualIID( iid, IID_IXPersistentLocalStorageImpl3 )
++             || IsEqualIID( iid, IID_IXPersistentLocalStorageImpl2 )
++             || IsEqualIID( iid, IID_IXPersistentLocalStorageImpl ) )
++        {
++            *out = static_cast<IXPersistentLocalStorageImpl3 *>( this );
++            return S_OK;
++        }
++        *out = NULL;
++        return E_NOINTERFACE;
++    }
++    ULONG STDMETHODCALLTYPE AddRef() override { return 1; }
++    ULONG STDMETHODCALLTYPE Release() override { return 1; }
++
++    HRESULT STDMETHODCALLTYPE XPersistentLocalStorageGetPathSize( SIZE_T *pathSize ) override
++    {
++        if ( pathSize ) *pathSize = 4;
++        return S_OK;
++    }
++    HRESULT STDMETHODCALLTYPE XPersistentLocalStorageGetPath( SIZE_T size, char *path,
++                                                              SIZE_T *pathUsed ) override
++    {
++        write_string( path, ( INT32 )size, pathUsed, "G:\\" );
++        return S_OK;
++    }
++    HRESULT STDMETHODCALLTYPE XPersistentLocalStorageGetSpaceInfo(
++        XPersistentLocalStorageSpaceInfo *info ) override
++    {
++        if ( info )
++        {
++            info->totalBytes = 2048ull * 1024 * 1024;
++            info->usedBytes = 0;
++            info->totalFreeBytes = info->totalBytes;
++            info->availableFreeBytes = info->totalBytes;
++        }
++        return S_OK;
++    }
++    HRESULT STDMETHODCALLTYPE XPersistentLocalStoragePromptUserForSpaceAsync(
++        UINT64 bytes, XAsyncBlock *async ) override
++    {
++        (void)bytes; (void)async;
++        return E_NOTIMPL;
++    }
++    HRESULT STDMETHODCALLTYPE XPersistentLocalStoragePromptUserForSpaceResult(
++        XAsyncBlock *async ) override
++    {
++        (void)async;
++        return E_NOTIMPL;
++    }
++    HRESULT STDMETHODCALLTYPE XPersistentLocalStorageMountForPackage(
++        const char *packageIdentifier, XPackageMountHandle *mountHandle ) override
++    {
++        (void)packageIdentifier;
++        if ( mountHandle ) *mountHandle = ( XPackageMountHandle )( uintptr_t )1;
++        return S_OK;
++    }
++};
++
++static XPersistentLocalStorageObject storage_object;
++
 +class XGameObject : public IXGameImpl
 +{
 +public:
@@ -149,7 +219,7 @@ index c51613d..9e724c8 100644
  HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
  {
      // ------------ FOR FUTURE REFERENCES ------------
-@@ -103,6 +236,28 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
+@@ -103,6 +306,33 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
          return x_threading_impl->QueryInterface( iid, out );
      }
  
@@ -161,6 +231,11 @@ index c51613d..9e724c8 100644
 +    if ( IsEqualGUID( clsid, CLSID_XGameImpl ) )
 +    {
 +        return game_object.QueryInterface( iid, out );
++    }
++
++    if ( IsEqualGUID( clsid, CLSID_XPersistentLocalStorageImpl ) )
++    {
++        return storage_object.QueryInterface( iid, out );
 +    }
 +
 +    /* Probing is opt-in: a class handed back as numbered slots tells the image's callers
