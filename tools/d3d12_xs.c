@@ -130,8 +130,25 @@ static FARPROC host_export(const char *name)
 __declspec(dllexport) HRESULT WINAPI D3D12ConfigureVirtualMemoryX(void *base, UINT64 size,
                                                                   UINT32 alignment, UINT32 flags)
 {
-    note("d3d12_xs!D3D12ConfigureVirtualMemoryX(%p, %llx, %x, %x) -> S_OK",
-         base, size, alignment, flags);
+    /* The contract, from a static pass another project published: one pointer to a 32-byte
+     * configuration, zero-initialised, with only the DWORD at offset 4 written
+     * (ceil(size / 16 GiB) + 2, so 3 for 16 GiB and 4 for 24 GiB). Anything else is refused
+     * without touching state. */
+    {
+        const unsigned char *config = (const unsigned char *)base;
+        unsigned index;
+        note("d3d12_xs!D3D12ConfigureVirtualMemoryX(config %p)", base);
+        if (config != NULL)
+        {
+            unsigned written = 0;
+            for (index = 0; index < 32; index++)
+                written += config[index] != 0;
+            note("d3d12_xs!  %u non-zero byte(s) of 32, offset 4 = %lu",
+                 written,
+                 (unsigned long)(config[4] | (config[5] << 8) | (config[6] << 16) |
+                                 ((unsigned long)config[7] << 24)));
+        }
+    }
     return S_OK;
 }
 
@@ -291,6 +308,10 @@ static long long WINAPI hook_RegisterAppConstrainedChangeNotification(appstate_r
 static DWORD WINAPI appstate_thread(LPVOID unused)
 {
     (void)unused;
+    /* Off by default: a state change delivered before the engine is ready makes it assert
+     * (measured: int3 at image+0x1e1d574). STUB_APPSTATE=1 turns the delivery on. */
+    if (getenv("STUB_APPSTATE") == NULL)
+        return 0;
     Sleep(2000);
     if (g_constrained_routine)
     {

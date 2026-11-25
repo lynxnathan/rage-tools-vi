@@ -10274,3 +10274,33 @@ during an experiment reverted the uncommitted class implementations, and the pat
 only copy. It applied back cleanly and the run returned to its previous state, which is an
 argument for saving `tools/patches/xodus-platform.patch` after every successful build (the tool
 does that implicitly by re-applying it).
+
+### Public prior art boots this exact build, and ConsoleMode's presence asserts it (2026-11-25)
+
+Two finds from search, both concrete:
+
+* **`OnlyMoisties/GTA6-BootTest`** — stand-in DLLs and a debugger harness that boot *this*
+  build (`game_scarlett_master.exe`, GDK) on Windows: `xmem` with a GPU-visible pool of
+  pagefile sections and IAT hooks (a `G:` package-root redirect, a borderless fullscreen
+  window), `d3d12_xs` with COM device objects and `PresentX`, `XCRDAPI` with a synchronous
+  DirectStorage queue, `xgameruntime` proxies with a local user, and an RDNA2→HLSL translator
+  for the draws. Its README states the result: the game boots, streams archives, runs its frame
+  loop and **renders its first UI screen** (the start-screen prompt bar). That is the frames
+  problem stated by someone who solved the Windows half of it.
+* **`R0Y00/Xbox2Windows#874`** — a static pass on the same binary gives the
+  `D3D12ConfigureVirtualMemoryX` contract: **one pointer argument to a 32-byte
+  zero-initialised struct**, only the dword at offset 4 written, value `ceil(size/16GiB)+2`
+  (`3` for 16 GiB, `4` for 24 GiB), where the size comes from
+  `HKLM\Software\Microsoft\Windows NT\CurrentVersion\OEM\ConsoleMode`; a missing key takes the
+  24 GiB path. Called once per process, before device creation, immediately followed by two
+  `XMemVirtualAlloc(NULL, size, 0x20402000, …)` reservations.
+
+That matches what the shim sees: the first call is `D3D12ConfigureVirtualMemoryX`, and the
+reservations that follow are 24 GiB when the key is absent.
+
+**Measured here:** setting `ConsoleMode` to *any* value (1, 4, 6, 7, 8) makes the image raise
+`int3` at `image+0x1e1d574` before it ever configures virtual memory, and no
+`D3D12ConfigureVirtualMemoryX` call happens at all. Deleting the value restores the run
+(configuration call present, offset 4 read as 0, no breakpoint). So on this build the key's
+*presence* changes an early code path into an assert, which is worth knowing before anyone sets
+it "to make the console type right".
