@@ -10096,3 +10096,29 @@ was waiting on.
 That is the state to continue from: factory answers, guard unresolved, and its resolution call
 (`image+0x56eb10`, wide path to ASCII against a thread-local alias table) returns false for
 `D:\LocalDumps`.
+
+### The resolution ends in a device lookup, and only pack paths have a device (2026-11-25)
+
+Stepped through the resolver with `wine_gdb`. `image+0x56eb10` formats the wide path into ASCII
+and then asks the engine for a device that owns it:
+
+```
+56eb86  call 0x14128bb70        ; write the wide path as ASCII into the caller's buffer
+56eb96  call 0x14128bae0
+56eb9e  call 0x140968480        ; find the device for that path -> object or 0
+56eba8  test rax, rax ; je -> return 0
+56ebad  mov r8,[rax] ; call *0x168(%r8)   ; device slot 45 with the path
+56ebbd  cmp eax,-1 ; je -> return 0       ; -1 means "no such path here"
+```
+
+Measured at the device lookup, the only path that finds a device is the pack:
+
+```
+FIND-DEVICE rax=0x6ffffa845e80 path=G:/appdata0.rpf
+```
+
+and for the reporter's call the lookup yields nothing, so the resolver returns 0, the caller
+takes the early exit at `image+0x2236e75`, and the postcondition assert at `image+0x2237178`
+fires because the object was never initialised. Note the path: the engine has devices for its
+own mounts (packs on `G:`), and none for `D:`, which is exactly the device set the platform
+layer is supposed to establish — the same five GDK classes the runtime still refuses.
