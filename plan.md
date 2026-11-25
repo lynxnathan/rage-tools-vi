@@ -91,8 +91,9 @@ Each needs a specific input, not more effort.
 - [ ] Play the game: needs a PC build, or the console system software implemented by a
   recompilation project. Guard patching moves the stop but not the requirement, and the
   unattended loop needs its backtrace parser fixed first (`tools/boot_loop.py`).
-- [ ] RPF9 table of contents: content unidentified; `Front B` is a per-entry table for 206
-  of 654 packs and composite for the other 448.
+- [ ] RPF9 table of contents: content unidentified. `Front B` is a per-entry table for 206
+  of 654 packs and composite for the other 448, and neither joaat, the 64-bit families nor
+  the engine's own Murmur3 x64-128 (both halves, 41,550 values, zero hits) appear in it.
 - [ ] Read the stream class: its `Read` at `+0x60`, and the three words at `+0x10`,
   `+0x18`, `+0x20` that the archive ctor passes to the region reader.
 - [ ] Front A milestone on `story000_bvh4.rpf` — needs independent table framing.

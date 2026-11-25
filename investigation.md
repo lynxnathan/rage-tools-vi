@@ -9638,3 +9638,20 @@ Everything recorded in this thread before that point is instrumentation: which s
 which guards fire, which slots are called. It is useful for the recompilation route and it
 is not evidence that the game runs. Stated plainly so a later reader does not mistake a
 walked guard for a drawn frame.
+
+### The engine's own name hash is not in the front region either (2026-11-24)
+
+The name hash this engine uses is Murmur3 x64-128 (`FUN_145305880`), which is not joaat, so
+the earlier 32-bit and 64-bit exclusions did not cover it. Tested directly: both 64-bit
+halves of that hash over the 20,775 named entries in the registry, against every 4-byte
+aligned 64-bit word in `data.rpf`'s front region.
+
+```
+names 20,775   values 41,550   words tested 17,414   hits 0
+chance floor 3.9e-11
+```
+
+Zero is a clean negative at that floor. So the front region is not a table of this engine's
+name hashes for the names in the registry — which sharpens the open question: either the
+region holds something else (paths, ids, or encrypted keys), or the names in those archives
+are not in the registry.
