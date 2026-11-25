@@ -10304,3 +10304,23 @@ reservations that follow are 24 GiB when the key is absent.
 (configuration call present, offset 4 read as 0, no breakpoint). So on this build the key's
 *presence* changes an early code path into an assert, which is worth knowing before anyone sets
 it "to make the console type right".
+
+### The package drive was shadowed by a raw device, and fixing it is not enough (2026-11-25)
+
+A console title builds its paths on the package drive — this image asks for `G:/appdata0.rpf` —
+and the prefix had **`g::` -> `/dev/sdb1`** in `dosdevices`, the same raw-device entry that
+shadowed `d:` earlier. With it present, `G:` exists as a letter (`winepath` resolves it) but has
+no contents: `dir G:\` is empty and `if exist G:\appdata0.rpf` says missing. Removing `g::` and
+pointing `g:` at the package root fixes that:
+
+```
+g: -> /run/media/.../GTA6.Acceptance.Test
+if exist G:\appdata0.rpf -> found
+dir G:\ /b -> acphal.dll, amd_fidelityfx_loader_xbox.dll, …, anim.rpf
+```
+
+`tools/run_dir.py --package-drive g` now does this and reports a shadowing entry.
+
+It changed nothing in the run: with `G:` usable, `WINEDEBUG=+file` still shows the image opening
+**no** file on `G:` at all, and no window appears. So the drive was a real defect and not this
+wall: whatever the image does before it touches the package, it does not get to the package.
