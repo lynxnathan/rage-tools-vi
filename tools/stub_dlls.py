@@ -86,20 +86,30 @@ def write_stub(out, dll, symbols):
             "#include <stdio.h>",
             "#include <windows.h>",
             f'#define TRACE(name,a,b,c,d) do {{ if (getenv("STUB_TRACE")) {{ fprintf(stderr, "{dll}!%s(%llx,%llx,%llx,%llx)\\n", name,(unsigned long long)(a),(unsigned long long)(b),(unsigned long long)(c),(unsigned long long)(d)); }} }} while (0)',
+            "#include <stdlib.h>",
+            "/* STUB_RET=<n> makes every stub return n instead of 0, which is how a scalar\n"
+            " * the image compares against a lower bound (a handle, an id) is identified: the\n"
+            " * check starts passing and the stop moves. */",
+            "static unsigned long long stub_return(void)",
+            "{",
+            "    static unsigned long long value; static int ready;",
+            "    if (!ready) { const char *t = getenv(\"STUB_RET\"); if (t) value = strtoull(t, NULL, 0); ready = 1; }",
+            "    return value;",
+            "}",
             ""]
     for index, (kind, value) in enumerate(symbols):
         if kind == "name":
             name = value
             if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):
-                body.append(f"unsigned long long {name}(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d) {{ TRACE(\"{name}\",a,b,c,d); return 0; }}")
+                body.append(f"unsigned long long {name}(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d) {{ TRACE(\"{name}\",a,b,c,d); return stub_return(); }}")
                 exports.append(f"  {name}")
             else:
                 internal = f"stub_{index}"
-                body.append(f"unsigned long long {internal}(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d) {{ TRACE(\"{name}\",a,b,c,d); return 0; }}")
+                body.append(f"unsigned long long {internal}(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d) {{ TRACE(\"{name}\",a,b,c,d); return stub_return(); }}")
                 exports.append(f"  {name}={internal}")
         else:
             name = f"ord_{value}"
-            body.append(f"unsigned long long {name}(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d) {{ TRACE(\"{name}\",a,b,c,d); return 0; }}")
+            body.append(f"unsigned long long {name}(unsigned long long a, unsigned long long b, unsigned long long c, unsigned long long d) {{ TRACE(\"{name}\",a,b,c,d); return stub_return(); }}")
             exports.append(f"  {name} @{value} NONAME")
     (out / f"{safe}.def").write_text("EXPORTS\n" + "\n".join(exports) + "\n")
     custom = Path(__file__).resolve().parent / "stub_custom" / f"{dll}.c"

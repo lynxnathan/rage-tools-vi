@@ -9888,3 +9888,33 @@ patched run the only exception codes are `40010006` (the image's debug print, 62
 VCRUNTIME140's raise/abort path because a CRT routine rejected an argument (frames
 `0x5B29847 <- 0x2240EFC <- ... <- 0x661F0`). That is consistent with a stub handing back a
 shape the image then passes to `memmove`-style code with a wrong size.
+
+### A real GDK runtime replaces the zero-answering stub (2026-11-25)
+
+The image loads `xgameruntime.dll` itself and caches what `QueryApiImpl` returns, so every
+title, sandbox and language answer came from our own stub returning zeros. Xodus's runtime —
+the continuation of WineGDK — implements that layer for real, and it builds as a win64 DLL
+with mingw (`tools/xgameruntime.py`, which clones, configures with
+`-Dthread_local=_Thread_local` for the C files, builds and installs into `cache/shims`).
+`tools/run_dir.py` already prefers `cache/shims` over `cache/stubs`, so a staged run picks it
+up with no other change.
+
+First run with it, staged and offline:
+
+```
+[256] (fixme) main.cpp::QueryApiImpl {973a344e-24bf-4d0f-8457-56c534892b29} not implemented, returning E_NOINTERFACE.
+[256] (fixme) main.cpp::QueryApiImpl {e349bd1a-fc20-4e40-b99c-4178cc6b409f} not implemented, returning E_NOINTERFACE.
+[256] (fixme) main.cpp::QueryApiImpl {b884675d-b738-4a9c-815d-9a9a1e0c6c9b} not implemented, returning E_NOINTERFACE.
+[256] (fixme) main.cpp::QueryApiImpl {37e56907-2f10-41e8-b72f-36edb185331a} not implemented, returning E_NOINTERFACE.
+[256] (fixme) main.cpp::QueryApiImpl {01acd177-91f9-4763-a38e-ccbb55ce32e0} not implemented, returning E_NOINTERFACE.
+```
+
+Five interface ids are asked for that this runtime does not provide. That is a different kind
+of stop from the ones before it: not a stub lying, but a gap in the platform layer, named by
+id and reproducible.
+
+The guard at `image+0x2237178` still fires with it, so it is not about the GDK answers. Two
+further attempts to satisfy its failed lookup are recorded as negative: setting the WER
+`LocalDumps` `DumpFolder` to the `D:\LocalDumps` the image names (it still stops), and
+starting the image as `D:\run\game.exe` so the game might mount that drive (the loader then
+exits 53 before the image runs at all).

@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-181 scripts.
+182 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -195,5 +195,6 @@ so `python3 tools/<name>.py` works without arguments.
 | [`verify_quadtree.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_quadtree.py) | Verify the class-0 quadtree JSON against the geometry source. |  |
 | [`vtable_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vtable_scan.py) | Enumerate vtables in the executable and resolve chosen slots. | --find --limit --min-slots --slot |
 | [`wrapper_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/wrapper_probe.py) | Probe 32-byte +0x10 wrappers for a signature that predicts rotation leaves. |  |
+| [`xgameruntime.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/xgameruntime.py) | Build the Xodus xgameruntime into `cache/shims` so the image talks to a real GDK layer. | --check --rebuild |
 | [`xref.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/xref.py) | Find the code that references an image RVA: call/jmp rel32, and rip-relative operands. | --kind --limit --to |
 | [`zipcrypto_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/zipcrypto_probe.py) | Test passwords against a ZipCrypto entry without extracting anything. | --wordlist --words |
