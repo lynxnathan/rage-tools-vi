@@ -34,6 +34,7 @@ missing:
   * `ffmpeg`, `xwininfo`, `xprop`, and `flameshot` when the session is Wayland.
 
     python3 tests/test_boot_frames.py --game-dir <dump>
+    python3 tests/test_boot_frames.py --selftest    # prove the harness can pass
     python3 tests/test_boot_frames.py --game-dir <dump> --seconds 900 --settle 5
 
 The image is launched unpatched, so the run stops where the shipped executable stops.
@@ -217,6 +218,65 @@ def motion(previous, frame):
     return sum(abs(a - b) for a, b in zip(previous, frame)) / len(frame)
 
 
+def selftest(args, method, display, screen):
+    """The same detection, capture and scoring, pointed at a program that does open a window.
+
+    A scoreboard that has never recorded a pass is not evidence of anything: this runs Wine's
+    notepad, and if the window is not found, cropped and scored as carrying content, the
+    harness is what is broken — not the image.
+    """
+    from rage import proton_wine
+    wine = proton_wine()
+    if wine is None:
+        print("  skipped (no Proton wine)")
+        return 0
+    before = windows()
+    env = dict(os.environ, WINEPREFIX=os.environ.get("PROTON_PREFIX",
+                                                     str(Path.home() / ".proton-vi/pfx")))
+    launch = ["unshare", "-rn", str(wine), "notepad"] if not args.online else \
+        [str(wine), "notepad"]
+    process = subprocess.Popen(launch, env=env, stdout=subprocess.DEVNULL,
+                               stderr=subprocess.DEVNULL)
+    window = None
+    frames = 0
+    best = (0, 0.0, 0.0)
+    try:
+        deadline = time.time() + args.seconds
+        while time.time() < deadline:
+            if window is None:
+                window = pick_window(before, descendants(process.pid), ["notepad"])
+                if window is None:
+                    time.sleep(0.5)
+                    continue
+                rect = rectangle(window)
+                print(f"  window {window} at {rect[2]}x{rect[3]}+{rect[0]}+{rect[1]} "
+                      f"via {method}")
+            frame, error = capture(method, screen, rect, display)
+            if frame is None:
+                print(f"  capture failed: {error}")
+                break
+            contrast, deviation, lit = spread(frame)
+            if (contrast, deviation, lit) > best:
+                best = (contrast, deviation, lit)
+            if contrast >= args.min_spread and lit >= args.min_lit:
+                frames += 1
+            time.sleep(1)
+    finally:
+        process.terminate()
+        try:
+            process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            process.kill()
+    print(f"  window {window or 'none'}, content frames {frames}, contrast {best[0]}, "
+          f"lit {best[2]:.1%}")
+    check("the harness finds a window", window is not None)
+    check("the harness captures content from it", frames >= max(1, args.min_frames // 2),
+          f"({frames})")
+    print()
+    print("PASS" if not FAILED else f"FAIL: {len(FAILED)} check(s)")
+    return 0 if not FAILED else 1
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -232,6 +292,9 @@ def main():
     parser.add_argument("--min-spread", type=int, default=24)
     parser.add_argument("--min-lit", type=float, default=0.02,
                         help="share of pixels above a quarter of full scale")
+    parser.add_argument("--selftest", action="store_true",
+                        help="run a known windowing program instead of the image, so a pass "
+                             "proves the harness can see a window, capture it and score content")
     parser.add_argument("--online", action="store_true",
                         help="allow the image's network access (its crash reporter posts "
                              "minidumps to submit.backtrace.io); off by default")
@@ -245,6 +308,21 @@ def main():
     if not display:
         print("  skipped (no DISPLAY; a real window needs the session display)")
         return 0
+    if args.selftest:
+        method = args.capture
+        if method == "auto":
+            method = "desktop" if os.environ.get("WAYLAND_DISPLAY") else "x11"
+        if method == "desktop" and not shutil.which("flameshot"):
+            print("  skipped (desktop capture needs flameshot)")
+            return 0
+        for tool in ("ffmpeg", "xwininfo", "xprop"):
+            if not shutil.which(tool):
+                print(f"  skipped ({tool} missing)")
+                return 0
+        root = subprocess.run(["xwininfo", "-root"], capture_output=True, text=True).stdout
+        screen = (int(re.search(r"Width:\s+(\d+)", root).group(1)),
+                  int(re.search(r"Height:\s+(\d+)", root).group(1)))
+        return selftest(args, method, display, screen)
     if args.game_dir is None or not args.game_dir.is_dir():
         print("  skipped (no game directory; pass --game-dir or set RAGE_GAME_DIR)")
         return 0

@@ -34,6 +34,18 @@ else
     note "rust tests" "FAIL"; tail -4 /tmp/check-rust.log | sed 's/^/    /'; fail=1
 fi
 
+# The acceptance scoreboard proves it can pass before it is trusted to say anything about the
+# image: a harness that has never seen a window cannot report on one.
+if [ -n "${DISPLAY:-}" ]; then
+    if $PY tests/test_boot_frames.py --selftest --seconds 8 >/tmp/check-harness.log 2>&1; then
+        note "boot harness" "PASS ($(grep -c '^  ok' /tmp/check-harness.log) checks)"
+    else
+        note "boot harness" "FAIL"; tail -4 /tmp/check-harness.log | sed 's/^/    /'; fail=1
+    fi
+else
+    note "boot harness" "skipped (no DISPLAY)"
+fi
+
 if [ -n "${RAGE_GAME_DIR:-}" ]; then
     if $PY tests/test_boot_frames.py --game-dir "$RAGE_GAME_DIR" --seconds 20 >/tmp/check-frames.log 2>&1; then
         note "boot frames" "PASS"

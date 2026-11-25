@@ -10146,3 +10146,25 @@ so the image is querying `XSystemGetXboxLiveSandboxId` through our object. `Titl
 
 The changes live in `tools/patches/xodus-platform.patch`, applied (and idempotently re-applied)
 by `tools/xgameruntime.py`, so the runtime is reproducible from the clone plus that one file.
+
+### The scoreboard now proves it can pass (2026-11-25)
+
+A harness that has never recorded a pass cannot be trusted to report a failure. The acceptance
+test therefore has a positive control — `--selftest` runs Wine's notepad and puts it through the
+same detection, cropping and scoring:
+
+```
+window 0x1e00003 at 1368x1026+0+29 via desktop
+window 0x1e00003, content frames 5, contrast 180, lit 100.0%
+ok    the harness finds a window
+ok    the harness captures content from it (5)
+PASS
+```
+
+So the machinery that reports `window none` for the image is demonstrably able to find a Wine
+window, crop it out of a Wayland desktop capture and score content. `tools/check.sh` now runs
+that control as its own step (`boot harness`), separate from the acceptance run against the
+image, so the scoreboard cannot rot silently.
+
+The acceptance run itself is unchanged and still fails: the image exits in `System Init` before
+any window exists.
