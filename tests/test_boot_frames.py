@@ -239,6 +239,8 @@ def selftest(args, method, display, screen):
     launch = ["unshare", "-rn", str(wine), "notepad"] if not args.online else \
         [str(wine), "notepad"]
     print("  CONTROL: wine notepad, not the game (this only proves the harness works)")
+    frames_dir = ROOT / "cache/frames" / ("control-" + time.strftime("%Y%m%dT%H%M%S"))
+    frames_dir.mkdir(parents=True, exist_ok=True)
     process = subprocess.Popen(launch, env=env, stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL)
     window = None
@@ -264,6 +266,10 @@ def selftest(args, method, display, screen):
                 best = (contrast, deviation, lit)
             if contrast >= args.min_spread and lit >= args.min_lit:
                 frames += 1
+                png = frames_dir / f"{frames:03d}.png"
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo",
+                                "-pix_fmt", "gray", "-s", f"{WIDTH}x{HEIGHT}", "-i", "pipe:0",
+                                "-frames:v", "1", str(png)], input=frame, capture_output=True)
             time.sleep(1)
     finally:
         process.terminate()
@@ -273,6 +279,7 @@ def selftest(args, method, display, screen):
             process.kill()
     print(f"  window {window or 'none'}, content frames {frames}, contrast {best[0]}, "
           f"lit {best[2]:.1%}")
+    print(f"  frames kept in {frames_dir.relative_to(ROOT)}")
     check("the harness finds a window", window is not None)
     check("the harness captures content from it", frames >= max(1, args.min_frames // 2),
           f"({frames})")
@@ -373,6 +380,10 @@ def main():
     print(f"  run directory {game} ({links} linked, {placed} stubs); the dump is not written")
 
     work = Path(tempfile.mkdtemp(prefix="bootframes-"))
+    frames_dir = ROOT / "cache/frames" / time.strftime("%Y%m%dT%H%M%S")
+    frames_dir.mkdir(parents=True, exist_ok=True)
+    index = (frames_dir / "index.tsv").open("w")
+    index.write("t\tframe\tcontrast\tlit\tmotion\n")
     log_path = work / "run.log"
     exe = game / "bootframe.exe"
     exe.write_bytes(args.exe.read_bytes())
@@ -458,6 +469,13 @@ def main():
                 clicked_at = time.time()
             elif clicked and not answered and delta > args.max_motion:
                 answered = True
+            number = len(timeline)
+            png = frames_dir / f"{number:04d}.png"
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo",
+                            "-pix_fmt", "gray", "-s", f"{WIDTH}x{HEIGHT}", "-i", "pipe:0",
+                            "-frames:v", "1", str(png)], input=frame, capture_output=True)
+            index.write(f"{number}\t{png.name}\t{contrast}\t{lit:.4f}\t{delta:.2f}\n")
+            index.flush()
             timeline.append(f"    {len(timeline):3d}  contrast {contrast:3d}  lit {lit:5.1%}  "
                             f"motion {delta:6.2f}{'  still' if still else ''}"
                             f"{'  minimized' if hidden else ''}")
@@ -472,8 +490,10 @@ def main():
                 process.kill()
         exe.unlink(missing_ok=True)
 
+    index.close()
     for line in timeline[-20:]:
         print(line)
+    print(f"  frames kept in {frames_dir.relative_to(ROOT)}")
     log = log_path.read_text(errors="replace") if log_path.is_file() else ""
     exit_code = process.returncode if process is not None else None
     print(f"  exit {exit_code}, window {window or 'none'}, grabs {grabs} ({failures} failed), "

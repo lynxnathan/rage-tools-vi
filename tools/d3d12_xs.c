@@ -356,6 +356,23 @@ static void patch_import(HMODULE image, const char *wanted, void *replacement)
 static DWORD (WINAPI *real_WaitForMultipleObjects)(DWORD, const HANDLE *, BOOL, DWORD);
 static DWORD (WINAPI *real_WaitForSingleObject)(HANDLE, DWORD);
 static HANDLE (WINAPI *real_CreateSemaphoreW)(void *, LONG, LONG, LPCWSTR);
+static HANDLE (WINAPI *real_CreateThread)(void *, SIZE_T, DWORD (WINAPI *)(void *), void *,
+                                          DWORD, DWORD *);
+static int g_threads_logged;
+
+static HANDLE WINAPI hook_CreateThread(void *attributes, SIZE_T stack,
+                                       DWORD (WINAPI *start)(void *), void *parameter,
+                                       DWORD flags, DWORD *id)
+{
+    HANDLE handle = real_CreateThread(attributes, stack, start, parameter, flags, id);
+    if (g_threads_logged < 16)
+    {
+        g_threads_logged++;
+        note("thread: created %p start %p param %p flags %lu", handle, start, parameter,
+             (unsigned long)flags);
+    }
+    return handle;
+}
 
 static HANDLE WINAPI hook_CreateSemaphoreW(void *attributes, LONG initial, LONG maximum,
                                            LPCWSTR name)
@@ -481,6 +498,7 @@ static void install_wait_hooks(HMODULE image)
     real_WaitForMultipleObjects = (void *)GetProcAddress(kernel, "WaitForMultipleObjects");
     real_WaitForSingleObject = (void *)GetProcAddress(kernel, "WaitForSingleObject");
     real_CreateSemaphoreW = (void *)GetProcAddress(kernel, "CreateSemaphoreW");
+    real_CreateThread = (void *)GetProcAddress(kernel, "CreateThread");
     real_PeekMessageA = (void *)GetProcAddress(user, "PeekMessageA");
     real_DispatchMessageA = (void *)GetProcAddress(user, "DispatchMessageA");
     if (real_WaitForMultipleObjects)
@@ -489,6 +507,8 @@ static void install_wait_hooks(HMODULE image)
         patch_import(image, "WaitForSingleObject", (void *)hook_WaitForSingleObject);
     if (real_CreateSemaphoreW)
         patch_import(image, "CreateSemaphoreW", (void *)hook_CreateSemaphoreW);
+    if (real_CreateThread)
+        patch_import(image, "CreateThread", (void *)hook_CreateThread);
     if (real_PeekMessageA)
         patch_import(image, "PeekMessageA", (void *)hook_PeekMessageA);
     if (real_DispatchMessageA)
