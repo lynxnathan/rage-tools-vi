@@ -61,9 +61,32 @@ static void *reserve(void *address, size_t size)
 }
 
 /* Committing on touch: the title writes anywhere in a reservation and expects memory. */
+/* Report the engine's failing allocation, read out of the exception context: the fault at
+ * image+0x554bdcb is a write through a NULL result, and the size asked for is the number that
+ * says whether the allocator refused a sane request or a corrupt one. */
+static void report_failed_allocation(EXCEPTION_POINTERS *info)
+{
+    static int reported;
+    HMODULE image = GetModuleHandleA(NULL);
+    uintptr_t rip = (uintptr_t)info->ContextRecord->Rip;
+    uintptr_t base = (uintptr_t)image;
+    if (reported >= 3 || base == 0)
+        return;
+    if (rip != base + 0x554bdcb)
+        return;
+    reported++;
+    if (getenv("STUB_TRACE"))
+        fprintf(stderr, "[%lx] xmem! allocation failed: rax=%p rbx=%llx r15=%llx rcx=%llx\n",
+                GetCurrentThreadId(), (void *)info->ContextRecord->Rax,
+                (unsigned long long)info->ContextRecord->Rbx,
+                (unsigned long long)info->ContextRecord->R15,
+                (unsigned long long)info->ContextRecord->Rcx);
+}
+
 static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
 {
     void *fault = (void *)info->ExceptionRecord->ExceptionInformation[1];
+    report_failed_allocation(info);
     void *page = (void *)((uintptr_t)fault & ~(uintptr_t)0xfff);
     if (info->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION || fault == NULL)
         return EXCEPTION_CONTINUE_SEARCH;
@@ -77,8 +100,18 @@ static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
         if (!inside)
             return EXCEPTION_CONTINUE_SEARCH;
     }
-    if (VirtualAlloc(page, 0x1000, MEM_COMMIT, PAGE_READWRITE) == NULL)
-        return EXCEPTION_CONTINUE_SEARCH;
+    {
+        /* Commit a megabyte at a time: the title walks these ranges sparsely and one page per
+         * fault turns into thousands of exceptions. */
+        void *committed = VirtualAlloc(page, 16u << 20, MEM_COMMIT, PAGE_READWRITE);
+        if (committed == NULL)
+            committed = VirtualAlloc(page, 0x1000, MEM_COMMIT, PAGE_READWRITE);
+        if (getenv("STUB_TRACE"))
+            fprintf(stderr, "[%lx] xmem! commit on touch %p -> %p (ranges %ld)\n",
+                    GetCurrentThreadId(), page, committed, (long)g_range_count);
+        if (committed == NULL)
+            return EXCEPTION_CONTINUE_SEARCH;
+    }
     return EXCEPTION_CONTINUE_EXECUTION;
 }
 
@@ -134,7 +167,20 @@ unsigned long long XMemGetWorkingSetStatistics(void *out, unsigned long long siz
     return 0;
 }
 
-unsigned long long XMemAllocatePhysicalPages(void) { return 0; }
+/* Called with (address, size, ...) and checked for a truthy result: the image asserts
+ * (image+0x5eb27be) when it comes back false. Back it with a real reservation so the caller's
+ * expectation holds, and report the arguments that were passed. */
+unsigned long long XMemAllocatePhysicalPages(unsigned long long address, unsigned long long size,
+                                             unsigned long long a, unsigned long long b)
+{
+    void *p;
+    (void)a; (void)b;
+    if (getenv("STUB_TRACE"))
+        fprintf(stderr, "[%lx] xmem!XMemAllocatePhysicalPages(%p, %llx, %llx, %llx)\n",
+                GetCurrentThreadId(), (void *)(uintptr_t)address, size, a, b);
+    p = reserve((void *)(uintptr_t)address, (size_t)size);
+    return p != NULL ? 1 : 0;
+}
 unsigned long long XMemFreePhysicalPages(void) { return 0; }
 unsigned long long XMemMapPhysicalPages(void) { return 0; }
 unsigned long long XMemMapPhysicalPagesScatter(void) { return 0; }

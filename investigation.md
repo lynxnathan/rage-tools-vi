@@ -10494,3 +10494,25 @@ and the run proceeds to the same fault storm (5,484 → 8,091 handled faults) an
 
 So the startup barrier is solved by supplying the platform's answer rather than by signalling
 its event: the engine was waiting on us.
+
+### The device is created: 11_1, not 12_x (2026-11-25)
+
+With the connectivity hint delivered, the image reaches `D3D12XboxCreateDevice` and the call
+now reports its arguments properly and tries every feature level:
+
+```
+D3D12XboxCreateDevice(adapter 0, iid 5405c344-d457-444e…, params …)
+  level c200 -> 0x80070057   (E_INVALIDARG)
+  level c100 -> 0x80070057
+  level c000 -> 0x80070057
+  level b100 -> 0x00000000   (S_OK)
+```
+
+So **a device is created at feature level 11_1**, and the assert that fired whenever creation
+failed (`image+0x19f4f59`) disappears: the run goes from one breakpoint to none, faults drop to
+32, and it proceeds into the next stage, where it aborts (exit 5) with the crash context still
+at `System Init`, frame 0. The 12_x levels are refused by the vkd3d-proton build in this prefix,
+which is the next thing to look at if the engine needs 12_1/12_2 features.
+
+The physical-page call is also answered now (`XMemAllocatePhysicalPages` returns a real
+reservation instead of 0), which is what raised the assert at `image+0x5eb27be` before.

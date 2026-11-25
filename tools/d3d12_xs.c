@@ -261,8 +261,11 @@ __declspec(dllexport) HRESULT WINAPI D3D12XboxCreateDevice(IUnknown *adapter, co
     const unsigned long long *words = (const unsigned long long *)params;
     HRESULT result;
 
-    note("d3d12_xs!D3D12XboxCreateDevice(adapter %p, iid %08lx-%04x, params %p)",
-         adapter, iid ? (unsigned long)iid->Data1 : 0, iid ? iid->Data2 : 0, params);
+    if (iid != NULL)
+        note("d3d12_xs!D3D12XboxCreateDevice(adapter %p, iid %x-%x-%x, params %p)",
+             adapter, (unsigned)iid->Data1, (unsigned)iid->Data2, (unsigned)iid->Data3, params);
+    else
+        note("d3d12_xs!D3D12XboxCreateDevice(adapter %p, iid NULL, params %p)", adapter, params);
     if (words != NULL)
         note("d3d12_xs!  params %llx %llx %llx %llx %llx %llx %llx %llx",
              words[0], words[1], words[2], words[3], words[4], words[5], words[6], words[7]);
@@ -271,8 +274,38 @@ __declspec(dllexport) HRESULT WINAPI D3D12XboxCreateDevice(IUnknown *adapter, co
     if (device != NULL)
         *device = NULL;
     result = function(adapter, FL_12_0, iid, device);
-    note("d3d12_xs!D3D12XboxCreateDevice -> %#lx (device %p)", (unsigned long)result,
+    note("d3d12_xs!D3D12XboxCreateDevice -> %lx (device %p)", (unsigned long)result,
          device ? *device : NULL);
+    if (result != 0)
+    {
+        /* Try every level the host may accept, highest first, and report what it answers. */
+        static const UINT32 levels[] = { 0xc200, 0xc100, 0xc000, 0xb100, 0xb000 };
+        static const GUID iid_device =
+            { 0x189819f1, 0x1db6, 0x4b57, { 0xbe, 0x54, 0x18, 0x21, 0x33, 0x9b, 0x85, 0xf7 } };
+        unsigned index;
+        for (index = 0; index < sizeof(levels) / sizeof(levels[0]); index++)
+        {
+            HRESULT attempt = function(adapter, levels[index], &iid_device, device);
+            note("d3d12_xs!  level %x -> %lx", (unsigned)levels[index], (unsigned long)attempt);
+            if (attempt == 0)
+            {
+                result = attempt;
+                break;
+            }
+        }
+    }
+    if (result != 0 && iid != NULL)
+    {
+        /* The console's IID is not one vkd3d-proton implements; a PC device is the nearest
+         * thing and answers the public chain, so fall back to it and say so. */
+        static const GUID iid_device =
+            { 0x189819f1, 0x1db6, 0x4b57, { 0xbe, 0x54, 0x18, 0x21, 0x33, 0x9b, 0x85, 0xf7 } };
+        HRESULT retry = function(adapter, FL_12_0, &iid_device, device);
+        note("d3d12_xs!  retried with IID_ID3D12Device -> %lx (device %p)",
+             (unsigned long)retry, device ? *device : NULL);
+        if (retry == 0)
+            result = retry;
+    }
     return result;
 }
 
