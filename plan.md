@@ -52,6 +52,11 @@ Each line is a route, what would settle it, and where it stands.
   reports no window at all; the unpatched image stops on the first guard
   (`image+0x2237178`) inside a second. Settle by finding what should fill the object field
   that guard tests (`obj+0xc`), which is zero from the constructor at `image+0x582a610`.
+- [ ] **Frames.** Zero. The image stays alive, samples three threads for its whole life, and
+  waits infinite on a count-0 semaphore (`image+0x56a0d`); `D3D12XboxCreateDevice` is never
+  called. The public harness `OnlyMoisties/GTA6-BootTest` reaches this build's first UI screen
+  on Windows with a GPU-visible pool, `d3d12_xs` device objects with `PresentX` and a
+  synchronous DirectStorage queue; that port is the remaining work.
 - [ ] **Crash reporter.** It posts minidumps to `submit.backtrace.io`; the frames test now
   runs inside `unshare -rn` so nothing leaves the machine. Settle nothing further unless a
   run needs the network, which is `--online`.

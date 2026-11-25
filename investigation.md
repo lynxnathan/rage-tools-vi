@@ -10341,3 +10341,14 @@ export gap was real and is closed, but the image does not reach it.
 The pattern across this session is worth stating plainly: every layer that is fixed (drives,
 interfaces, exports, factory objects, queue dispatch) is a real defect, and none of them is the
 one that stops this image, because the stop happens early and the same way each time.
+
+### The image never has more than three threads (2026-11-25)
+
+Sampled `/proc/<pid>/task` every 200 ms for the whole life of a run: the count goes 1 → 3 within
+a second and then stays at 3 (two of them Wine's `wine_threadpool`) until the process is killed.
+No worker threads are created at any point, not even briefly, through any path — including the
+one our IAT hooks cannot see, the CRT's `_beginthreadex`.
+
+So the 67 infinite waits on the count-0 semaphore are not "waiting for workers to finish": there
+are no workers, and there never were. Whatever signals that semaphore, it is not a thread this
+image starts.
