@@ -26,6 +26,7 @@ CHECKOUT = ROOT / "cache/xodus"
 URL = "https://github.com/xodus-gaming/xgameruntime"
 SHIMS = ROOT / "cache/shims"
 NAME = "xgameruntime.dll"
+PROXY_NAME = "xgameruntime_real.dll"
 EXPORTS = ("QueryApiImpl", "InitializeApiImpl", "InitializeApiImplEx", "InitializeApiImplEx2",
            "UninitializeApiImpl", "XErrorReport")
 
@@ -57,6 +58,8 @@ def build(rebuild=False):
     if not built.is_file():
         raise SystemExit(f"no {NAME} in {built.parent}")
     SHIMS.mkdir(parents=True, exist_ok=True)
+    # The runtime must keep its own name: it loads "xgameruntime.dll" by name to reach the
+    # API implementations, so a proxy under that name recurses into itself.
     shutil.copy2(built, SHIMS / NAME)
     return SHIMS / NAME
 
@@ -77,6 +80,7 @@ def main():
             print(f"skipped ({tool} missing)")
             return 0
     path = build(args.rebuild)
+
     exports = subprocess.run(["x86_64-w64-mingw32-objdump", "-p", str(path)],
                              capture_output=True, text=True).stdout
     missing = [name for name in EXPORTS if name not in exports]

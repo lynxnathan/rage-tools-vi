@@ -9955,3 +9955,17 @@ attempt starts past them: a catchpoint on `SIGTRAP` never fires because Wine ins
 handler and gdb's default architecture becomes `i386` when the 32-bit preloader execs, so breakpoints
 and casts misfire. A working instrument needs `set architecture i386:x86-64` after the exec and a
 hardware breakpoint at the guard, not a signal catch.
+
+### A proxy under the runtime's own name cannot work (2026-11-25)
+
+The idea was to keep Xodus's runtime for the classes it answers and fall back to the logging
+probe object for the rest: install the runtime as `xgameruntime_real.dll` and put our proxy
+under the name the image loads. It recurses — Xodus's own `Init.cpp` loads
+`xgameruntime.dll` *by name* to reach the API implementations, so the proxy ends up calling
+itself and the thread exhausts its stack (`stack overflow ... stack 0x108c0`).
+
+So the fallback has to live inside the runtime, not beside it: `src/main.cpp`'s
+`QueryApiImpl` is the single place that decides, and returning a probe object there is the
+change to make. `tools/xgameruntime.py` now installs the runtime under its own name only.
+With that installed and the staged directory rebuilt, the run is back to the baseline:
+one breakpoint at `image+0x2237178`, exit 3, fourteen handled access violations.

@@ -243,19 +243,56 @@ static void init_object(void)
     object[0] = vtable;
 }
 
-long long QueryApiImpl(const void *iid_a, const void *iid_b, void **out, unsigned long long r9)
+/* A real runtime sits beside this one as xgameruntime_real.dll. Every class it answers is
+ * forwarded to it; a class it does not know falls back to the probe object, so the game gets
+ * a live vtable instead of E_NOINTERFACE while the missing class is being implemented. */
+typedef long long (*query_fn)(const void *, const void *, void **, unsigned long long);
+
+static HMODULE real_module(void)
 {
-    init_object();
-    TRACE("iid=%p iid2=%p out=%p r9=%llx", iid_a, iid_b, (void *)out, r9);
-    if (out) *out = object;
-    return 0;
+    static HMODULE module;
+    static int tried;
+    if (!tried) { module = LoadLibraryA("xgameruntime_real.dll"); tried = 1; }
+    return module;
 }
 
-long long InitializeApiImpl(void) { TRACE("", 0); return 0; }
+long long QueryApiImpl(const void *iid_a, const void *iid_b, void **out, unsigned long long r9)
+{
+    HMODULE module = real_module();
+    query_fn real = module ? (query_fn)GetProcAddress(module, "QueryApiImpl") : NULL;
+    long long result = -1;
+    init_object();
+    if (real)
+        result = real(iid_a, iid_b, out, r9);
+    if (real == NULL || (unsigned long long)result > 0x7fffffff)
+    {
+        TRACE("iid=%p iid2=%p out=%p r9=%llx -> probe object", iid_a, iid_b, (void *)out, r9);
+        if (out) *out = object;
+        return 0;
+    }
+    TRACE("iid=%p iid2=%p out=%p r9=%llx -> real", iid_a, iid_b, (void *)out, r9);
+    return result;
+}
+
+static long long forward(const char *name, unsigned long long a, unsigned long long b,
+                         unsigned long long c, unsigned long long d)
+{
+    HMODULE module = real_module();
+    long long (*function)(unsigned long long, unsigned long long, unsigned long long,
+                          unsigned long long) = NULL;
+    if (module)
+        function = (void *)GetProcAddress(module, name);
+    if (function == NULL)
+        return 0;
+    return function(a, b, c, d);
+}
+
+long long InitializeApiImpl(unsigned long long a, unsigned long long b)
+{ TRACE("a=%llx b=%llx", a, b); return forward("InitializeApiImpl", a, b, 0, 0); }
 long long InitializeApiImplEx(unsigned long long a, unsigned long long b)
-{ TRACE("a=%llx b=%llx", a, b); return 0; }
+{ TRACE("a=%llx b=%llx", a, b); return forward("InitializeApiImplEx", a, b, 0, 0); }
 long long InitializeApiImplEx2(unsigned long long a, unsigned long long b)
-{ TRACE("a=%llx b=%llx", a, b); return 0; }
+{ TRACE("a=%llx b=%llx", a, b); return forward("InitializeApiImplEx2", a, b, 0, 0); }
 long long XErrorReport(unsigned long long code, unsigned long long a, unsigned long long b)
-{ TRACE("code=%llx a=%llx b=%llx", code, a, b); return 0; }
-long long UninitializeApiImpl(void) { TRACE("", 0); return 0; }
+{ TRACE("code=%llx a=%llx b=%llx", code, a, b); return forward("XErrorReport", code, a, b, 0); }
+long long UninitializeApiImpl(void) { TRACE("", 0); return forward("UninitializeApiImpl", 0, 0, 0, 0); }
