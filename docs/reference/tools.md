@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-180 scripts.
+181 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -106,6 +106,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`header_census.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/header_census.py) | Census every RPF9 header in a set of archives and fit Front B size laws. | --tsv, |
 | [`header_words.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/header_words.py) | Read every header listed in a census TSV and analyze the header words. | --source |
 | [`human_range_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/human_range_scan.py) | Scan AWC data chunks for tonal energy in the human 20 Hz-20 kHz band. |  |
+| [`iat_calls.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/iat_calls.py) | Name every indirect call through an import: `call [rip+x]` -> which library, which symbol. | --at --symbol --window |
 | [`identify_opaque_context.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/identify_opaque_context.py) | Identify opaque RPF9 fragments from verified neighboring payload headers. |  |
 | [`index_coverage.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/index_coverage.py) | Report how much of each archive is classified, merging side indexes. | --out |
 | [`layout_link_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/layout_link_probe.py) | Test structured vehicle-model/layout pairs against class-0 layout roots. |  |
