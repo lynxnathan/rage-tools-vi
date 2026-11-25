@@ -52,6 +52,15 @@ Each line is a route, what would settle it, and where it stands.
   reports no window at all; the unpatched image stops on the first guard
   (`image+0x2237178`) inside a second. Settle by finding what should fill the object field
   that guard tests (`obj+0xc`), which is zero from the constructor at `image+0x582a610`.
+- [ ] **The four port pieces, in order.** Each comes from the public harness
+  `OnlyMoisties/GTA6-BootTest`, which reaches this build's first UI screen on Windows:
+  (1) `xmem` with a GPU-visible pool mapped through vkd3d plus the `G:` package-root
+  redirect (the drive now exists in the prefix; the hook is what the harness does);
+  (2) `d3d12_xs` as real COM device/queue/command-list objects with `PresentX`, forwarding
+  entry points to the prefix's `d3d12.dll`; (3) `XCRDAPI` as a factory with a synchronous
+  DirectStorage queue over zlib-deflated ranges; (4) `rdna2-spirv` wired as the shader
+  translator at dispatch. Check each with `tests/test_boot_frames.py --compare-frame`
+  against the package's `xbs_splash.png`.
 - [ ] **Frames.** Zero. The image stays alive, samples three threads for its whole life, and
   waits infinite on a count-0 semaphore (`image+0x56a0d`); `D3D12XboxCreateDevice` is never
   called. The public harness `OnlyMoisties/GTA6-BootTest` reaches this build's first UI screen
