@@ -39,6 +39,9 @@ Last updated: 2026-11-24.
   `(p5-p6)×N×p8`) and what fills the region past them.
 - [ ] Decode the remaining ~1.7 M Opus streams; the `0xff25` variant now has a working
   path, the others run through the table rules.
+- [ ] Carve the shader programs. No container magic exists in the plaintext corpus
+  (40 `SGD5` in 161 GB, zero `DXBC`/`DXIL`), so the boundary has to come from the loader's
+  table or from the streams the index already finds.
 - [ ] Content check for every decode path (flatness for audio, pixel stats for images,
   frames against declared for video).
 - [ ] ACE1 trailer pairs (15 `u32` fields, 73 streams).

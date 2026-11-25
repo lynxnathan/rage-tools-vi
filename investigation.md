@@ -9386,3 +9386,24 @@ signatures. Blind filling is measured to reach control flow (stack overflow), so
 step is interface by interface with its structure, which is a project rather than an
 iteration. The GUIDs are not in any public table reachable from here, and the NDA headers
 cannot be a dependency.
+
+### Shader programs are not findable by magic in the plaintext archives (2026-11-24)
+
+Corpus-wide scan of all 32 archives (161.3 GB) for the four-byte tags a shader container
+would carry:
+
+```
+SGD5  40 occurrences in 7 archives (levels 12, audio 7, story000 6, movies 5, shaders 2,
+      navmeshes 1, packs 1)
+DXBC / DXIL / SHDR / RDEF / ISGN / OSGN / SHEX / SDX5 / SEGD / SHAD / SPSH
+      0 occurrences
+```
+
+`shaders.rpf` is 411,695,600 B and holds two `SGD5` at `+0x9000` and one pack magic; no
+per-shader boundary, no DXBC/DXIL container, entropy 6.83 in the largest span. Across the
+corpus, 40 hits over 161 GB is the level of coincidence, not a store.
+
+So carving shader programs is not a magic search: it needs the loader's own table, or the
+payloads inside the streams the index already finds. That is the same shape as the RPF9
+table-of-contents problem, and it is why a recompilation project carves them with the
+game's code rather than with a signature.
