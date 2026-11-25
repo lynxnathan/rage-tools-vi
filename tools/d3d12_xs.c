@@ -80,6 +80,23 @@ static void note(const char *format, ...)
         case 'x':
             cursor = emit_number(cursor, end, va_arg(args, unsigned int), 0, NULL);
             break;
+        case 'u':
+        case 'd':
+        {
+            char digits[16];
+            unsigned long long value = va_arg(args, unsigned int);
+            int length = 0;
+            if (value == 0)
+                digits[length++] = '0';
+            while (value != 0)
+            {
+                digits[length++] = (char)('0' + (value % 10));
+                value /= 10;
+            }
+            while (length > 0 && cursor < end)
+                *cursor++ = digits[--length];
+            break;
+        }
         case 'l':
             format++;
             if (*format == 'l') {
