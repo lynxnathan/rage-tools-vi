@@ -10076,3 +10076,23 @@ So the image asks the factory for a **32 MiB staging buffer** through vtable slo
 after `DStorageGetFactory` returns, and faults inside that call because the object it holds is
 not a COM object with a real vtable. The next piece is therefore a genuine
 `IDStorageFactory` (IUnknown at slots 0–2, `SetStagingBufferSize` at 8), not a vtable of zeros.
+
+### The factory object was never a COM object, and now it is (2026-11-25)
+
+The factory stub returned the *vtable address* where the image expects `[object] == vtable`:
+`mov rax, [rcx]` then `call *0x40(%rax)` indexes 0x40 bytes into code, which is how the read of
+address `-1` happened. Handing back the address of an object whose first qword is the vtable
+fixes it, and the call the image makes is now visible:
+
+```
+xcrdapi! slot 8 caller=0x6ffff4cde518 args=6ffff2bee020,2000000,6ffff2bef040,7e3e90
+```
+
+Slot 8 receives `0x2000000` — the 32 MiB staging buffer — and returns `S_OK`, so the
+DirectStorage factory path now completes. With that fixed the run is back at the reporter guard
+(one breakpoint, exit 3): the storage factory was a real defect, but it was not what the guard
+was waiting on.
+
+That is the state to continue from: factory answers, guard unresolved, and its resolution call
+(`image+0x56eb10`, wide path to ASCII against a thread-local alias table) returns false for
+`D:\LocalDumps`.

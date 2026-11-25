@@ -31,6 +31,9 @@ SLOT(16) SLOT(17) SLOT(18) SLOT(19) SLOT(20) SLOT(21) SLOT(22) SLOT(23)
 static void *vtable[512];
 static void *object[1];
 
+/* The object the caller receives is an address whose first qword is the vtable: the image
+ * does `mov rax, [object]` then `call *0x40(%rax)`. Handing back the vtable itself makes that
+ * read index into code bytes (measured: a read of address -1). */
 static void *build(void)
 {
     unsigned i;
@@ -44,7 +47,7 @@ static void *build(void)
     SET(16); SET(17); SET(18); SET(19); SET(20); SET(21); SET(22); SET(23);
 #undef SET
     object[0] = vtable;
-    return object[0];
+    return object;
 }
 
 long long DStorageGetFactory(const void *iid, void **out, unsigned long long c,
