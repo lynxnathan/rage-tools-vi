@@ -12,12 +12,13 @@ produced it. Long form: `investigation.md` (append-only) and `plan.md` (open che
 | D3D12 device created | **yes**, `0x706b0080` via vkd3d-proton | log line `D3D12XboxCreateDevice -> 0x0 (device …)` |
 | worker threads | **yes**, 16 | `thread: created …` after the hint is delivered |
 | survives its own heap faults | yes (committed on touch) | `xmem! commit on touch …` |
-| stays alive | **no**, exit 5 | console list slot `0x420` lands outside the PC list's table |
+| stays alive | **no**, exit 5 | device slots `0x270`/`0x278` (allocator-pool setup) land past the PC table |
 | no fatal exception | **yes** | stage 2 green once slot `0x248` forwards to `CreateCommandList` |
 | window / frames / menu | **no** | `tests/test_boot_frames.py`: `window none`, menu SSIM 0.0000 |
 
-The abort is the title's own allocator (`image+0x554f316` → `image+0x661f0` abort), and it prints
-nothing: the only output is its Breakpad reporter.
+The old allocator abort was the device ABI mismatch and is fixed. The title now gets through
+device creation, queue and command-list setup, and stops in the console allocator-pool entries;
+it still prints nothing but its Breakpad reporter.
 
 ## Reproduce in three commands
 
@@ -51,7 +52,7 @@ python3 tests/test_boot_frames.py --game-dir "$RAGE_GAME_DIR"     # the acceptan
 | d3d12_xs: config contract, device levels, DXGI adapter, `D3D12GetInterface` = E_NOTIMPL, probes | `tools/d3d12_xs.c` (+ `tools/d3d12_shim.py`) |
 | Xodus runtime: XSystem/XGame/XNetworking/XUser/XPersistentLocalStorage, connectivity-hint delivery, exports | `tools/patches/xodus-platform.patch` (+ `tools/xgameruntime.py`) |
 | xmem: reserve vs commit, commit-on-touch, free kept mapped, physical pages | `tools/stub_custom/xmem.dll.c` |
-| d3d12_xs: aggregate-return ABI adaptor (`0xc8`, `0xd0`), console slot `0x180` queue creator forwarded | `tools/d3d12_xs.c` |
+| d3d12_xs: aggregate-return ABI adaptor (`0xc8`, `0xd0`), console slot `0x180` queue creator, `0x248` list creator with a 0..59 forwarding proxy | `tools/d3d12_xs.c` |
 | xcrdapi: factory object with a real vtable, staging buffer | `tools/stub_custom/xcrdapi.dll.c` |
 | debugger that works on this image | `tools/wine_gdb.py` |
 | screen audit and pixel checks | `tools/screen_audit.py`, `tests/test_boot_pixels.py` |
@@ -64,20 +65,23 @@ convention (return pointer first, `this` second). `tools/d3d12_xs.c` now patches
 `0xd0` with an `xchg rcx, rdx; jmp <original>` thunk, and the heap-property calls no longer
 overwrite the device. See the `2026-11-25` journal entry for the store that proved it.
 
-The new stop is the **console command list**. The title creates a `DIRECT` queue through PC slot
-`0x40`, a `COPY` queue through slot `0x180` (forwarded to `0x40`), an allocator through `0x48`,
-then a command list through slot `0x248` (forwarded to `CreateCommandList` with the PC list IID).
-That list is then called at slot `0x420`, a console slot the PC list does not have, and the run
-ends in the Breakpad dump. The public harness `OnlyMoisties/GTA6-BootTest` names the device
-additions in its `REPORT.md`: `0x180` queue, `0x248` command list, `0x1b8`/`0x1c8`/`0x1f0`/`0x218`/`0x2b0`
-PSOs, `0x270`/`0x278` allocators, `0x360` `GetResourceAllocationInfo1`, `0x3f8`/`0x428` resource
-variants. The slot map is recorded in the `2026-11-25` journal entry; the clone lives in
+The new stop is the **console allocator pool**. Command lists now work through a proxy: slots
+0..59 forward to the real vkd3d list, and the console additions (60..1023) are logged and return
+`S_OK`. The title created about a hundred lists and called their console entries `0x83`/`0x84`
+without complaint. It then calls device slots `0x270`/`0x278` from `image+0x247ab10` with
+`(0, 0x8235, 3)` and `(0, 0, 0)`/`(2, 0, 0)`; those calls are past the PC table, and making them
+return `S_OK` makes the initializer return false (its caller asserts at `image+0x19f4f58`), so
+they need real state rather than a stub.
+
+The public harness `OnlyMoisties/GTA6-BootTest` names the device additions in its `REPORT.md`:
+`0x180` queue, `0x248` command list, `0x1b8`/`0x1c8`/`0x1f0`/`0x218`/`0x2b0` PSOs,
+`0x270`/`0x278` allocators, `0x360` `GetResourceAllocationInfo1`, `0x3f8`/`0x428` resource
+variants. The slot map is recorded in the `2026-11-25` journal entries; the clone lives in
 `cache/GTA6-BootTest` (untracked).
 
-Order of work: choose the command-list representation — a probe object with a large generic table
-(the public harness's route, reaches a black window) or a real console-list proxy over vkd3d
-(needed for rendering). Then continue with the PSO and resource creators, and add the ABI thunk to
-`0x360`. `tests/test_boot_stages.py` stage 3 is the scoreboard until the frames test can run.
+Order of work: implement the allocator-pool entries with the state the initializer expects, then
+the PSO and resource creators, then add the ABI thunk to `0x360`. `tests/test_boot_stages.py`
+stage 3 is the scoreboard until the frames test can run.
 
 The pagefile-section pool from `OnlyMoisties/GTA6-BootTest` is still the candidate for the
 GPU-visible heap, but the heap faults are recoverable and are not the current stop.

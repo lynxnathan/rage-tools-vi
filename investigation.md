@@ -10843,3 +10843,35 @@ give the title a probe list object with a large generic table (the public harnes
 reaches a black window), or transcribe the console command-list layout into a real proxy over
 vkd3d. The current forwarding is kept because it proves slot `0x248`'s role and gets the title
 one step further; it is not a rendering path.
+
+### A command-list proxy over vkd3d carries the title through list setup (2026-11-25)
+
+`tools/d3d12_xs.c` now returns a proxy for slot `0x248`: slots 0..59 forward to the real vkd3d
+`ID3D12GraphicsCommandList` through generated stubs (`mov r10,[rcx+8]; mov rcx,r10; jmp
+[rax+slot*8]`), and slots 60..1023 call a generic handler that logs the slot and returns `S_OK`.
+The title accepted it and created about a hundred lists, of both type 0 and type 2, calling the
+console-list entries `0x83`/`0x84` with `(0x700000, 0, 0, mask)` and
+`(0xc3c0, 0x80020000, 0, mask)` before closing each one. Both calls were logged by the generic
+handler and the title did not react badly to a zero return, so those two entries are not the
+immediate blocker.
+
+The next blocker is device-side. After the lists, `image+0x247ab10` calls device slots `0x270`
+and `0x278`:
+
+```
+slot 0x270 (0, 0x8235, 3, 0)
+slot 0x278 (0, 0, 0, 0) or (2, 0, 0, 0)
+```
+
+and then the enclosing initializer at `image+0x2477440` returns false, so the caller raises its
+own `int3` at `image+0x19f4f58`. Patching both slots to return `S_OK` produced exactly the same
+false return, which is the useful negative: these are allocator-pool setup calls that must hand
+back real state, not merely succeed. Without the patch the call lands in unrelated `d3d12core`
+code (the log names `CreateReservedResource2`) and faults, so the entries are past the end of
+the PC table and the out-of-range write into `.rdata` is only a placeholder.
+
+The public report lists slots 78 and 79 as Xbox allocator creators at a different call site, so
+the layout is consistent; the arguments above are a second, earlier use on the same entries.
+The next implementation is therefore the console allocator-pool creator, with the size class
+from the structure at `image+0x247ab10` (`u16` at `+0`, `u8` at `+2`, `u8` at `+3`, `u32` at `+4`)
+and the state the initializer expects back.

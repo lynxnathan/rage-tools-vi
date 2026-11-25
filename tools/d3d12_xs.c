@@ -283,6 +283,61 @@ static IUnknown *first_dxgi_adapter(void)
     return (IUnknown *)adapter;
 }
 
+/* The console command list is a superset of the PC one: slots 0..59 are forwarded to the real
+ * vkd3d list, and the additions after them get a generic handler that logs the slot and returns
+ * S_OK. Every console list call therefore sees a proxy in RCX; the forwarding stubs replace it
+ * with the real list before jumping, so the PC methods keep their normal `this`. */
+#define LIST_FORWARD_SLOTS 60
+#define LIST_PROXY_SLOTS 1024
+
+static unsigned long long console_list_generic(void *self, unsigned long long slot)
+{
+    note("d3d12_xs! console list slot %llx (list %p)", slot, self);
+    return 0;
+}
+
+static void *build_list_proxy(void *real)
+{
+    void **proxy = VirtualAlloc(NULL, 16, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    void **vtable = VirtualAlloc(NULL, LIST_PROXY_SLOTS * sizeof(void *),
+                                 MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+    unsigned char *stubs = VirtualAlloc(NULL, LIST_PROXY_SLOTS * 32,
+                                        MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    int slot;
+
+    if (proxy == NULL || vtable == NULL || stubs == NULL)
+        return real;
+    for (slot = 0; slot < LIST_PROXY_SLOTS; slot++)
+    {
+        unsigned char *code = stubs + slot * 32;
+        if (slot < LIST_FORWARD_SLOTS)
+        {
+            unsigned int offset = (unsigned int)(slot * 8);
+            /* mov r10, [rcx+8] ; mov rax, [r10] ; mov rcx, r10 ; jmp [rax+offset] */
+            code[0] = 0x4c; code[1] = 0x8b; code[2] = 0x51; code[3] = 0x08;
+            code[4] = 0x49; code[5] = 0x8b; code[6] = 0x02;
+            code[7] = 0x4c; code[8] = 0x89; code[9] = 0xd1;
+            code[10] = 0xff; code[11] = 0xa0;
+            memcpy(code + 12, &offset, 4);
+        }
+        else
+        {
+            unsigned int number = (unsigned int)slot;
+            unsigned long long handler = (unsigned long long)(UINT_PTR)console_list_generic;
+            /* mov edx, slot ; movabs rax, handler ; jmp rax */
+            code[0] = 0xba;
+            memcpy(code + 1, &number, 4);
+            code[5] = 0x48; code[6] = 0xb8;
+            memcpy(code + 7, &handler, 8);
+            code[15] = 0xff; code[16] = 0xe0;
+        }
+        vtable[slot] = code;
+    }
+    proxy[0] = vtable;
+    proxy[1] = real;
+    return proxy;
+}
+
 /* The console command-list creator at slot 0x248 takes a 16-byte descriptor in RDX where
  * the PC CreateCommandList takes (nodeMask, type) in RDX/R8. Translate while the console
  * descriptor layout is still being measured. */
@@ -300,10 +355,14 @@ static HRESULT WINAPI console_create_command_list(void *self, const UINT *desc, 
     if (g_create_command_list == NULL)
         return E_NOTIMPL;
     {
+        void *real = NULL;
         HRESULT result = g_create_command_list(self, desc[2], desc[0], allocator, initial,
-                                               &iid_pc_command_list, out);
-        note("d3d12_xs!  CreateCommandList(node %x, type %x) -> %lx (list %p)",
-             desc[2], desc[0], (unsigned long)result, out ? *out : NULL);
+                                               &iid_pc_command_list, &real);
+        void *proxy = result >= 0 ? build_list_proxy(real) : NULL;
+        note("d3d12_xs!  CreateCommandList(node %x, type %x) -> %lx (list %p, proxy %p)",
+             desc[2], desc[0], (unsigned long)result, real, proxy);
+        if (out != NULL)
+            *out = proxy != NULL ? proxy : real;
         return result;
     }
 }
