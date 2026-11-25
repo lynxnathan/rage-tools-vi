@@ -52,6 +52,11 @@ Each line is a route, what would settle it, and where it stands.
   reports no window at all; the unpatched image stops on the first guard
   (`image+0x2237178`) inside a second. Settle by finding what should fill the object field
   that guard tests (`obj+0xc`), which is zero from the constructor at `image+0x582a610`.
+- [ ] **The `_xs` shim is written, not exercised.** `tools/d3d12_xs.c` forwards the
+  root-signature and device entry points to vkd3d-proton, but no run has called
+  `D3D12XboxCreateDevice`: the only `d3d12_xs` call reached so far is
+  `D3D12ConfigureVirtualMemoryX`, before the first guard. Settle by reaching the create
+  call in a run and reading the device it returns.
 - [ ] **Five guards walked.** `image+0x2237178`, `+0x2224517`, `+0x1d5cc69`, `+0x22106e0`,
   `+0x2219650` are bypassed in one unattended run; the next stop is a write to 0 inside a
   system library. Settle by identifying which argument the image passes before that call.
