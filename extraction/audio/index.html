@@ -1,0 +1,2586 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="RPF9 / GTA VI archive and object-graph reverse engineering">
+      
+      
+        <meta name="author" content="Rage Tools VI">
+      
+      
+      
+        <link rel="prev" href="../pipeline/">
+      
+      
+        <link rel="next" href="../corpus/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Audio (AWC/XMA2) - Rage Tools VI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#audio-audiorpf" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Rage Tools VI" class="md-header__button md-logo" aria-label="Rage Tools VI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rage Tools VI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Audio (AWC/XMA2)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../explained/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  From first principles
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../findings/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Findings
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../rpf9/format/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  RPF9
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../inventory/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Extraction
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../data/data-rpf/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Data
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/executable/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Rage Tools VI" class="md-nav__button md-logo" aria-label="Rage Tools VI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Rage Tools VI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explained/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    From first principles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../findings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Findings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/object-graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RPF9
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    RPF9
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpf9/format/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Container format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpf9/metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata regions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpf9/layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pack layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpf9/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extraction pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extraction
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Extraction
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory and entry point
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../containment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Containment view
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../downloads-corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Downloads corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../large-archives/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Large archives
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audio (AWC/XMA2)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audio (AWC/XMA2)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#container-variants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container variants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-per-stream-word" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The per-stream word
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#story000-cutscene-audio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        story000 cutscene audio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#index-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Index coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-much-audio-there-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much audio there is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decoding-a-previously-missed-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decoding a previously missed container
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decode-coverage-by-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decode coverage by variant
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#codec-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codec status
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Codec status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0x05-xma2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0x05 = XMA2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0x0b-opus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0x0B = Opus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0x02-ace1-impulse-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0x02 = ACE1 impulse responses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus pass
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../entries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entry manifests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../packs-signatures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packs signatures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bvh4-entries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BVH4 entries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serialized structs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quadtree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quadtree view
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/data-rpf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    data.rpf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/textures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Textures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/script-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Script schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/rig-names/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rig names
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/localization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Localization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/executable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The executable as a source
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/structures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recovered structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/report-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/names/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hash names
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#container-variants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container variants
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-per-stream-word" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The per-stream word
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#story000-cutscene-audio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        story000 cutscene audio
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#index-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Index coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-much-audio-there-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much audio there is
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decoding-a-previously-missed-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decoding a previously missed container
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decode-coverage-by-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decode coverage by variant
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#codec-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codec status
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Codec status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#0x05-xma2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0x05 = XMA2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0x0b-opus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0x0B = Opus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#0x02-ace1-impulse-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0x02 = ACE1 impulse responses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="audio-audiorpf">Audio (<code>audio.rpf</code>)<a class="headerlink" href="#audio-audiorpf" title="Permanent link">&para;</a></h1>
+<p><code>audio.rpf</code> contains <strong>6,625 <code>ADAT</code> AWC containers / 23.51 GB</strong>. The GTA VI
+container is a new layout, not the GTA V AWC format parsed by vgmstream.</p>
+<h2 id="container-variants">Container variants<a class="headerlink" href="#container-variants" title="Permanent link">&para;</a></h2>
+<p>Three flag families are known, and the payload layout differs between them:</p>
+<table>
+<thead>
+<tr>
+<th>Flags</th>
+<th><code>data_offset</code></th>
+<th style="text-align: right;">Per-stream header</th>
+<th>Chunk table</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0xff21</code></td>
+<td><code>20 + 42·n</code></td>
+<td style="text-align: right;">42 B</td>
+<td>at <code>0x50</code>, 8-byte records</td>
+<td>decoded</td>
+</tr>
+<tr>
+<td><code>0xff02</code></td>
+<td><code>16 + 60·n</code></td>
+<td style="text-align: right;">60 B</td>
+<td>at <code>0x10 + 4·n</code></td>
+<td><strong>decoded</strong></td>
+</tr>
+<tr>
+<td><code>0xff25</code></td>
+<td>compact</td>
+<td style="text-align: right;">—</td>
+<td>ends at <code>data_offset</code></td>
+<td>open</td>
+</tr>
+<tr>
+<td><code>0xff61</code></td>
+<td>—</td>
+<td style="text-align: right;">—</td>
+<td>—</td>
+<td>decoded (rare)</td>
+</tr>
+</tbody>
+</table>
+<p>A chunk record is a little-endian <code>u64</code> packing <code>offset:28 | size:28 | type:8</code>,
+so the type byte is the record's high byte. <code>0xff02</code> streams own exactly seven
+chunks, in order <code>0x36 0x55 0x5c 0x76 0xa3 0xb2 0xbd</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th><code>0xff21</code></th>
+<th><code>0xff02</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>stream index at <code>+0x10</code></td>
+<td><code>u16[n]</code>, monotonic</td>
+<td>none; <code>4·n</code> bytes of per-stream data</td>
+</tr>
+<tr>
+<td><code>data_offset</code> (6 streams)</td>
+<td><code>0x110</code></td>
+<td><code>0x82</code></td>
+</tr>
+<tr>
+<td><code>0x76</code> rate</td>
+<td>low <code>u16</code> at <code>+0x08</code> (<code>0xBB80</code> = 48 kHz)</td>
+<td>same</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>0x76</code> descriptor is 32 bytes: sample count at <code>+0x00</code>/<code>+0x0c</code>, rate as the
+low <code>u16</code> at <code>+0x08</code>, codec at <code>+0x1c</code>, codec sub-ID at <code>+0x1d</code>. Reading the rate
+as a <code>u32</code> yields nonsense on both variants.</p>
+<h2 id="the-per-stream-word">The per-stream word<a class="headerlink" href="#the-per-stream-word" title="Permanent link">&para;</a></h2>
+<p>The field that decides how many chunks a stream owns is a single <code>u32</code>, and its two
+halves do different jobs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a> 31              3 2   0
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>+-----------------+-----+
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>|   stream id     | tags|
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>+-----------------+-----+
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  29 bits           3 bits
+</code></pre></div>
+<p>The tag count sits in the <strong>high three bits</strong>, not the low ones. Reading it as a
+plain integer gives a stream id in the millions for ordinary streams, which is what
+made the first parser look broken; masking the top three bits yields sensible ids,
+and masking the bottom three yields chunk counts that match the chunk table exactly.</p>
+<p>This is also why the chunk-table search had to be a suffix scan: the table is
+located relative to <code>data_offset</code>, and <code>data_offset</code> depends on the tag count, so
+the two have to be solved together (<code>tools/awc_chunk_table.py</code>).</p>
+<div class="admonition note">
+<p class="admonition-title">Verification state</p>
+<p>The bit split above is stated in the upstream layout notes and is consistent
+with every stream decoded so far (93,344 Opus, 1,818 XMA2, 73 ACE1,
+zero failures), but it has not been re-derived as a standalone measurement
+since the extraction volume went offline. Treat it as inherited-but-consistent
+rather than freshly counted.</p>
+</div>
+<h2 id="story000-cutscene-audio"><code>story000</code> cutscene audio<a class="headerlink" href="#story000-cutscene-audio" title="Permanent link">&para;</a></h2>
+<p><code>story000</code>'s 9.56 GB unclassified span is a second audio archive: 63,853 AWC
+containers, 98.4 % <code>0xff02</code>, all codec <code>0x0b</code> (Opus) at 48 kHz. A whole-file scan
+with the rules above indexes <strong>63,325 banks / 9,212,590,080 B = 46.011 %</strong> of that
+20 GB archive, and raises its classified share from <strong>35.39 % to 81.40 %</strong>
+(<code>output/index/story000-adat.tsv</code>). Decoding it
+produced <strong>196,350 streams / 148.3 hours / 47.7 GB of WAV</strong> in
+<code>output/extracted/story000-opus/</code>. Opus packets are framed <code>[u16 size][packet]</code>
+inside <code>0x800</code>-byte blocks, the same as <code>audio.rpf</code>.</p>
+<p>Tools: <code>tools/awc_framing_ff02.py</code> (variant census) and
+<code>tools/extract_awc_ff02.py</code> (WAV export with manifest and SHA-256).</p>
+<p>The <code>0x76</code> descriptor is 32 bytes: sample count at <code>+0x00</code>/<code>+0x0c</code>, sample rate
+at <code>+0x08</code>, codec at <code>+0x1c</code>, and codec sub-ID at <code>+0x1d</code>.</p>
+<h2 id="index-coverage">Index coverage<a class="headerlink" href="#index-coverage" title="Permanent link">&para;</a></h2>
+<p>The original stream index classified <strong>99.93 % of <code>audio.rpf</code> as <code>unclassified</code></strong> —
+it recognises compressions, and an AWC bank is neither compressed nor opaque. That
+was an <em>index</em> gap, not missing data, and it is now closed:</p>
+<table>
+<thead>
+<tr>
+<th>source</th>
+<th style="text-align: right;">banks</th>
+<th style="text-align: right;">bytes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>extraction manifest (<code>0xff21</code> pass)</td>
+<td style="text-align: right;">6,625</td>
+<td style="text-align: right;">23,510,392,992</td>
+</tr>
+<tr>
+<td>gaps between them (<code>0xff21</code>, <code>0xff02</code>, <code>0xff61</code>)</td>
+<td style="text-align: right;">534</td>
+<td style="text-align: right;">4,943,599,616</td>
+</tr>
+<tr>
+<td><strong>total</strong></td>
+<td style="text-align: right;"><strong>7,159</strong></td>
+<td style="text-align: right;"><strong>28,453,992,608 = 99.687 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Both variants share one rule: the chunk table holds four records per stream and ends
+exactly at <code>header_size</code>, with <code>type:8 | size:28 | offset:28</code> per record. Only the
+table's start differs — <code>0x50</code> for <code>0xff21</code>, <code>0x10 + 4·count</code> for <code>0xff02</code>. A bank
+ends where its furthest record ends, rounded up to <code>0x800</code>.</p>
+<p>Three rules finish the job, applied in this order:</p>
+<ol>
+<li>a computable table position (<code>0xff21</code> at <code>0x50</code>, <code>0xff02</code> at <code>0x10 + 4·count</code>),
+   with records-per-stream derived from <code>header_size</code> rather than assumed;</li>
+<li>a suffix scan — the longest valid 8-byte record run ending at <code>header_size</code> — for
+   <code>0xff25</code>/<code>0xff61</code>, which carry no computable position;</li>
+<li>the same suffix scan as a fallback when the computable rule does not close, which
+   catches banks carrying an extra per-stream table (one bank needed exactly this).</li>
+</ol>
+<p>Scan alignment is 4 bytes, not <code>0x800</code>: most banks are <code>0x800</code>-aligned but a handful
+sit on a 4-byte boundary. Validation is what keeps the looser scan honest.</p>
+<p>The residual <strong>0.313 % (89,462,064 B, 275 gaps)</strong> is accounted for: <strong>19,509,248 B</strong>
+is the archive's own front region, and the other <strong>69,952,816 B</strong> are regions where
+<code>ADAT</code> bytes exist but no candidate validates at any offset shift — the bytes are not
+a container header there.</p>
+<p>A magic scan alone does not validate: <code>ADAT</code> occurs at 7,159 aligned
+offsets in <code>audio.rpf</code>, and <strong>none</strong> validate against <code>awc_parse.py</code>'s tag model,
+because that model is the Leonida/story000 layout rather than the <code>0xff21</code>/<code>0xff02</code>
+one. Validating one layout with the other yields confident garbage — which is exactly
+what the first 7,159 rejections were.</p>
+<h2 id="how-much-audio-there-is">How much audio there is<a class="headerlink" href="#how-much-audio-there-is" title="Permanent link">&para;</a></h2>
+<p>Reading each container's chunk table, without decoding anything
+(<code>tools/extract_adat_gaps.py</code> + <code>tools/audio_census_totals.py</code>):</p>
+<table>
+<thead>
+<tr>
+<th>archive</th>
+<th style="text-align: right;">containers</th>
+<th style="text-align: right;">streams</th>
+<th style="text-align: right;">stream data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>audio.rpf</code></td>
+<td style="text-align: right;">7,159</td>
+<td style="text-align: right;">1,606,237</td>
+<td style="text-align: right;">22.47 GB</td>
+</tr>
+<tr>
+<td><code>story000.rpf</code></td>
+<td style="text-align: right;">63,325</td>
+<td style="text-align: right;">213,579</td>
+<td style="text-align: right;">6.06 GB</td>
+</tr>
+<tr>
+<td><strong>total</strong></td>
+<td style="text-align: right;"><strong>70,484</strong></td>
+<td style="text-align: right;"><strong>1,819,816</strong></td>
+<td style="text-align: right;"><strong>28.53 GB</strong></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>codec</th>
+<th style="text-align: right;">in the corpus</th>
+<th style="text-align: right;">decoded</th>
+<th style="text-align: right;">share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>opus</td>
+<td style="text-align: right;">1,795,416</td>
+<td style="text-align: right;">93,344</td>
+<td style="text-align: right;">5.2 %</td>
+</tr>
+<tr>
+<td>xma2</td>
+<td style="text-align: right;">1,818</td>
+<td style="text-align: right;">1,818</td>
+<td style="text-align: right;"><strong>100 %</strong></td>
+</tr>
+<tr>
+<td>ace1</td>
+<td style="text-align: right;">227</td>
+<td style="text-align: right;">73</td>
+<td style="text-align: right;">32 %</td>
+</tr>
+</tbody>
+</table>
+<p>The XMA2 number is the control: 1,818 obtained by decoding and 1,818 from the chunk
+tables, by independent paths. So the tables are read correctly, and the Opus figure
+means the decode passes covered about a twentieth of the streams that exist.</p>
+<p>Container flags in <code>audio.rpf</code>: <code>0xff25</code> 3,008, <code>0xff02</code> 2,071, <code>0xff21</code> 1,270 — the
+compact variant dominates, which is why the first extraction pass (a <code>0xff21</code> scan)
+under-counted the archive so badly.</p>
+<h2 id="decoding-a-previously-missed-container">Decoding a previously missed container<a class="headerlink" href="#decoding-a-previously-missed-container" title="Permanent link">&para;</a></h2>
+<p>The old probe looked for the data offset at <code>+0x0c</code> — the <code>0xff21</code> layout — so it found
+nothing in the <code>0xff02</code> pools. <code>tools/decode_adat_stream.py</code> uses the verified table
+rules instead, and the first stream from an untouched container decodes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>audio.rpf+0x16437000  (0xff02, 1,914 streams)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>stream 0: Opus, mono, declared 32,000 Hz, 116,480 samples
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>          4,096 B payload -&gt; 124 packets -&gt; 119,040 samples = 2.48 s
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>          peak 0.743 FS, RMS 0.107 FS — not silence
+</code></pre></div>
+<p>Two details worth knowing before decoding at scale:</p>
+<ul>
+<li>the <code>0x76</code> rate is the <strong>source</strong> rate (32 kHz here, 48 kHz in the packs measured
+  earlier); libopus only produces 48 kHz and rejects other rates with <code>OPUS_BAD_ARG</code>,
+  so always decode at 48 kHz;</li>
+<li>the decoded length is ~2 % longer than the declared sample count, because the
+  declared value is post-trim.</li>
+</ul>
+<h2 id="decode-coverage-by-variant">Decode coverage by variant<a class="headerlink" href="#decode-coverage-by-variant" title="Permanent link">&para;</a></h2>
+<p>A sample of 24 evenly spaced containers, 8 streams each (<code>tools/decode_adat_sample.py</code>):</p>
+<table>
+<thead>
+<tr>
+<th>variant</th>
+<th style="text-align: right;">containers</th>
+<th style="text-align: right;">streams decoded</th>
+<th style="text-align: right;">audio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0xff02</code></td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">72</td>
+<td style="text-align: right;">3.0 min</td>
+</tr>
+<tr>
+<td><code>0xff21</code></td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">2.7 min</td>
+</tr>
+<tr>
+<td><code>0xff61</code></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.1 min</td>
+</tr>
+<tr>
+<td><code>0xff25</code></td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;"><strong>0</strong></td>
+<td style="text-align: right;">—</td>
+</tr>
+</tbody>
+</table>
+<p>112 streams, 5.8 minutes, median RMS 0.13 FS, 2 near-silent. <code>0xff61</code> decodes once its
+table is found by suffix scan.</p>
+<p><strong><code>0xff25</code> has no chunk table at all.</strong> A sampled container reports <code>count = 2</code>,
+<code>header_size = 64</code>, and inside the header there is an inline descriptor ending
+<code>07 00 | 80 bb | 0b | 01 | ff ff</code> — flags, <code>0xbb80</code> (48 000 Hz), codec, channels,
+terminator. Over 600 such containers, <strong>95.3 %</strong> are Opus (codec <code>0x0b</code>) at 48 kHz with
+one or two channels; stereo is the majority (401 stereo, 171 mono).</p>
+<p>So the compact variant describes its streams in place rather than through records, which
+is why the table model found nothing.</p>
+<p>Two further probes narrowed it without solving it: only <strong>32 of 200</strong> containers admit a
+valid 8-byte table under any byte shift (two records per stream where they do), and no
+field in the first 64 bytes scales with the container size. The type-like bytes sit at
+<em>odd</em> offsets (<code>0x23</code>, <code>0x2b</code>, <code>0x2f</code>, <code>0x3f</code>), so the alignment is not the one the other
+variants use.</p>
+<p>Further tests, all negative except one identification: no block framing at sizes
+<code>0x100</code>–<code>0x2000</code> and shifts 0–3; packet chains stop after 12–25 packets; and the repeated
+payload offset <code>+0x860</code> holds the <code>a0 00 f8</code> <strong>marker</strong> already documented in
+<code>tools/awc_framing.py</code>, not packet data. Big-endian <code>u16</code> and little-endian <code>u32</code> length
+prefixes both fail there too.</p>
+<p><strong>Decodable, with a common framing.</strong> Many <code>0xff25</code> containers are a sequence of <code>0x800</code>-byte
+blocks carrying packets from <code>block + 0x60</code>; measured over 300 sampled containers that holds
+for <strong>42 %</strong> of those that parse (first offset) and <strong>58 %</strong> (period), and <strong>45 %</strong> produce no
+8-packet run under it at all. So it is a fast path, not a definition. Decoding packet by packet gives, from one 266 KB container:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>3,049 packets -&gt; 60.98 s stereo   RMS 0.176   spectral flatness 0.0045
+</code></pre></div>
+<p>The variant that contributed nothing to every earlier pass accounts for <strong>100.96 hours</strong>
+of audio across its 3,008 containers (3,008 decoded, 65.0 GiB WAV) in <code>audio.rpf</code>. Decode with
+<code>tools/decode_adat_stream.py --ff25</code>.</p>
+<p>Earlier measurements that bounded the problem, retained because they explain why the
+structural routes failed:</p>
+<ul>
+<li>the body entropy is 7.74–7.79 against 3.4–4.4 for the header, so the containers do hold
+  audio;</li>
+<li><strong><code>header_size</code> is not the data start</strong> — one container with <code>header_size = 64</code> has the
+  <code>… 80 bb 0b 01 ff ff</code> descriptor sitting <em>at</em> offset 64, so the descriptor block extends
+  past it;</li>
+<li>the payload is packet-framed but not block-framed: scanning a whole container finds
+  1,678 short runs of ≥12 valid size-prefixed packets, while all 130 <code>0x800</code>-aligned
+  blocks fail the other variants' block rule;</li>
+<li>a table-like run in the header is an arithmetic sequence of step 90 read one byte in,
+  the third independent sign that this variant's fields sit at odd offsets.</li>
+</ul>
+<p>What is not yet located is the <strong>payload start and the split between streams</strong>; until
+both exist, no <code>0xff25</code> stream is decoded, and the census keeps its 3,008 containers'
+streams out of the decoded totals.</p>
+<h2 id="codec-status">Codec status<a class="headerlink" href="#codec-status" title="Permanent link">&para;</a></h2>
+<p>The corpus scan found 2,320 parsed streams:</p>
+<table>
+<thead>
+<tr>
+<th>Codec</th>
+<th style="text-align: right;">Streams</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0x0b</code></td>
+<td style="text-align: right;">2,081</td>
+<td><strong>Opus; decoded</strong></td>
+</tr>
+<tr>
+<td><code>0x05</code></td>
+<td style="text-align: right;">166</td>
+<td><strong>XMA2; decoded</strong></td>
+</tr>
+<tr>
+<td><code>0x02</code></td>
+<td style="text-align: right;">73</td>
+<td><strong>ACE1 impulse responses; decoded</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="0x05-xma2"><code>0x05</code> = XMA2<a class="headerlink" href="#0x05-xma2" title="Permanent link">&para;</a></h3>
+<p>The first wrapper used <code>wFormatTag=0x0161</code> (WMAudio2), so ffmpeg called the
+wrong decoder. The correct XMA2 tag is <strong><code>0x0166</code></strong>. With it, <strong>151 unique
+streams decode to 86 MB of PCM WAV</strong>; all 151 are non-silent and 148 have
+spectral flatness below 0.1. The engine rumble in the decoded set is a
+human-confirmed check. The 15 missing <code>0x05</code> rows are fragmented AWC entries.</p>
+<h3 id="0x0b-opus"><code>0x0B</code> = Opus<a class="headerlink" href="#0x0b-opus" title="Permanent link">&para;</a></h3>
+<p>Each <code>0x800</code>-byte <code>0x55</code> block is a sequence of</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>[u16le packet size][size-byte Opus packet] ...
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>zero padding to the block end
+</code></pre></div>
+<p>The <code>a0 00 f8</code> prefix is a 160-byte packet (<code>f8</code> is its TOC); the next packet
+starts at 162. libopus decodes the controls at 48 kHz, and every <code>0xA3</code> block
+boundary matches cumulative decoded frames × channels.</p>
+<p>Bulk export: <strong>2,081/2,081 streams / 2.5 GB untrimmed WAV</strong>, zero decode
+failures. 11 non-48 kHz streams are decoded at 48 kHz with source rate
+recorded; 5 seek flags and 1 encoded silence are preserved. Pre-skip and
+end-trim are bounded by controls but not exactly determined.</p>
+<h3 id="0x02-ace1-impulse-responses"><code>0x02</code> = ACE1 impulse responses<a class="headerlink" href="#0x02-ace1-impulse-responses" title="Permanent link">&para;</a></h3>
+<p>Each <code>0x2000</code>-byte tile is 1,024 interleaved complex float32 bins of a
+2,048-point real FFT, stored with the Nyquist bin omitted. Inverse-transform
+the tiles, restore the missing alternating Nyquist component from the zero
+leading half and adjacent overlaps, concatenate the second halves, and trim to
+the tap count at <code>0x76 +0x0c</code>. The terminal <code>0x2000</code> bytes are an <code>ACE1</code>
+trailer: <code>0xfffface1</code> + 15 LE <code>u16</code> pairs + zero padding.</p>
+<p><code>tools/extract_awc_ace1.py</code> exported <strong>73/73 streams / 6 MB float32 WAV</strong>; all
+controls have overlap/padding RMS below <code>8e-9</code>. The first trailer pair values
+are not needed for reconstruction and remain unassigned.</p>
+<h2 id="reproduce">Reproduce<a class="headerlink" href="#reproduce" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># full audio.rpf output: AWC + framing + XMA2 + Opus</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>tools/rebuild_audio.sh<span class="w"> </span>SOURCE/audio.rpf<span class="w"> </span>output/extracted
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># individual subsets from an existing AWC extraction</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>python3<span class="w"> </span>tools/extract_awc_xma2.py<span class="w"> </span>--limit<span class="w"> </span><span class="m">0</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>python3<span class="w"> </span>tools/extract_awc_opus.py<span class="w"> </span>--limit<span class="w"> </span><span class="m">0</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>python3<span class="w"> </span>tools/extract_awc_ace1.py<span class="w"> </span>--limit<span class="w"> </span><span class="m">0</span>
+</code></pre></div>
+<p>Artifacts: <code>handoff/audio-awc.md</code>, <code>handoff/audio-awc-decode.md</code>,
+<code>handoff/data-awc-opus.md</code>, <code>handoff/data-awc-trim-ace1.md</code>,
+<code>handoff/audio-awc-framing.tsv</code>, <code>handoff/audio-xma2-decode.tsv</code>,
+<code>handoff/audio-opus-decode.tsv</code>, <code>handoff/audio-ace1-decode.tsv</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../pipeline/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Full pipeline">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Full pipeline
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../corpus/" class="md-footer__link md-footer__link--next" aria-label="Next: Corpus pass">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Corpus pass
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "content.code.copy", "content.tabs.link", "search.highlight", "search.suggest"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../assets/js/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

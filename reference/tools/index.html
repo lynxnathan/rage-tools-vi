@@ -1,0 +1,2798 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="RPF9 / GTA VI archive and object-graph reverse engineering">
+      
+      
+        <meta name="author" content="Rage Tools VI">
+      
+      
+      
+        <link rel="prev" href="../structures/">
+      
+      
+        <link rel="next" href="../report-formats/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Tool index - Rage Tools VI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tools" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Rage Tools VI" class="md-header__button md-logo" aria-label="Rage Tools VI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rage Tools VI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Tool index
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="amber"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../explained/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  From first principles
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../findings/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Findings
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/overview/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../rpf9/format/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  RPF9
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../extraction/inventory/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Extraction
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../data/data-rpf/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Data
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../executable/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Rage Tools VI" class="md-nav__button md-logo" aria-label="Rage Tools VI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Rage Tools VI
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explained/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    From first principles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../findings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Findings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/object-graph/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Object graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RPF9
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    RPF9
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpf9/format/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Container format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpf9/metadata/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metadata regions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpf9/layout/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pack layout
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../rpf9/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extraction pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extraction
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Extraction
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory and entry point
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/containment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Containment view
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/downloads-corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Downloads corpus
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/large-archives/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Large archives
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/audio/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audio (AWC/XMA2)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/corpus/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Corpus pass
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/entries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Entry manifests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/packs-signatures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Packs signatures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/bvh4-entries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    BVH4 entries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/structs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Serialized structs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extraction/quadtree/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quadtree view
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/data-rpf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    data.rpf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/textures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Textures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/script-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Script schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/rig-names/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rig names
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data/localization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Localization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../executable/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The executable as a source
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../structures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recovered structures
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../report-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Report formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../names/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hash names
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="tools">Tools<a class="headerlink" href="#tools" title="Permanent link">&para;</a></h1>
+<p>Every script in <code>tools/</code> at a glance. The summary column comes from each file's own
+docstring, so this page is generated, not maintained by hand:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python3<span class="w"> </span>tools/tool_index.py<span class="w">          </span><span class="c1"># regenerate</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>python3<span class="w"> </span>tools/tool_index.py<span class="w"> </span>--check<span class="w">  </span><span class="c1"># verify the page matches the code</span>
+</code></pre></div>
+<p>Run any tool with <code>--help</code> for its arguments. Most read from the repository root
+so <code>python3 tools/&lt;name&gt;.py</code> works without arguments.</p>
+<p>184 scripts.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+<th>Notable flags</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/active_learning_queue.py"><code>active_learning_queue.py</code></a></td>
+<td>Build a representative/uncertain label queue from ML binary clusters.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/adat_index.py"><code>adat_index.py</code></a></td>
+<td>Index the <code>ADAT</code> containers inside an audio archive.</td>
+<td>--limit --out --show</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/annotate_handoff.py"><code>annotate_handoff.py</code></a></td>
+<td>Join the name registry onto every handoff table that carries hashes.</td>
+<td>--annotate` --coverage --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/archive_inventory.py"><code>archive_inventory.py</code></a></td>
+<td>Normalize Rust map output for the small local archives.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/array_inventory.py"><code>array_inventory.py</code></a></td>
+<td>Export every valid typed array with its root context.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/array_records.py"><code>array_records.py</code></a></td>
+<td>Detect header plus 16-byte entry arrays in no-pointer object records.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/array_types.py"><code>array_types.py</code></a></td>
+<td>Decode array headers with count, stride, and element type hash.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audio_census_totals.py"><code>audio_census_totals.py</code></a></td>
+<td>Aggregate the AWC census tables into one result.</td>
+<td>--out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audio_gap.py"><code>audio_gap.py</code></a></td>
+<td>Exactly which audio streams are still undecoded.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audio_opus_trim_model.py"><code>audio_opus_trim_model.py</code></a></td>
+<td>Test the AWC Opus trim model against the exported decode table.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audit_opaque_streams.py"><code>audit_opaque_streams.py</code></a></td>
+<td>Validate zlib candidates and weak DOS signatures in the extracted data.rpf.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/audit_payload_objects.py"><code>audit_payload_objects.py</code></a></td>
+<td>Independently validate payload objects using the local RPF9 controls.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/awc_audio_tests.py"><code>awc_audio_tests.py</code></a></td>
+<td>Render raw AWC payload hypotheses to WAV for listening tests.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/awc_chunk_table.py"><code>awc_chunk_table.py</code></a></td>
+<td>Locate and dump the AWC chunk table for every ADAT variant.</td>
+<td>--dir --limit</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/awc_framing.py"><code>awc_framing.py</code></a></td>
+<td>Inspect GTA VI ADAT/AWC stream framing without decoding.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/awc_framing_ff02.py"><code>awc_framing_ff02.py</code></a></td>
+<td>Parse the <code>0xff02</code> / <code>0xff25</code> AWC variants and report their codecs.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/awc_parse.py"><code>awc_parse.py</code></a></td>
+<td>Parse an <code>ADAT</code> bank, following the published GTA VI audio layout.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bink_index.py"><code>bink_index.py</code></a></td>
+<td>Index the Bink2 movies inside <code>movies.rpf</code>.</td>
+<td>--out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_corpus.py"><code>bone_corpus.py</code></a></td>
+<td>Match plaintext data.rpf PSIN bone names against the script.rpf object tree.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_geometry.py"><code>bone_geometry.py</code></a></td>
+<td>Summarize class-0 bone centroids, extents, and shared-hash templates.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_geometry_names.py"><code>bone_geometry_names.py</code></a></td>
+<td>Predict bone names from geometry, inside a rig family.</td>
+<td>--out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_name_probe.py"><code>bone_name_probe.py</code></a></td>
+<td>Resolve class-0 bone-table hashes by generating rig-style bone names.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_table.py"><code>bone_table.py</code></a></td>
+<td>Decode the class-0 0x5387a04e bone table and its 0x1ebb416b point arrays.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_template_families.py"><code>bone_template_families.py</code></a></td>
+<td>Cluster class-0 roots into near-identical bone-template families.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_templates.py"><code>bone_templates.py</code></a></td>
+<td>Group class-0 roots by exact bone-hash sets and report shared templates.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/boot_loop.py"><code>boot_loop.py</code></a></td>
+<td>Iterate the console image's guard asserts: patch one, run, find the next.</td>
+<td>--game-dir --rounds</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bruteforce_bink_framing.py"><code>bruteforce_bink_framing.py</code></a></td>
+<td>Parallel framing sweep for AWC payload -&gt; Bink Audio decoder.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bruteforce_ueba.py"><code>bruteforce_ueba.py</code></a></td>
+<td>Sweep AWC data payload offsets through a synthetic UEBA/Bink Audio wrapper.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bulk_extract.py"><code>bulk_extract.py</code></a></td>
+<td>Parallel bounded-memory extraction of every zlib span in an index.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_alloc_harvest.py"><code>bvh4_alloc_harvest.py</code></a></td>
+<td>Harvest exact payload sizes from <code>*_bvh4</code> descriptors, slice by slice.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_descriptor_probe.py"><code>bvh4_descriptor_probe.py</code></a></td>
+<td>Probe the 208-byte plaintext descriptor that <code>core_bvh4</code> stores per entry.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_entry_manifest.py"><code>bvh4_entry_manifest.py</code></a></td>
+<td>Build an entry-level manifest for <code>core_bvh4.rpf</code> from the payload model.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_node_probe.py"><code>bvh4_node_probe.py</code></a></td>
+<td>Probe <code>core_bvh4</code> payload internals: tail alignment, 0x81 runs, and +0xa4.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_payload_probe.py"><code>bvh4_payload_probe.py</code></a></td>
+<td>Test the <code>core_bvh4</code> descriptor's sub-region fields against its payload.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bvh4_struct_probe.py"><code>bvh4_struct_probe.py</code></a></td>
+<td>Tabulate the small serialized structs inside <code>core_bvh4</code> entries.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/chain_start_verify.py"><code>chain_start_verify.py</code></a></td>
+<td>Verify the <code>chain_start</code> column of the stream indexes.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/chks_probe.py"><code>chks_probe.py</code></a></td>
+<td>Probe the <code>CHKS</code> trailer that follows <code>LRSC</code> in <code>levels</code>-style records.</td>
+<td>--archive --index</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/claims_check.py"><code>claims_check.py</code></a></td>
+<td>Check that the numbers the docs publish still match the committed artifacts.</td>
+<td>--list</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/clip_index_to_packs.py"><code>clip_index_to_packs.py</code></a></td>
+<td>Split index ranges that cross a pack boundary, one row per pack.</td>
+<td>--all --dry-run</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/corpus_report.py"><code>corpus_report.py</code></a></td>
+<td>Render <code>handoff/corpus-pass.tsv</code> into a docs page and a console table.</td>
+<td>--write</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/corpus_table.py"><code>corpus_table.py</code></a></td>
+<td>Assemble <code>handoff/corpus-pass.tsv</code> from the per-archive products.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/coverage_gaps.py"><code>coverage_gaps.py</code></a></td>
+<td>Report unclassified extraction spans by archive and largest gaps.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/crypt_battery.py"><code>crypt_battery.py</code></a></td>
+<td>Cipher battery for the masked RPF9 regions.</td>
+<td>--dir --suffix</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/d3d12_shim.py"><code>d3d12_shim.py</code></a></td>
+<td>Build the d3d12_xs.dll shim that backs the console D3D12 entry points with vkd3d-proton.</td>
+<td>--check</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_awc_ace1_ir.py"><code>data_awc_ace1_ir.py</code></a></td>
+<td>Test an inverse real FFT on a bounded set of codec 0x02 controls.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_awc_opus_probe.py"><code>data_awc_opus_probe.py</code></a></td>
+<td>Test little-endian length-prefixed Opus in one GTA VI ADAT container.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_awc_trim_controls.py"><code>data_awc_trim_controls.py</code></a></td>
+<td>Measure trim ambiguity and the 0x02 ACE1 trailer on named controls.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_last_child.py"><code>data_last_child.py</code></a></td>
+<td>Compare the last data.rpf child trailer with a known boundary control.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_opus_exceptions.py"><code>data_opus_exceptions.py</code></a></td>
+<td>Re-test only the failed rows of the existing AWC Opus manifest.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_rpf_inventory.py"><code>data_rpf_inventory.py</code></a></td>
+<td>Audit data.rpf pack bounds, PSIN records, and localized resource payloads.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/decode_adat_sample.py"><code>decode_adat_sample.py</code></a></td>
+<td>Sample streams across containers and measure how many actually decode.</td>
+<td>--containers --index --per-container</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/decode_adat_stream.py"><code>decode_adat_stream.py</code></a></td>
+<td>Decode one stream from an AWC container using the indexer's own table rules.</td>
+<td>--output --start --stream</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/decode_raw_deflate.py"><code>decode_raw_deflate.py</code></a></td>
+<td>Find complete raw DEFLATE streams in extracted RPF9 opaque ranges.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/entry_model.py"><code>entry_model.py</code></a></td>
+<td>Which entry model does each archive follow, and how well does it fit?</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/entry_reconciliation.py"><code>entry_reconciliation.py</code></a></td>
+<td>Reconcile declared RPF9 entry counts against observed payload items.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/explorer_deflate_e2e.py"><code>explorer_deflate_e2e.py</code></a></td>
+<td>Compare a known raw-DEFLATE control with Python's independent decoder.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/explorer_image_fixture.py"><code>explorer_image_fixture.py</code></a></td>
+<td>Create and check a small synthetic PNG-in-zlib RPF fixture.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/explorer_sparse_fixture.py"><code>explorer_sparse_fixture.py</code></a></td>
+<td>Create a sparse RPF9-shaped fixture and matching index for UI tests.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/export_localized_text.py"><code>export_localized_text.py</code></a></td>
+<td>Export readable strings from the identified data.rpf localization archives.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_adat_gaps.py"><code>extract_adat_gaps.py</code></a></td>
+<td>Extract and census the AWC containers the old pass missed.</td>
+<td>--all --archive --census --known --out-dir</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_archive_ranges.py"><code>extract_archive_ranges.py</code></a></td>
+<td>Extract locally mapped RPF9 ranges, with a manifest covering every stored byte.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc.py"><code>extract_awc.py</code></a></td>
+<td>Extract AWC containers (ADAT) from a raw audio span using mmap boundaries.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc_ace1.py"><code>extract_awc_ace1.py</code></a></td>
+<td>Export AWC codec 0x02 ACE1 impulse responses as float32 WAV.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc_all.py"><code>extract_awc_all.py</code></a></td>
+<td>Decode every <code>ADAT</code> stream in a framing table: Opus to WAV, XMA2 via ffmpeg.</td>
+<td>--framing --no-wav --out-manifest</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc_ff02.py"><code>extract_awc_ff02.py</code></a></td>
+<td>Decode the <code>0xff02</code> AWC variant to WAV (story000 cutscene audio).</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc_opus.py"><code>extract_awc_opus.py</code></a></td>
+<td>Export all AWC codec 0x0B streams as untrimmed 48 kHz PCM WAV.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc_variants.py"><code>extract_awc_variants.py</code></a></td>
+<td>Decode the <code>0xff21</code> / <code>0xff61</code> ADAT variants to WAV.</td>
+<td>--limit --manifest --out-dir</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_awc_xma2.py"><code>extract_awc_xma2.py</code></a></td>
+<td>Decode AWC streams whose 0x76 codec is XMA2 (observed codec 0x05).</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extract_entry.py"><code>extract_entry.py</code></a></td>
+<td>General extraction entry point over the Rust range extractor.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extraction_coverage.py"><code>extraction_coverage.py</code></a></td>
+<td>Summarize repo-wide extraction coverage and unsupported spans.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extraction_index_pilot.py"><code>extraction_index_pilot.py</code></a></td>
+<td>Build a standalone RPF range browser from the eight rebuilt indexes.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extraction_inventory.py"><code>extraction_inventory.py</code></a></td>
+<td>Normalize the stream indexes into one repo-wide extraction inventory.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/extraction_tree.py"><code>extraction_tree.py</code></a></td>
+<td>Build a standalone, nested-quadrant view of verified RPF9 extraction manifests.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/fetch_vocab.py"><code>fetch_vocab.py</code></a></td>
+<td>Fetch the engine's own name table as a hash vocabulary.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_a_compare.py"><code>front_a_compare.py</code></a></td>
+<td>Compare the post-signature Front A tables across the RPF9 controls.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_a_probe.py"><code>front_a_probe.py</code></a></td>
+<td>Probe story000_bvh4.rpf Front A for known payload ranges and simple transforms.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_ab_matrix.py"><code>front_ab_matrix.py</code></a></td>
+<td>Compare Front A/B equality across languages and tabulate B-size modes.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_b_blocks.py"><code>front_b_blocks.py</code></a></td>
+<td>Compare the first and last ciphertext blocks of Front B across the census.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_b_law_fit.py"><code>front_b_law_fit.py</code></a></td>
+<td>Fit Front A, Front B, and trailer sizes against N from a header census TSV.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_b_modes.py"><code>front_b_modes.py</code></a></td>
+<td>Tabulate Front B size against 12N and 12(N+1), grouped by header mode.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_b_stability.py"><code>front_b_stability.py</code></a></td>
+<td>Compare Front B bodies of packs that share N, mode, and format tag.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/front_hash_probe.py"><code>front_hash_probe.py</code></a></td>
+<td>Search RPF front-region words for any hash of any known name.</td>
+<td>--source</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/frontb_stride.py"><code>frontb_stride.py</code></a></td>
+<td>Recover the Front B row stride and the count at which it changes.</td>
+<td>--census</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/handoff_index.py"><code>handoff_index.py</code></a></td>
+<td>Regenerate <code>handoff/README.md</code>: what each artifact is and what makes it.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/handoff_manifest.py"><code>handoff_manifest.py</code></a></td>
+<td>Maintain <code>handoff/provenance.tsv</code> and <code>handoff/README.md</code>.</td>
+<td>--check</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/harvest_names.py"><code>harvest_names.py</code></a></td>
+<td>Harvest a name corpus from decoded archive streams.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/hash_corpus_test.py"><code>hash_corpus_test.py</code></a></td>
+<td>Test candidate hash algorithms and name variants against project targets.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/header_census.py"><code>header_census.py</code></a></td>
+<td>Census every RPF9 header in a set of archives and fit Front B size laws.</td>
+<td>--tsv,</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/header_words.py"><code>header_words.py</code></a></td>
+<td>Read every header listed in a census TSV and analyze the header words.</td>
+<td>--source</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/human_range_scan.py"><code>human_range_scan.py</code></a></td>
+<td>Scan AWC data chunks for tonal energy in the human 20 Hz-20 kHz band.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/iat_calls.py"><code>iat_calls.py</code></a></td>
+<td>Name every indirect call through an import: <code>call [rip+x]</code> -&gt; which library, which symbol.</td>
+<td>--at --symbol --window</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/identify_opaque_context.py"><code>identify_opaque_context.py</code></a></td>
+<td>Identify opaque RPF9 fragments from verified neighboring payload headers.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/index_coverage.py"><code>index_coverage.py</code></a></td>
+<td>Report how much of each archive is classified, merging side indexes.</td>
+<td>--out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/layout_link_probe.py"><code>layout_link_probe.py</code></a></td>
+<td>Test structured vehicle-model/layout pairs against class-0 layout roots.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/levels_paths.py"><code>levels_paths.py</code></a></td>
+<td>Harvest the ASCII resource paths that <code>levels</code> PSIN sections carry.</td>
+<td>--archive --index --limit --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/levels_sections.py"><code>levels_sections.py</code></a></td>
+<td>Census the tagged sections of <code>levels</code>-style PSIN records.</td>
+<td>--archive --index --limit</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/localized_extents.py"><code>localized_extents.py</code></a></td>
+<td>Compare localization pack extents and Front A/B across languages.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/lsns_tables.py"><code>lsns_tables.py</code></a></td>
+<td>Parse the LSNS section as what it is: a container of 16-byte-record tables.</td>
+<td>--archive --index</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/metadata_entropy.py"><code>metadata_entropy.py</code></a></td>
+<td>Measure Front A, Front B, and trailer byte statistics for every census header.</td>
+<td>--parent-ends</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/metadata_regions.py"><code>metadata_regions.py</code></a></td>
+<td>Compare the three RPF9 metadata regions across the observed controls.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/ml_binary_clusters.py"><code>ml_binary_clusters.py</code></a></td>
+<td>Cluster packs binary streams from byte-level features (proposal engine only).</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/mmap_extract.py"><code>mmap_extract.py</code></a></td>
+<td>Bounded-memory selective zlib extraction using a read-only mmap.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/name_hash_game.py"><code>name_hash_game.py</code></a></td>
+<td>The game's own name hash, as read out of the executable.</td>
+<td>--hash --probe</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/name_registry.py"><code>name_registry.py</code></a></td>
+<td>One name registry, and the two things anyone actually needs from it.</td>
+<td>--annotate --build --column --lookup --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/native_texture_scan.py"><code>native_texture_scan.py</code></a></td>
+<td>Scan decoded data.rpf resources for native texture dictionaries.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/nested_packs.py"><code>nested_packs.py</code></a></td>
+<td>Every occurrence of the pack magic inside an archive, and what it turned out to be.</td>
+<td>--archive --out --source</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/object_names.py"><code>object_names.py</code></a></td>
+<td>Map JOAAT name fields across the script.rpf object tree.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_extent_check.py"><code>pack_extent_check.py</code></a></td>
+<td>Check the three-boundary pack model against the index of every archive.</td>
+<td>--all</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_extents.py"><code>pack_extents.py</code></a></td>
+<td>Resolve RPF9 pack extents from zero padding, in index-only mode.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_layout.py"><code>pack_layout.py</code></a></td>
+<td>Draw one pack's front-region map from its own header, using the loader's formula.</td>
+<td>--offset --scan</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_model_fit.py"><code>pack_model_fit.py</code></a></td>
+<td>Which simple entry model fits each pack exactly?</td>
+<td>--out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pair_arrays.py"><code>pair_arrays.py</code></a></td>
+<td>Export every 0x8f18aff0 (u32 hash, f32) pair array with root context.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pair_entry_manifest.py"><code>pair_entry_manifest.py</code></a></td>
+<td>Emit entry manifests for packs whose entry count verifies exactly.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/patch_guard.py"><code>patch_guard.py</code></a></td>
+<td>Patch a guard <code>int3</code> in a copy of the image, and run the copy.</td>
+<td>--at --exe --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pe_audit.py"><code>pe_audit.py</code></a></td>
+<td>Static audit of a PE image — no execution, no network.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pe_scan.py"><code>pe_scan.py</code></a></td>
+<td>Correct PE section mapping + pattern scans, so negatives can be trusted.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pi_archive_audit.py"><code>pi_archive_audit.py</code></a></td>
+<td>Archive-only reproduction for the RPF9 payload audit.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pipeline.py"><code>pipeline.py</code></a></td>
+<td>Reproducible RPF9 output pipeline.</td>
+<td>--dry-run --force --resume</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_0f000080.py"><code>probe_0f000080.py</code></a></td>
+<td>Probe the 0f000080 packs family: sizes, header words, and 16-bit texture.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_4042.py"><code>probe_4042.py</code></a></td>
+<td>Probe the dominant u16_4042 packs stream header.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_4042_classes.py"><code>probe_4042_classes.py</code></a></td>
+<td>Compare u16_4042 size classes by entropy and byte regularity.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_ff25_payload.py"><code>probe_ff25_payload.py</code></a></td>
+<td>Find a 0xff25 payload by decoding candidates, not by guessing the container layout.</td>
+<td>--end --start</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_index_layout.py"><code>probe_index_layout.py</code></a></td>
+<td>Test fixed-stride offset and length hypotheses against small RPF9 controls.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/property_tree.py"><code>property_tree.py</code></a></td>
+<td>Dump a named object subtree from the script.rpf object graph.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/protection_audit.py"><code>protection_audit.py</code></a></td>
+<td>Test an image for a commercial packer/protector instead of assuming one.</td>
+<td>--json</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_blocks.py"><code>psin_blocks.py</code></a></td>
+<td>Decode the five PSIN blocks with the writer's own field order.</td>
+<td>--index --rows</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_dump.py"><code>psin_dump.py</code></a></td>
+<td>Print PSIN records as readable rows, using the name registry.</td>
+<td>--build`). --limit --property --record</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_entries.py"><code>psin_entries.py</code></a></td>
+<td>Extract every two-row entry from the PSIN property arrays.</td>
+<td>--out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_extract.py"><code>psin_extract.py</code></a></td>
+<td>Extract the PSIN property arrays straight from script.rpf.</td>
+<td>--out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_name_probe.py"><code>psin_name_probe.py</code></a></td>
+<td>Resolve PSIN class and field hashes against a text corpus.</td>
+<td>--corpus --out --properties</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_property_scan.py"><code>psin_property_scan.py</code></a></td>
+<td>Does any archive besides <code>script.rpf</code> carry PSIN property arrays?</td>
+<td>--archives</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_property_tree.py"><code>psin_property_tree.py</code></a></td>
+<td>Parse the PSIN typed property array and test 64-bit name-hash variants.</td>
+<td>--dump --hash-test</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_segment.py"><code>psin_segment.py</code></a></td>
+<td>Segment a PSIN record into rows of a fixed width.</td>
+<td>--describe --out --properties</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_segments.py"><code>psin_segments.py</code></a></td>
+<td>Split a PSIN record where its table width changes.</td>
+<td>--describe --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_sweep.py"><code>psin_sweep.py</code></a></td>
+<td>Find and extract PSIN records in any archive, not just <code>script.rpf</code>.</td>
+<td>--archive --index --limit-mb --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_table_width.py"><code>psin_table_width.py</code></a></td>
+<td>Measure the row width of each PSIN property array.</td>
+<td>--properties</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/quadtree.py"><code>quadtree.py</code></a></td>
+<td>Build one resource-local XY quadtree per class-0 root and an HTML view.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/rage.py"><code>rage.py</code></a></td>
+<td>One entry point for the project's operations.</td>
+<td>--help`) --marker</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/rig_name_corpus_probe.py"><code>rig_name_corpus_probe.py</code></a></td>
+<td>Resolve rig hashes against a large text corpus in tiers.</td>
+<td>--bones --corpus --deep) --out --weights</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/root_classes.py"><code>root_classes.py</code></a></td>
+<td>Classify object-tree roots by their child part/bone signatures.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/root_names.py"><code>root_names.py</code></a></td>
+<td>Match the script.rpf object-tree root IDs against JOAAT names.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/rotation_parts.py"><code>rotation_parts.py</code></a></td>
+<td>Analyze +0x18 named records and their direct rotation targets.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/run_dir.py"><code>run_dir.py</code></a></td>
+<td>Stage a game directory so a run never writes into the dump.</td>
+<td>--game-dir --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/scan_libmagic.py"><code>scan_libmagic.py</code></a></td>
+<td>Report file(1) signatures for every regular file in a local extraction.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/schema_names.py"><code>schema_names.py</code></a></td>
+<td>Match JOAAT field names in the decoded PSIN sections.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/screen_audit.py"><code>screen_audit.py</code></a></td>
+<td>Audit the screen in pixels: did anything change while the image ran?</td>
+<td>--game-dir --interval --seconds --threshold</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/script_bone_namespace_probe.py"><code>script_bone_namespace_probe.py</code></a></td>
+<td>Cross-check skeleton family hashes against the named vehicle mover tables.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/script_meta.py"><code>script_meta.py</code></a></td>
+<td>Parse the script metadata resource by its writer's own rules.</td>
+<td>--dump --index</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/script_pair.py"><code>script_pair.py</code></a></td>
+<td>Inspect the two entries in the script.rpf pack at 0x1000.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/script_sections.py"><code>script_sections.py</code></a></td>
+<td>Build the record -&gt; section index for the script metadata corpora.</td>
+<td>--archive --index --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/section_blocks.py"><code>section_blocks.py</code></a></td>
+<td>Test 16-byte block repetition in the decoded PSIN sections of script.rpf.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/signature_survey.py"><code>signature_survey.py</code></a></td>
+<td>Classify bulk-extracted streams by leading magic/signature.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/source_inventory.py"><code>source_inventory.py</code></a></td>
+<td>Inventory a source directory and locate extracted manifests for its RPFs.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/story000_bvh4_control.py"><code>story000_bvh4_control.py</code></a></td>
+<td>Build the four-range XML control table for story000_bvh4.rpf.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/stream_index.py"><code>stream_index.py</code></a></td>
+<td>Streaming mmap range index with bounded per-stream memory.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/struct_grammar_probe.py"><code>struct_grammar_probe.py</code></a></td>
+<td>Test the struct-first entry grammar on any archive, not just core_bvh4.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/struct_harvest.py"><code>struct_harvest.py</code></a></td>
+<td>Unified struct harvest across archives, with the two guards.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/struct_types.py"><code>struct_types.py</code></a></td>
+<td>Partition the script.rpf object tree by record size and tagged-pointer layout.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/stub_dlls.py"><code>stub_dlls.py</code></a></td>
+<td>Console-only imports of a Windows image, and stub DLLs that satisfy them.</td>
+<td>--list --out</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/test_audio_spectral.py"><code>test_audio_spectral.py</code></a></td>
+<td>Spectral success-case test: harmonic speech/control vs noise candidate.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/test_awc_xma2.py"><code>test_awc_xma2.py</code></a></td>
+<td>Build XMA2 WAVE wrappers from AWC 0x55 data chunks and decode with ffmpeg.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/texture_control_probe.py"><code>texture_control_probe.py</code></a></td>
+<td>Recover one descriptor-backed texture control from a bounded source window.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/texture_decode.py"><code>texture_decode.py</code></a></td>
+<td>Decode native UI textures: linear top mip first, then candidate block tiles.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/tool_index.py"><code>tool_index.py</code></a></td>
+<td>Write <code>docs/reference/tools.md</code> from the tools' own docstrings.</td>
+<td>--check</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/transform_pairs.py"><code>transform_pairs.py</code></a></td>
+<td>Test whether 48-byte transform entries pair by index and high byte.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/transform_values.py"><code>transform_values.py</code></a></td>
+<td>Follow tagged pointers from named tree parts to their float value leaves.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/type_tags.py"><code>type_tags.py</code></a></td>
+<td>Match array header type tags to JOAAT names of likely value types.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/unclassified_probe.py"><code>unclassified_probe.py</code></a></td>
+<td>Probe every archive's largest <code>unclassified</code> span for internal structure.</td>
+<td>--source</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/value_array_context.py"><code>value_array_context.py</code></a></td>
+<td>Link typed 48-byte-header value arrays to their nearest named ancestors.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/value_entries.py"><code>value_entries.py</code></a></td>
+<td>Validate 48-byte array headers and classify their 16-byte value entries.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vehicle_curve_branches.py"><code>vehicle_curve_branches.py</code></a></td>
+<td>Compare branch samples for known window channels and unknown mover channels.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vehicle_curve_join.py"><code>vehicle_curve_join.py</code></a></td>
+<td>Join vehicle curve keys to same-root named parts and rotation leaves.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vehicle_curve_quantization.py"><code>vehicle_curve_quantization.py</code></a></td>
+<td>Native-precision test for degree quantization and leaf-angle identity.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vehicle_curves.py"><code>vehicle_curves.py</code></a></td>
+<td>Decode 0xb066759f vehicle mover curves and name their JOAAT channels.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vehicle_roots.py"><code>vehicle_roots.py</code></a></td>
+<td>Inventory vehicle-like roots and their mover-curve coverage.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_bulk.py"><code>verify_bulk.py</code></a></td>
+<td>Verify a bulk extraction manifest against its range index and output files.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_extraction.py"><code>verify_extraction.py</code></a></td>
+<td>Verify the general extraction entry point against known manifests.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_quadtree.py"><code>verify_quadtree.py</code></a></td>
+<td>Verify the class-0 quadtree JSON against the geometry source.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vtable_scan.py"><code>vtable_scan.py</code></a></td>
+<td>Enumerate vtables in the executable and resolve chosen slots.</td>
+<td>--find --limit --min-slots --slot</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/wine_gdb.py"><code>wine_gdb.py</code></a></td>
+<td>Attach gdb to the running console image and stop at image addresses.</td>
+<td>--at --game-dir --single</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/wrapper_probe.py"><code>wrapper_probe.py</code></a></td>
+<td>Probe 32-byte +0x10 wrappers for a signature that predicts rotation leaves.</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/xgameruntime.py"><code>xgameruntime.py</code></a></td>
+<td>Build the Xodus xgameruntime into <code>cache/shims</code> so the image talks to a real GDK layer.</td>
+<td>--check --rebuild</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/xref.py"><code>xref.py</code></a></td>
+<td>Find the code that references an image RVA: call/jmp rel32, and rip-relative operands.</td>
+<td>--kind --limit --to</td>
+</tr>
+<tr>
+<td><a href="https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/zipcrypto_probe.py"><code>zipcrypto_probe.py</code></a></td>
+<td>Test passwords against a ZipCrypto entry without extracting anything.</td>
+<td>--wordlist --words</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../structures/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Recovered structures">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Recovered structures
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../report-formats/" class="md-footer__link md-footer__link--next" aria-label="Next: Report formats">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Report formats
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "content.code.copy", "content.tabs.link", "search.highlight", "search.suggest"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../assets/js/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>
