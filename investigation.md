@@ -10664,3 +10664,14 @@ imports `VirtualFree` directly, which is outside the stub's accounting.
 That is the next thing to check: whether the title frees its own ranges with `VirtualFree` (as
 opposed to the XMem wrappers) and whether our commit-on-touch then re-commits a page that a later
 free removed.
+
+### Negative: the image never calls VirtualFree itself (2026-11-25)
+
+Hooked `VirtualAlloc`/`VirtualFree` in the image's import table to see whether the title decommits
+the pages the stub committed. Neither is ever called: the image manages its heaps entirely
+through `xmem`, and the only `VirtualAlloc` traffic is inside the stubs. So the `memset` fault at
+`0x2bf7000` is not caused by a direct free from the title.
+
+That leaves the stub's own accounting as the only candidate — a page logged as committed that is
+not, which means the log line and the system state disagree — and it is where the next session
+should start, with `VirtualQuery` printed at the moment of the memset fault rather than after it.
