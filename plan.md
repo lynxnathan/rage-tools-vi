@@ -27,8 +27,9 @@ Last updated: 2026-11-24.
 - [ ] Explain the 36.7 % partial match on the `LSCH` `+0x18` word.
 - [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`.
 - [ ] Find the second component's size law in the 440 composite packs.
-- [ ] Reconcile the arena's last term with the measured region sizes, then identify the
-  four front-region sections and what fills the region past them.
+- [ ] Identify what the two loaded ranges contain: section 1 is `align16(p3*8)` bytes at
+  `obj[+0x10]`, section 2 is `p4 - header[0x30]` bytes at `obj[+0x18]`, both hashed
+  content; and reconcile the arena's last term with the measured region sizes.
 - [ ] Decode the remaining ~1.7 M Opus streams.
 - [ ] Carve the shader programs — the boundary has to come from the loader's table or from
   the streams the index already finds.

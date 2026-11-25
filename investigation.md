@@ -9424,3 +9424,30 @@ distribution, not a grid. The same holds for the region after section 4 (60,728 
 So the entry records are not fixed-size rows with padding; whatever the arena formula sizes
 is not a plain record array with a zero byte. That is a real constraint on the next reading,
 and it is why the term `(p5-p6)×N×p8` and the census figure `N×64` still disagree.
+
+### The loader reads exactly two ranges, and their sizes come from the header (2026-11-24)
+
+`FUN_140a348a0` builds up to two 16-byte `{offset, size}` records and hands them to the
+stream walker `FUN_1406bd160`, which reads each range and passes it on:
+
+```
+FUN_140a34980(out, p3 = u16@0x1a, offset = obj[+0x10])   size = FUN_1406bd150(p3)
+FUN_140a34970(out, p4 = u32@0x1c, field = u32@0x30, offset = obj[+0x18])
+                                                        size = p4 - u32@0x30
+FUN_1406bd150(p3) = align16(p3 * 8)
+```
+
+So the front region is not read wholesale: the loader reads **one range of
+`align16(p3*8)` bytes** and **one range of `p4 - header[0x30]` bytes**, at offsets the
+archive object holds. On `data.rpf+0` that is 32 bytes and 320 bytes.
+
+The walker then iterates 16-byte records `{u64 offset, u32 size}`, i.e. a list of at most
+two load tasks, and calls `FUN_140613720(stream, offset, size)` per task.
+
+Both ranges are high-entropy in the file (`data.rpf` section 1 `0x40..0x60` is four 8-byte
+values whose low halves are not small keys; section 2 `0x60..0x1b0` is uniform noise), so
+whatever they are, they are hashed or encrypted content rather than a readable key table.
+
+Two consequences for the open item: section 1 is `p3` records of 8 bytes and section 2 is
+`p4 - header[0x30]` bytes, and the `0x10`/`0x18` fields of the archive object are **file
+offsets**, not buffer pointers.
