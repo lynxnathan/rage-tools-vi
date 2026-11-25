@@ -9792,3 +9792,39 @@ folklore: standard MSVC section set, maximum section entropy 6.75, entry point a
 codes 0/2/3), no `VMProtect`/`Themida`/`Denuvo`/`UPX` strings or section names, and of
 3,269,969 `int3` bytes 3,662 are branch-target guards while 2,769,869 sit in padding runs.
 No commercial protector is indicated; the guards behave like live asserts in a checked build.
+
+### Correction: the guards still fire; the drives only let the reporter write (2026-11-25)
+
+The previous entry says provisioning `d:`/`t:` makes the reporter's registration succeed and
+that the guard stops being the first stop. That is wrong, and the measurement that corrects
+it is the same one that produced it, run again with the current stubs:
+
+```
+code=80000003 (EXCEPTION_BREAKPOINT) flags=0 addr=00006FFFF5187179      1
+code=c0000005 (EXCEPTION_ACCESS_VIOLATION) flags=0 addr=FFFFEFFFFF6B8FCE  7
+```
+
+`0x6FFFF5187179 - 0x6FFFF2F50000 = 0x2237179`, the guard plus one, still raised, still at
+`image+0x2237178`. What the drives changed is only the fault's aftermath: earlier the reporter
+could not save (`WER - Failed to save t:\...`) because `T:` did not exist; now it writes the
+dump, uploads it, and the run exits 3. The reporter was already registered; the guard is a
+different condition.
+
+What the image asks the filesystem is itself evidence: `WINEDEBUG=+file` shows it looking for
+its own symbols on the build machine's path, not on any dump directory —
+
+```
+CreateFileW L"D:\a\_work\1\s\binaries\amd64ret\bin\amd64\onecore\msvcp140.amd64.onecore.pdb"
+  -> not found (c000003a)
+```
+
+— and no lookup of `D:\LocalDumps` appears at all. So the container miss inside
+`image+0x56eb30` is against an in-memory registry, not a directory, and the guard's condition
+is still unexplained.
+
+Two things are now solid and useful. Test runs are offline by default: the frames test starts
+Wine inside `unshare -rn`, verified to give no DNS and no route, and the run reaches the same
+stop with no upload line in the log. And `STUB_ARENA=pattern` in the `xgameruntime` stub fills
+the returned arena with 0..255, so a field the image consumes can be recognised by its offset
+— `TitleID` and `Sandbox` in the crash context did **not** change under that pattern, so they
+do not come from that arena.

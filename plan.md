@@ -52,9 +52,13 @@ Each line is a route, what would settle it, and where it stands.
   reports no window at all; the unpatched image stops on the first guard
   (`image+0x2237178`) inside a second. Settle by finding what should fill the object field
   that guard tests (`obj+0xc`), which is zero from the constructor at `image+0x582a610`.
-- [ ] **Crash reporter.** `D:`/`T:` in the prefix let the Breakpad reporter register, and it
-  posts minidumps to `submit.backtrace.io`; disabling `winhttp` makes the image exit 53 at
-  startup. Settle with a `winhttp` stub that fails the send, then confirm no upload line.
+- [ ] **Crash reporter.** It posts minidumps to `submit.backtrace.io`; the frames test now
+  runs inside `unshare -rn` so nothing leaves the machine. Settle nothing further unless a
+  run needs the network, which is `--online`.
+- [ ] **The guard at `image+0x2237178`.** It fires with the reporter registered, with `T:`
+  present, with a real `d3d12_xs`, and after the arena fix. Its early exit is a failed lookup
+  in the container at `image+0x56eb30` for `L"D:\LocalDumps"`, which the image never asks the
+  filesystem for. Settle by reading the container's fill site and the value it wants.
 - [ ] **Title and sandbox answers.** The crash context reports `TitleID: unknown`,
   `Sandbox: unknown`, `System Language: Unknown State` in `System Init`. Settle by answering
   those `xgameruntime` queries and seeing the same fields filled in the next crash log.

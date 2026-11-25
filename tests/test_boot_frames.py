@@ -24,7 +24,10 @@ rectangle directly. `--capture` forces either. The rectangle must stay unobstruc
 the run lasts — this test cannot see what a compositor draws on top, so keep other windows
 off it, and it will say so if the window is minimized.
 
-Prerequisites, all skipped rather than failed when missing:
+The image's crash reporter posts a minidump to the publisher's Backtrace project for every
+fault it catches, so the run is started inside a network namespace with no route
+(`unshare -rn`); `--online` lifts that. Prerequisites, all skipped rather than failed when
+missing:
   * a session display (`DISPLAY`), the image (`cache/exe/game_scarlett_master.exe`),
   * a game directory with the package (`--game-dir` or `RAGE_GAME_DIR`),
   * Proton's wine (`PROTON_WINE` or a Steam/GE installation),
@@ -229,6 +232,9 @@ def main():
     parser.add_argument("--min-spread", type=int, default=24)
     parser.add_argument("--min-lit", type=float, default=0.02,
                         help="share of pixels above a quarter of full scale")
+    parser.add_argument("--online", action="store_true",
+                        help="allow the image's network access (its crash reporter posts "
+                             "minidumps to submit.backtrace.io); off by default")
     parser.add_argument("--settle", type=int, default=3,
                         help="consecutive content frames with motion below --max-motion")
     parser.add_argument("--max-motion", type=float, default=1.0,
@@ -286,7 +292,16 @@ def main():
     env = dict(os.environ, WINEPREFIX=os.environ.get(
         "PROTON_PREFIX", str(Path.home() / ".proton-vi/pfx")), STUB_TRACE="1")
 
-    print(f"  capture {method} on {display}, screen {screen[0]}x{screen[1]}")
+    launch = [str(wine)]
+    if not args.online:
+        if not shutil.which("unshare"):
+            print("  skipped (unshare missing; pass --online to run with the network up)")
+            return 0
+        # The image's Breakpad reporter posts a minidump to the publisher's Backtrace
+        # project for every fault it catches; a test run has no business doing that.
+        launch = ["unshare", "-rn"] + launch
+    print(f"  capture {method} on {display}, screen {screen[0]}x{screen[1]}, "
+          f"network {'up' if args.online else 'off'}")
     before = windows()
     process = None
     window = None
@@ -304,7 +319,7 @@ def main():
     timeline = []
     try:
         with open(log_path, "w") as sink:
-            process = subprocess.Popen([str(wine), str(exe)], cwd=str(game),
+            process = subprocess.Popen(launch + [str(exe)], cwd=str(game),
                                        env=env, stdout=sink, stderr=subprocess.STDOUT)
         deadline = time.time() + args.seconds
         while time.time() < deadline:
