@@ -236,9 +236,27 @@ void XMemFreeDefault(void *p) { (void)XMemFree(p, 0, 0); }
  * development console reports; the image asking for it suggests a capability check. */
 unsigned long long XMemIsToolsMemAvailable(void) { return 1; }
 
+/* A Series X reports 16 GiB of GDDR6 with about 13.5 GiB usable by a title. The layout of this
+ * structure is not public, so every 64-bit word is filled with a plausible figure and the call is
+ * logged: if the title sizes a heap from it, zeros are worse than a real console's numbers. */
 unsigned long long XMemGetWorkingSetStatistics(void *out, unsigned long long size)
 {
-    if (out && size) memset(out, 0, (size_t)size);
+    if (getenv("STUB_TRACE"))
+        fprintf(stderr, "[%lx] xmem!XMemGetWorkingSetStatistics(%p, %llx)\n",
+                GetCurrentThreadId(), out, size);
+    if (out && size)
+    {
+        unsigned long long *words = (unsigned long long *)out;
+        unsigned long long index;
+        static const unsigned long long values[] = {
+            16ull * 1024 * 1024 * 1024,   /* total */
+            13ull * 1024 * 1024 * 1024,   /* free */
+            3ull * 1024 * 1024 * 1024,    /* reserved */
+            0, 0, 0, 0, 0
+        };
+        for (index = 0; index < size / sizeof(unsigned long long); index++)
+            words[index] = index < sizeof(values) / sizeof(values[0]) ? values[index] : 0;
+    }
     return 0;
 }
 
@@ -257,6 +275,17 @@ unsigned long long XMemAllocatePhysicalPages(unsigned long long count)
     return 1;
 }
 unsigned long long XMemFreePhysicalPages(void) { return 0; }
-unsigned long long XMemMapPhysicalPages(void) { return 0; }
+/* One argument, from the call site at image+0x2216a1d: the code passes a single value in rcx
+ * and stores the result into a pointer slot. On a console this maps granted physical pages into
+ * the caller's address space; here it hands back a fresh mapping of the same kind the allocator
+ * uses, so the caller has something real to write through. */
+unsigned long long XMemMapPhysicalPages(unsigned long long descriptor)
+{
+    void *p = reserve(NULL, 0x10000);
+    if (getenv("STUB_TRACE"))
+        fprintf(stderr, "[%lx] xmem!XMemMapPhysicalPages(%llx) -> %p\n", GetCurrentThreadId(),
+                descriptor, p);
+    return (unsigned long long)(uintptr_t)p;
+}
 unsigned long long XMemMapPhysicalPagesScatter(void) { return 0; }
 unsigned long long XMemTransferMemory(void) { return 0; }

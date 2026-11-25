@@ -10703,3 +10703,17 @@ crash reporter, so there is no engine message to read — the decision is intern
 The most plausible reason an allocator aborts on a console title this early is that the memory it
 was given is not the memory it asked for (GPU-visible, page-granular, at a usable address) — which
 is exactly what the public harness's pagefile-section pool provides and this stub does not.
+
+### The title only ever calls alloc, free and the touch range (2026-11-25)
+
+Instrumented every xmem entry the stub implements and logged which ones run. Across a full run
+the image calls **only** `XMemVirtualAlloc` (seven reservations), `XMemAlloc`/`XMemAllocDefault`,
+`XMemAllocatePhysicalPages` (once, `0x280`) and the free wrappers. It never calls
+`XMemMapPhysicalPages`, `XMemMapPhysicalPagesScatter`, `XMemTransferMemory`,
+`XMemGetWorkingSetStatistics` or `XMemIsToolsMemAvailable` — so the abort is not a refusal of a
+memory query, and filling the statistics with Series X figures (16 GiB total, 13.5 GiB usable)
+changes nothing because the call never happens.
+
+One detail worth carrying forward: `XMemVirtualAlloc` is called with `0x20402000`, which is a
+console flag word (large-page style attributes), and the stub ignores it and returns ordinary
+4 KiB pages. A title that checks its pages for a console granularity would find 4 KiB.
