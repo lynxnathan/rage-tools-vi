@@ -296,6 +296,24 @@ static appstate_routine g_constrained_routine;
 static PVOID g_constrained_context;
 static HANDLE g_semaphores[8];
 static int g_semaphore_count;
+static LPVOID (WINAPI *real_VirtualAlloc)(LPVOID, SIZE_T, DWORD, DWORD);
+static int g_alloc_logged;
+static int g_alloc_failed;
+
+static LPVOID WINAPI hook_VirtualAlloc(LPVOID address, SIZE_T size, DWORD type, DWORD protect)
+{
+    LPVOID result = real_VirtualAlloc(address, size, type, protect);
+    if (result == NULL)
+        g_alloc_failed++;
+    if (g_alloc_logged < 24)
+    {
+        g_alloc_logged++;
+        note("alloc: VirtualAlloc(%p, %llx, %lx, %lx) -> %p", address,
+             (unsigned long long)size, (unsigned long)type, (unsigned long)protect, result);
+    }
+    return result;
+}
+
 static HANDLE g_events[16];
 static int g_event_count;
 
@@ -598,6 +616,7 @@ static void install_wait_hooks(HMODULE image)
     real_WaitForSingleObject = (void *)GetProcAddress(kernel, "WaitForSingleObject");
     real_CreateSemaphoreW = (void *)GetProcAddress(kernel, "CreateSemaphoreW");
     real_CreateThread = (void *)GetProcAddress(kernel, "CreateThread");
+    real_VirtualAlloc = (void *)GetProcAddress(kernel, "VirtualAlloc");
     real_CreateEventW = (void *)GetProcAddress(kernel, "CreateEventW");
     real_CreateEventA = (void *)GetProcAddress(kernel, "CreateEventA");
     real_PeekMessageA = (void *)GetProcAddress(user, "PeekMessageA");
@@ -610,6 +629,8 @@ static void install_wait_hooks(HMODULE image)
         patch_import(image, "CreateSemaphoreW", (void *)hook_CreateSemaphoreW);
     if (real_CreateThread)
         patch_import(image, "CreateThread", (void *)hook_CreateThread);
+    if (real_VirtualAlloc)
+        patch_import(image, "VirtualAlloc", (void *)hook_VirtualAlloc);
     if (real_CreateEventW)
         patch_import(image, "CreateEventW", (void *)hook_CreateEventW);
     if (real_CreateEventA)

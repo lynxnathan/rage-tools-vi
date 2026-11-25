@@ -13,6 +13,26 @@
  * the reservation keeps the address the title asked for and stays sparse like the console's. */
 #define COMMIT_ON_TOUCH_LIMIT (1024ull * 1024 * 1024)
 
+/* Ranges we reserved but did not commit. The touch handler must only commit inside them:
+ * intercepting every access violation (including the CRT heap's guard-page probes) breaks the
+ * heap's own growth and turns every later allocation into NULL. */
+#define TRACKED_RANGES 32
+static struct { uintptr_t begin, end; } g_ranges[TRACKED_RANGES];
+static volatile LONG g_range_count;
+
+static void track(void *base, size_t size, int reserved_only)
+{
+    LONG index;
+    if (!reserved_only || base == NULL || size == 0)
+        return;
+    index = InterlockedIncrement(&g_range_count) - 1;
+    if (index < TRACKED_RANGES)
+    {
+        g_ranges[index].begin = (uintptr_t)base;
+        g_ranges[index].end = (uintptr_t)base + size;
+    }
+}
+
 static void *reserve(void *address, size_t size)
 {
     DWORD flags = MEM_RESERVE | MEM_COMMIT;
@@ -22,6 +42,7 @@ static void *reserve(void *address, size_t size)
     p = VirtualAlloc(address, size, flags, PAGE_READWRITE);
     if (!p && address)
         p = VirtualAlloc(NULL, size, flags, PAGE_READWRITE);
+    track(p, size, flags == MEM_RESERVE);
     if (getenv("STUB_TRACE"))
         fprintf(stderr, "[%lx] xmem!alloc(%p, %llx, %s) -> %p\n", GetCurrentThreadId(), address,
                 (unsigned long long)size, flags == MEM_RESERVE ? "reserve" : "commit", p);
@@ -35,6 +56,16 @@ static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
     void *page = (void *)((uintptr_t)fault & ~(uintptr_t)0xfff);
     if (info->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION || fault == NULL)
         return EXCEPTION_CONTINUE_SEARCH;
+    {
+        LONG index;
+        int inside = 0;
+        for (index = 0; index < g_range_count && index < TRACKED_RANGES; index++)
+            if ((uintptr_t)fault >= g_ranges[index].begin &&
+                (uintptr_t)fault < g_ranges[index].end)
+                inside = 1;
+        if (!inside)
+            return EXCEPTION_CONTINUE_SEARCH;
+    }
     if (VirtualAlloc(page, 0x1000, MEM_COMMIT, PAGE_READWRITE) == NULL)
         return EXCEPTION_CONTINUE_SEARCH;
     return EXCEPTION_CONTINUE_EXECUTION;

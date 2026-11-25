@@ -10433,3 +10433,22 @@ The next questions, in order: who is supposed to signal that manual-reset event 
 barrier the whole session has been sitting behind), and then the faults that appear once the
 engine runs — 8,101 of them, spread across image addresses, with the crash context still at
 `System Init`, frame 0.
+
+### Past the barrier, the engine's allocator starts returning NULL (2026-11-25)
+
+With the manual-reset event signalled, 16 threads run and the image faults ~8,100 times. The most
+frequent fault is the same one, 543 times:
+
+```
+image+0x554bdcb   vmovdqu %xmm0,(%rax,%rcx,1)
+```
+
+i.e. `*(allocator_result + offset) = xmm0` with `rax == NULL`: the engine's own allocator
+(`image+0x4d9c140`, a thunk chain into the CRT heap) is returning NULL, and every caller then
+writes through it. So the fault storm is not 8,000 bugs, it is one allocation failure repeated.
+
+Two candidate causes were tested and are not it: the touch handler committing outside the ranges
+this stub reserved (now tracked, and the count is unchanged), and `VirtualAlloc` through the
+image's IAT (hooked; the image never calls it — its heap grows by another path).
+
+The crash context after all this is still `System Init`, frame 0.
