@@ -9863,3 +9863,26 @@ VirtualMachine  XboxAnacondaTitleMemory Advanced   (SMTEnabled true)
 
 `TitleID: unknown` and `Sandbox: unknown` in the crash context are therefore not a limitation
 of the package: the values are on disk and the stub answers the query with zeros.
+
+### Probes that came back negative, and one that narrows the abort (2026-11-25)
+
+Three cheap experiments, all negative, each of which removes a guess:
+
+**The slots do not carry the title id.** `STUB_SLOT_VALUE=<hex>` makes every `xgameruntime`
+slot return that value instead of the arena. With `0x7952987A` (the package's `TitleId`)
+the crash context still reads `TitleID: unknown`, on the unpatched image (which stops at the
+guard) and on the patched one (which reaches System Init and aborts). So the configuration is
+not a scalar return value of the slots the image touches.
+
+**The crash-context labels are not plain text in the image.** `"TitleID: "` appears neither as
+ASCII nor as UTF-16, and `"Sandbox"` appears only in unrelated ASCII. The block around
+`image+0x6194ecb` holds a run of bytes that is not text (`16 08 0b 14 0d 0c 0f 15 13 e9 df
+14 21 21 1a 1e 1d b7`), so the reporter's own labels are stored obfuscated and cannot be
+reached by a string search — which is why `xref` on the printed text finds nothing.
+
+**The abort is a CRT parameter failure, not an uncaught C++ exception.** Across a full
+patched run the only exception codes are `40010006` (the image's debug print, 62) and
+`c0000005` (15). There is no `e06d7363`, so nothing reached `std::terminate`: the image calls
+VCRUNTIME140's raise/abort path because a CRT routine rejected an argument (frames
+`0x5B29847 <- 0x2240EFC <- ... <- 0x661F0`). That is consistent with a stub handing back a
+shape the image then passes to `memmove`-style code with a wrong size.
