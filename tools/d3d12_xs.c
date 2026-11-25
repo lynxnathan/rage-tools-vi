@@ -440,6 +440,16 @@ static DWORD WINAPI hook_WaitForSingleObject(HANDLE handle, DWORD milliseconds)
         note("wait: WaitForSingleObject(handle %p, ms %lu) caller %p", handle,
              (unsigned long)milliseconds, __builtin_return_address(0));
         describe_handle(handle);
+        if (milliseconds == INFINITE)
+        {
+            /* Windows-level backtrace: gdb only unwinds the unix side, so the engine's own
+             * frames have to come from the API that knows them. */
+            void *frames[24];
+            USHORT captured = RtlCaptureStackBackTrace(0, 24, frames, NULL);
+            USHORT index;
+            for (index = 0; index < captured; index++)
+                note("wait:   frame %u %p", index, frames[index]);
+        }
     }
     result = real_WaitForSingleObject(handle, milliseconds);
     return result;

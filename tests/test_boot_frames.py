@@ -246,6 +246,7 @@ def selftest(args, method, display, screen):
     window = None
     frames = 0
     best = (0, 0.0, 0.0)
+    best_splash = (0.0, None)
     try:
         deadline = time.time() + args.seconds
         while time.time() < deadline:
@@ -326,6 +327,10 @@ def main():
     parser.add_argument("--min-spread", type=int, default=24)
     parser.add_argument("--min-lit", type=float, default=0.02,
                         help="share of pixels above a quarter of full scale")
+    parser.add_argument("--splash", type=Path,
+                        help="reference artwork the frame is compared against (default: the "
+                             "package's xbs_splash.png); SSIM per kept frame, best kept")
+    parser.add_argument("--min-splash-ssim", type=float, default=0.80)
     parser.add_argument("--compare-frame", metavar="FILE:REFERENCE",
                         help="visual-regression comparison of a kept frame against a "
                              "reference image, by SSIM and PSNR (ffmpeg's filters)")
@@ -442,7 +447,7 @@ def main():
     frames_dir = ROOT / "cache/frames" / time.strftime("%Y%m%dT%H%M%S")
     frames_dir.mkdir(parents=True, exist_ok=True)
     index = (frames_dir / "index.tsv").open("w")
-    index.write("t\tframe\tcontrast\tlit\tmotion\n")
+    index.write("t\tframe\tcontrast\tlit\tmotion\tsplash_ssim\n")
     log_path = work / "run.log"
     exe = game / "bootframe.exe"
     exe.write_bytes(args.exe.read_bytes())
@@ -460,6 +465,12 @@ def main():
     print("  ACCEPTANCE: the console image (this is the one that must pass)")
     print(f"  capture {method} on {display}, screen {screen[0]}x{screen[1]}, "
           f"network {'up' if args.online else 'off'}")
+    splash = args.splash
+    if splash is None:
+        splash = args.game_dir / "xbs_splash.png"
+    splash = splash if splash.is_file() else None
+    if splash is not None:
+        print(f"  artwork reference {splash.name}")
     before = windows()
     process = None
     window = None
@@ -469,6 +480,7 @@ def main():
     failures = 0
     first_failure = ""
     best = (0, 0.0, 0.0)
+    best_splash = (0.0, None)
     still = 0
     settled_at = None
     clicked = False
@@ -533,7 +545,13 @@ def main():
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo",
                             "-pix_fmt", "gray", "-s", f"{WIDTH}x{HEIGHT}", "-i", "pipe:0",
                             "-frames:v", "1", str(png)], input=frame, capture_output=True)
-            index.write(f"{number}\t{png.name}\t{contrast}\t{lit:.4f}\t{delta:.2f}\n")
+            splash_ssim = None
+            if splash is not None:
+                splash_ssim, _ = similarity(str(png), str(splash))
+                if splash_ssim is not None and splash_ssim > best_splash[0]:
+                    best_splash = (splash_ssim, png.name)
+            index.write(f"{number}\t{png.name}\t{contrast}\t{lit:.4f}\t{delta:.2f}"
+                        f"\t{'' if splash_ssim is None else f'{splash_ssim:.4f}'}\n")
             index.flush()
             timeline.append(f"    {len(timeline):3d}  contrast {contrast:3d}  lit {lit:5.1%}  "
                             f"motion {delta:6.2f}{'  still' if still else ''}"
@@ -569,6 +587,12 @@ def main():
           f"({best[2]:.1%} lit)")
     check(f"the content settles for {args.settle} s after the videos",
           settled_at is not None, "(the menu)")
+    if splash is not None:
+        check(f"a frame matches the package's artwork ({splash.name}) beyond "
+              f"SSIM {args.min_splash_ssim}",
+              best_splash[0] >= args.min_splash_ssim,
+              f"(best {best_splash[0]:.4f}"
+              + (f" at {best_splash[1]}" if best_splash[1] else "") + ")")
     check("the menu answers a click", answered,
           "(the picture changed after the click)" if clicked else "(never clicked)")
     if minimized:
