@@ -370,6 +370,10 @@ def main():
                         help="reference artwork the frame is compared against (default: the "
                              "package's xbs_splash.png); SSIM per kept frame, best kept")
     parser.add_argument("--min-splash-ssim", type=float, default=0.80)
+    parser.add_argument("--menu", type=Path,
+                        help="reference screenshot of the menu (default: the first of "
+                             "cache/reference/gta-6-*.webp that exists); a splash is not the goal")
+    parser.add_argument("--min-menu-ssim", type=float, default=0.50)
     parser.add_argument("--diff-frame", metavar="FILE:REFERENCE",
                         help="cv2.absdiff-style comparison: ratio of differing pixels, their "
                              "bounding box, and the mean level (PIL, no extra dependency)")
@@ -514,7 +518,7 @@ def main():
     frames_dir = ROOT / "cache/frames" / time.strftime("%Y%m%dT%H%M%S")
     frames_dir.mkdir(parents=True, exist_ok=True)
     index = (frames_dir / "index.tsv").open("w")
-    index.write("t\tframe\tcontrast\tlit\tmotion\tsplash_ssim\n")
+    index.write("t\tframe\tcontrast\tlit\tmotion\tsplash_ssim\tmenu_ssim\n")
     log_path = work / "run.log"
     exe = game / "bootframe.exe"
     exe.write_bytes(args.exe.read_bytes())
@@ -544,6 +548,16 @@ def main():
     splash = splash if splash.is_file() else None
     if splash is not None:
         print(f"  artwork reference {splash.name}")
+    menu = args.menu
+    if menu is None:
+        candidates = sorted((ROOT / "cache/reference").glob("*.webp"))
+        menu = next((path for path in candidates if "pause-menu" in path.name), None)
+        if menu is None and candidates:
+            menu = candidates[0]
+    menu = menu if menu is not None and Path(menu).is_file() else None
+    if menu is not None:
+        print(f"  menu reference {Path(menu).name}")
+    best_menu = (0.0, None)
     before = windows()
     process = None
     window = None
@@ -618,13 +632,19 @@ def main():
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo",
                             "-pix_fmt", "gray", "-s", f"{WIDTH}x{HEIGHT}", "-i", "pipe:0",
                             "-frames:v", "1", str(png)], input=frame, capture_output=True)
+            menu_ssim = None
+            if menu is not None:
+                menu_ssim, _ = similarity(str(png), str(menu))
+                if menu_ssim is not None and menu_ssim > best_menu[0]:
+                    best_menu = (menu_ssim, png.name)
             splash_ssim = None
             if splash is not None:
                 splash_ssim, _ = similarity(str(png), str(splash))
                 if splash_ssim is not None and splash_ssim > best_splash[0]:
                     best_splash = (splash_ssim, png.name)
             index.write(f"{number}\t{png.name}\t{contrast}\t{lit:.4f}\t{delta:.2f}"
-                        f"\t{'' if splash_ssim is None else f'{splash_ssim:.4f}'}\n")
+                        f"\t{'' if splash_ssim is None else f'{splash_ssim:.4f}'}"
+                        f"\t{'' if menu_ssim is None else f'{menu_ssim:.4f}'}\n")
             index.flush()
             timeline.append(f"    {len(timeline):3d}  contrast {contrast:3d}  lit {lit:5.1%}  "
                             f"motion {delta:6.2f}{'  still' if still else ''}"
@@ -666,6 +686,12 @@ def main():
               best_splash[0] >= args.min_splash_ssim,
               f"(best {best_splash[0]:.4f}"
               + (f" at {best_splash[1]}" if best_splash[1] else "") + ")")
+    if menu is not None:
+        check(f"a frame matches the menu reference ({Path(menu).name}) beyond "
+              f"SSIM {args.min_menu_ssim}",
+              best_menu[0] >= args.min_menu_ssim,
+              f"(best {best_menu[0]:.4f}"
+              + (f" at {best_menu[1]}" if best_menu[1] else "") + ")")
     check("the menu answers a click", answered,
           "(the picture changed after the click)" if clicked else "(never clicked)")
     if minimized:

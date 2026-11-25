@@ -10543,3 +10543,28 @@ acceptance test sets the overrides itself, since a direct `wine` run has to.
 
 Remaining stop: the engine's own heap arithmetic faults at `image+0x69fe5`
 (`mov %r14d,(%r14)` with an invalid block pointer), still `System Init`, frame 0, exit 5.
+
+### The menu reference is a real screenshot, and the check says how far off we are (2026-11-25)
+
+The acceptance criterion is the menu, not a splash, so the test now carries a menu reference and
+compares every kept frame against it by SSIM, reporting the best match and its file.
+
+Provenance of the references, kept local under `cache/reference/` (untracked, as game imagery
+must be): three PS5 captures published by ViceManual — "GTA 6 launch night screenshots",
+vicemanual.com/gta-6-screenshots, captured on PS5 at the 18 November unlock, build 930.048.020,
+credited there as *Screenshot: ViceManual (vicemanual.com), game imagery © Rockstar Games*.
+`gta-6-pause-menu.webp` (2400x2160) is the pause menu; `gta-6-game-menu-save.webp` and
+`gta-6-map-start.webp` are kept beside it.
+
+Measured now:
+
+```
+artwork reference xbs_splash.png
+menu reference gta-6-pause-menu.webp
+exit 5, window none, grabs 0, content frames 0, lit 0.0%
+FAIL  a frame matches the package's artwork (xbs_splash.png) beyond SSIM 0.8  (best 0.0000)
+FAIL  a frame matches the menu reference (gta-6-pause-menu.webp) beyond SSIM 0.5 (best 0.0000)
+```
+
+Both are zero because no frame exists — the honest reading, and the check will say something
+real the moment one does.
