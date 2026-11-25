@@ -108,6 +108,18 @@ static void report_foreign_fault(EXCEPTION_POINTERS *info)
     if (rip >= base && rip < base + 0x72a0000ull)
         return;
     reported++;
+    {
+        MEMORY_BASIC_INFORMATION page;
+        void *page_address = (void *)(fault & ~(uintptr_t)0xfff);
+        if (VirtualQuery(page_address, &page, sizeof(page)) != 0)
+            fprintf(stderr, "[%lx] xmem! foreign page %p state=%lx protect=%lx region=%p/%llx\n",
+                    GetCurrentThreadId(), page_address, (unsigned long)page.State,
+                    (unsigned long)page.Protect, page.BaseAddress,
+                    (unsigned long long)page.RegionSize);
+        else
+            fprintf(stderr, "[%lx] xmem! foreign page %p could not be queried\n",
+                    GetCurrentThreadId(), page_address);
+    }
     captured = RtlCaptureStackBackTrace(1, 16, frames, NULL);
     fprintf(stderr, "[%lx] xmem! foreign fault: rip=%llx fault=%llx frames:",
             GetCurrentThreadId(), (unsigned long long)rip, (unsigned long long)fault);
@@ -123,7 +135,12 @@ static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
     report_foreign_fault(info);
     void *page = (void *)((uintptr_t)fault & ~(uintptr_t)0xfff);
     if (info->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION || fault == NULL)
+    {
+        if (getenv("STUB_TRACE"))
+            fprintf(stderr, "[%lx] xmem! touch: not an access violation (%lx)\n",
+                    GetCurrentThreadId(), (unsigned long)info->ExceptionRecord->ExceptionCode);
         return EXCEPTION_CONTINUE_SEARCH;
+    }
     {
         LONG index;
         int inside = 0;
@@ -147,6 +164,9 @@ static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
             if (enable == NULL || strcmp(enable, "0") != 0)
                 inside = 1;
         }
+        if (inside && getenv("STUB_TRACE"))
+            fprintf(stderr, "[%lx] xmem! touch: address %llx is inside\n",
+                    GetCurrentThreadId(), (unsigned long long)(uintptr_t)fault);
         if (!inside)
             return EXCEPTION_CONTINUE_SEARCH;
     }

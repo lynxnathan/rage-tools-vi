@@ -10675,3 +10675,31 @@ through `xmem`, and the only `VirtualAlloc` traffic is inside the stubs. So the 
 That leaves the stub's own accounting as the only candidate — a page logged as committed that is
 not, which means the log line and the system state disagree — and it is where the next session
 should start, with `VirtualQuery` printed at the moment of the memset fault rather than after it.
+
+### The abort chain starts in the heap code, not in a system call (2026-11-25)
+
+Instrumented the vectored handler to print its decision, and the picture changed: the `memset`
+fault at `0x2bf7000` is *handled* — the page is committed and the run continues:
+
+```
+xmem! foreign page 0000000002bf7000 state=2000 protect=0      (reserved, not committed)
+xmem! touch: address 2bf7000 is inside
+xmem! commit on touch 0000000002bf7000 -> 0000000002bf7000
+```
+
+so that fault, and the three before it, were never the fatal. The engine's own Windows backtrace
+at the abort is the useful part:
+
+```
+VCRUNTIME140(raise) <- image+0x554f316 <- image+0x21cb440 <- image+0x21cb2e9
+  <- image+0x21cb182 <- image+0x2190f0b <- image+0x81b253 <- image+0x53ec04f
+  <- image+0x53ebf3a <- image+0x661f0 (abort) <- image+0x1d109c9 <- image+0x5a91c0d
+```
+
+`image+0x554f316` is the same heap function that calls `VCRUNTIME140!memset` in the loop above,
+so the title's allocator is what decides to abort. Its process output contains nothing but the
+crash reporter, so there is no engine message to read — the decision is internal.
+
+The most plausible reason an allocator aborts on a console title this early is that the memory it
+was given is not the memory it asked for (GPU-visible, page-granular, at a usable address) — which
+is exactly what the public harness's pagefile-section pool provides and this stub does not.
