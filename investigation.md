@@ -10617,3 +10617,23 @@ and the answer the title wants is simply "granted". The stub now reports the val
 
 The heap fault at `image+0x69fe5` survives it (34 faults, exit 5), so the remaining gap is the
 backing itself — the harness's pagefile-section pool — not the entry point's contract.
+
+### The heap writes are handled now; the abort comes from the CRT after them (2026-11-25)
+
+Committing a faulting page below 4 GiB (the region the title's heap lives in, STUB_TOUCH_LOW=0
+turns it off) makes the heap writes recoverable, and the log shows exactly that: each fault at
+`image+0x69fe5` is followed by a successful commit at the page it touched, and the title moves on
+to the next allocation —
+
+```
+fault at 6ffff2fb9fe5  r14=0x1bf7080   -> commit on touch 0000000001bf7000 -> 0000000001bf7000
+fault at 6ffff2fb9fe5  r14=0x2cdb870   -> commit on touch 0000000002cdb000 -> 0000000002cdb000
+fault at 6ffff2fb9fe5  r14=0x3d06ea0   -> commit on touch 0000000003d06000 -> 0000000003d06000
+```
+
+so those four writes were never the fatal. The fatal is the CRT abort that follows: an access
+violation reported *inside* VCRUNTIME140 (`0x6FFFFFFD1989`) whose `info[1]` is `0x2BF7000` — an
+address this stub had just committed — and its frames are the abort path, not the heap.
+
+Stage 3 of `tests/test_boot_stages.py` therefore stays red for a different reason than it was
+red yesterday: the heap no longer kills the run, the CRT does.

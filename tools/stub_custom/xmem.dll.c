@@ -112,6 +112,15 @@ static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
         if (!inside && VirtualQuery(page, &info, sizeof(info)) != 0 &&
             info.State == MEM_RESERVE)
             inside = 1;
+        /* The title's heap lives below 4 GiB and writes into space it reserved through a route
+         * this stub does not see; committing a low faulting page is the console's behaviour
+         * (virtual space there is always backed). STUB_TOUCH_LOW=0 turns it off. */
+        if (!inside && (uintptr_t)fault < 0x100000000ull)
+        {
+            const char *enable = getenv("STUB_TOUCH_LOW");
+            if (enable == NULL || strcmp(enable, "0") != 0)
+                inside = 1;
+        }
         if (!inside)
             return EXCEPTION_CONTINUE_SEARCH;
     }
