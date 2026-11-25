@@ -238,6 +238,7 @@ def selftest(args, method, display, screen):
                                                      str(Path.home() / ".proton-vi/pfx")))
     launch = ["unshare", "-rn", str(wine), "notepad"] if not args.online else \
         [str(wine), "notepad"]
+    print("  CONTROL: wine notepad, not the game (this only proves the harness works)")
     process = subprocess.Popen(launch, env=env, stdout=subprocess.DEVNULL,
                                stderr=subprocess.DEVNULL)
     window = None
@@ -386,6 +387,7 @@ def main():
         # The image's Breakpad reporter posts a minidump to the publisher's Backtrace
         # project for every fault it catches; a test run has no business doing that.
         launch = ["unshare", "-rn"] + launch
+    print("  ACCEPTANCE: the console image (this is the one that must pass)")
     print(f"  capture {method} on {display}, screen {screen[0]}x{screen[1]}, "
           f"network {'up' if args.online else 'off'}")
     before = windows()

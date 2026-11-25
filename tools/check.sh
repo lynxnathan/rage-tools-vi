@@ -38,12 +38,12 @@ fi
 # image: a harness that has never seen a window cannot report on one.
 if [ -n "${DISPLAY:-}" ]; then
     if $PY tests/test_boot_frames.py --selftest --seconds 8 >/tmp/check-harness.log 2>&1; then
-        note "boot harness" "PASS ($(grep -c '^  ok' /tmp/check-harness.log) checks)"
+        note "frame harness (notepad)" "PASS ($(grep -c '^  ok' /tmp/check-harness.log) checks)"
     else
-        note "boot harness" "FAIL"; tail -4 /tmp/check-harness.log | sed 's/^/    /'; fail=1
+        note "frame harness (notepad)" "FAIL"; tail -4 /tmp/check-harness.log | sed 's/^/    /'; fail=1
     fi
 else
-    note "boot harness" "skipped (no DISPLAY)"
+    note "frame harness (notepad)" "skipped (no DISPLAY)"
 fi
 
 if [ -n "${RAGE_GAME_DIR:-}" ]; then
