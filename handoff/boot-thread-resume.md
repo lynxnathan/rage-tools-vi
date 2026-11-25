@@ -12,7 +12,7 @@ produced it. Long form: `investigation.md` (append-only) and `plan.md` (open che
 | D3D12 device created | **yes**, `0x706b0080` via vkd3d-proton | log line `D3D12XboxCreateDevice -> 0x0 (device …)` |
 | worker threads | **yes**, 16 | `thread: created …` after the hint is delivered |
 | survives its own heap faults | yes (committed on touch) | `xmem! commit on touch …` |
-| stays alive | **no**, exit 5 | stage 3 fails |
+| stays alive | **no**, exit 3 | title's own `int3` at `image+0x2478b7b`, after console slot `0x248` fails |
 | window / frames / menu | **no** | `tests/test_boot_frames.py`: `window none`, menu SSIM 0.0000 |
 
 The abort is the title's own allocator (`image+0x554f316` → `image+0x661f0` abort), and it prints
@@ -50,23 +50,32 @@ python3 tests/test_boot_frames.py --game-dir "$RAGE_GAME_DIR"     # the acceptan
 | d3d12_xs: config contract, device levels, DXGI adapter, `D3D12GetInterface` = E_NOTIMPL, probes | `tools/d3d12_xs.c` (+ `tools/d3d12_shim.py`) |
 | Xodus runtime: XSystem/XGame/XNetworking/XUser/XPersistentLocalStorage, connectivity-hint delivery, exports | `tools/patches/xodus-platform.patch` (+ `tools/xgameruntime.py`) |
 | xmem: reserve vs commit, commit-on-touch, free kept mapped, physical pages | `tools/stub_custom/xmem.dll.c` |
+| d3d12_xs: aggregate-return ABI adaptor (`0xc8`, `0xd0`), console slot `0x180` queue creator forwarded | `tools/d3d12_xs.c` |
 | xcrdapi: factory object with a real vtable, staging buffer | `tools/stub_custom/xcrdapi.dll.c` |
 | debugger that works on this image | `tools/wine_gdb.py` |
 | screen audit and pixel checks | `tools/screen_audit.py`, `tests/test_boot_pixels.py` |
 
 ## The next piece, concretely
 
-The title's allocator aborts although every fault of its own is tolerated. The public harness
-(`OnlyMoisties/GTA6-BootTest`) crosses this with a **pagefile-section pool**: `XMemVirtualAlloc`
-placeholders laid over mapped sections so the title's heap and the GPU see the same pages, plus
-`XMemAllocatePhysicalPages` handing out real backing.
+The fatal jump to 0 was an ABI mismatch, not memory. vkd3d implements aggregate-returning
+`ID3D12Device` methods with the explicit return pointer after `this`; the title uses the MSVC
+convention (return pointer first, `this` second). `tools/d3d12_xs.c` now patches slots `0xc8` and
+`0xd0` with an `xchg rcx, rdx; jmp <original>` thunk, and the heap-property calls no longer
+overwrite the device. See the `2026-11-25` journal entry for the store that proved it.
 
-Order of work: sections → map placeholders over them → verify with
-`python3 tests/test_boot_stages.py` (stage 3 must go green) → then the acceptance run's frames.
+The new stop is the **console device table**. The title creates a `DIRECT` queue through PC slot
+`0x40`, a `COPY` queue through slot `0x180` (forwarded to `0x40` for now), an allocator through
+`0x48`, then calls slot `0x248` with `(desc, allocator, 0, IID c3827890-4024-474c-98cf-645b51dc4874, out)`.
+That slot has no PC equivalent and returns failure, and the title asserts. The console device IID
+(`5405c344-d457-444e-b4dd-2366e45aee39`) is also absent from the PC headers.
 
-Open question worth answering before any of that: **why does the allocator abort** — its frames
-are known (`0x554f316` upward) and the abort is deliberate, so a breakpoint there with
-`tools/wine_gdb.py` should name the condition in one session.
+Order of work: name the extended device slots (start with `0x180` and `0x248`, then the returned
+object's `0x420`), or take the interface descriptors from a public source. `tests/test_boot_stages.py`
+is the scoreboard: stage 3 turns green when the title stops asserting, then the frames test decides
+the rest.
+
+The pagefile-section pool from `OnlyMoisties/GTA6-BootTest` is still the candidate for the
+GPU-visible heap, but the heap faults are recoverable and are not the current stop.
 
 ## Test hygiene, so the scoreboard stays trustworthy
 

@@ -283,6 +283,41 @@ static IUnknown *first_dxgi_adapter(void)
     return (IUnknown *)adapter;
 }
 
+/* vkd3d-proton implements the two aggregate-returning ID3D12Device methods with an explicit
+ * return pointer after `this` (WIDL_EXPLICIT_AGGREGATE_RETURNS), while the title uses the MSVC
+ * convention (hidden return pointer first, `this` second). A call therefore lands with the two
+ * arguments swapped and the callee writes its result over the object. A thunk that swaps RCX
+ * and RDX and jumps to the original slot converts one convention to the other. */
+static void patch_entry(void **vtable, int slot, void *target)
+{
+    DWORD old;
+    if (vtable[slot] == target)
+        return;
+    if (!VirtualProtect(&vtable[slot], sizeof(void *), PAGE_READWRITE, &old))
+        return;
+    note("d3d12_xs!  slot %x %p -> %p", slot * 8, vtable[slot], target);
+    vtable[slot] = target;
+    VirtualProtect(&vtable[slot], sizeof(void *), old, &old);
+}
+
+static void patch_slot(void **vtable, int slot)
+{
+    unsigned char *thunk = VirtualAlloc(NULL, 16, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    void *original = vtable[slot];
+    DWORD old;
+    if (thunk == NULL)
+        return;
+    thunk[0] = 0x48; thunk[1] = 0x87; thunk[2] = 0xca;   /* xchg rcx, rdx */
+    thunk[3] = 0x48; thunk[4] = 0xb8;                     /* movabs rax, imm64 */
+    memcpy(thunk + 5, &original, 8);
+    thunk[13] = 0xff; thunk[14] = 0xe0;                   /* jmp rax */
+    if (!VirtualProtect(&vtable[slot], sizeof(void *), PAGE_READWRITE, &old))
+        return;
+    vtable[slot] = thunk;
+    VirtualProtect(&vtable[slot], sizeof(void *), old, &old);
+    note("d3d12_xs!  slot %x %p -> aggregate-return thunk", slot * 8, original);
+}
+
 __declspec(dllexport) HRESULT WINAPI D3D12XboxCreateDevice(IUnknown *adapter, const void *params,
                                                            const GUID *iid, void **device)
 {
@@ -352,6 +387,17 @@ __declspec(dllexport) HRESULT WINAPI D3D12XboxCreateDevice(IUnknown *adapter, co
              (unsigned long)retry, device ? *device : NULL);
         if (retry == 0)
             result = retry;
+    }
+    if (result == 0 && device != NULL && *device != NULL)
+    {
+        void **device_vtable = *(void ***)*device;
+        note("d3d12_xs!  device %p vtable %p", *device, (void *)device_vtable);
+        patch_slot(device_vtable, 0xc8 / 8);   /* GetResourceAllocationInfo */
+        patch_slot(device_vtable, 0xd0 / 8);   /* GetCustomHeapProperties */
+        /* The title creates its copy queue through slot 0x180 with the same
+         * (desc, IID, out) shape as CreateCommandQueue; the PC table has no such entry.
+         * Forward it to the PC method while the console table is unidentified. */
+        patch_entry(device_vtable, 0x180 / 8, device_vtable[0x40 / 8]);
     }
     return result;
 }

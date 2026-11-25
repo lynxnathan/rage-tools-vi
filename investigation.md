@@ -10717,3 +10717,67 @@ changes nothing because the call never happens.
 One detail worth carrying forward: `XMemVirtualAlloc` is called with `0x20402000`, which is a
 console flag word (large-page style attributes), and the stub ignores it and returns ordinary
 4 KiB pages. A title that checks its pages for a console granularity would find 4 KiB.
+
+### The device ABI was the fatal: vkd3d returns aggregates after `this`, the title returns them in front (2026-11-25)
+
+Stage 3's fatal was thread `0x154` executing at address 0. Wine's early log line was
+misleading: the first-hit backtrace made `image+0x2478737` look like the call site, but the
+instruction at `image+0x2478731` is `callq *0xd0(%rax)` and the register state at the fault was
+`rdx = 0x706e0080` (the device this shim just returned), `rax = 0x100000004`, `rcx` = a stack
+buffer, `r8d = 1`, `r9d = 1` — a `D3D12_HEAP_PROPERTIES` return by value with node mask 1 and
+heap type `D3D12_HEAP_TYPE_DEFAULT`.
+
+Disassembling the slot (`vtable[0xd0]`, `d3d12core.dll`) showed the convention mismatch. The
+callee reads `rcx` as `this` and `rdx` as the output pointer, and its first stores are
+`movl $4,(%rsi)` followed by `movl $1,4(%rsi)` — that is, it wrote `0x0000000100000004` over the
+device object's first qword, i.e. over its own vtable. vkd3d-proton is built with
+`WIDL_EXPLICIT_AGGREGATE_RETURNS` (explicit return pointer after `this`), while the title is an
+MSVC build (hidden return pointer first, `this` second). The two conventions are swapped for
+every aggregate-returning COM method.
+
+The write was proven rather than inferred: protecting the device page read-only and logging the
+first write from a vectored handler caught
+
+```
+d3d12_xs! write 0x00000000706e0080 from rip 0x00006ffff23bcd5b
+```
+
+which is the slot function + `0x3b`, exactly the `movl $4,(%rsi)` above. After that store, the
+second call loaded `rax = 0x100000004` as the vtable, read slot `0xd0` from it (which happened to
+be mapped and zero) and called address 0. The allocator work of the previous entries was not the
+fatal; this was.
+
+**Fix.** `tools/d3d12_xs.c` now installs a 15-byte thunk at the two aggregate-returning
+`ID3D12Device` slots (`0xc8` `GetResourceAllocationInfo`, `0xd0` `GetCustomHeapProperties`):
+
+```
+xchg rcx, rdx ; movabs rax, <original> ; jmp rax
+```
+
+The slot keeps its original target, so the title's MSVC call is converted to vkd3d's convention
+before entry. The vtable is in `.rdata`, so the shim makes the two entries writable for the store
+and restores the old protection. This is an ABI adaptor, not a behavioural stub: vkd3d still
+computes the heap properties.
+
+**The next stop is the console table.** With the adaptor in place the title creates a `DIRECT`
+queue through the PC slot `0x40` (`CreateCommandQueue`, desc
+`{Type=0, Priority=0, Flags=0, NodeMask=1}`, `IID_ID3D12CommandQueue`, out in `.data`), then
+creates a second queue with `{Type=2 (COPY), Priority=0, Flags=1, NodeMask=0}` through slot
+`0x180` — an entry that plain `ID3D12Device` does not have (44 slots, last at `0x158`). Its
+argument shape is identical to `CreateCommandQueue` (`desc`, IID, out), so the shim temporarily
+forwards `0x180` to the PC slot `0x40`; the copy queue is created and the title moves on.
+
+Immediately after, it creates a command allocator through the PC slot `0x48`
+(`CreateCommandAllocator`, IID `6102dee4-af59-4b09-b999-b44d73f09b24`) and then calls slot
+`0x248` with `(desc {0,2,1,0}, allocator, 0, IID c3827890-4024-474c-98cf-645b51dc4874, out)`.
+That slot returns a failure and the title raises its own `int3` at `image+0x2478b7b`; the
+returned object's vtable is then used at slot `0x420`, so this is a console-specific
+command-list/resource creator, not a PC method. The console device IID the title asks for
+(`5405c344-d457-444e-b4dd-2366e45aee39`) and this IID are both absent from the PC headers, which
+is the concrete evidence that the console device interface is an extended table rather than
+`ID3D12Device`.
+
+The current stop is therefore *layout*, not memory: the extended device table has to be named
+(slot `0x180` forwards cleanly, slot `0x248` is the next unknown), or the title's interface
+descriptors have to come from a public source. Stage 3 remains red, now at exit 3 with the
+title's own assert instead of a jump to 0.

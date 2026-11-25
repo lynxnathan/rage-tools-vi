@@ -40,9 +40,10 @@ Last updated: 2026-11-25.
 
 ## Boot thread
 
-- [ ] Turn stage 3 of `tests/test_boot_stages.py` green: the title's allocator aborts at
-  `image+0x554f316` → `image+0x661f0`. Break there with `tools/wine_gdb.py` to name the
-  condition; the public harness's pagefile-section pool is the candidate input.
+- [ ] Turn stage 3 of `tests/test_boot_stages.py` green: the aggregate-return ABI is adapted
+  and the title now stops at its own assert (`image+0x2478b7b`) after console device slot
+  `0x248` fails. Name the extended device table (slots `0x180`, `0x248`, then the returned
+  object's `0x420`), or take its descriptors from a public source.
 - [ ] Pass `tests/test_boot_frames.py` (a real window, content frames, then a static screen
   after the videos): land the four port pieces in order — `xmem` GPU-visible pool plus the
   `G:` redirect; `d3d12_xs` COM device/queue/command-list objects with `PresentX`;
