@@ -10184,3 +10184,28 @@ So the guard's cause is not the file system, the registry, the drive letter or t
 directory: a platform-provided base path is missing from a `.bss` buffer. The earlier entries
 that read `D:\LocalDumps` at this call site were reading the neighbouring table; the debugger
 values above supersede them.
+
+### With XNetworking answered the image stops dying and sits idle (2026-11-25)
+
+Implementing `XNetworkingImpl2` (`xnetworking.idl`, 16 methods) changed the run's shape: the
+process no longer exits. A 90-second traced run ended only because `timeout` killed it (exit
+124), with no breakpoint and no unhandled exception, and the acceptance test had to terminate it
+after its 60 seconds (`exit -15`). Fifty-two debug prints, fourteen handled probes, no crash.
+
+It is idle, not working. `thread apply all bt` on the live process:
+
+```
+Thread 1 (game.exe):  read() -> wait_select_reply() -> server_select()
+Thread 2, 3 (wine_threadpool): NtWaitForAlertByThreadId
+```
+
+The main thread is in a Wine server select with no timeout, and its last platform calls are
+`RegisterAppStateChangeNotification` / `RegisterAppConstrainedChangeNotification`, which Wine
+answers with stubs (fixme). No window is created — `xwininfo -root -children` gains nothing
+while it runs — so the engine is waiting for something before it ever asks for a surface.
+
+Candidates, in the order they can be tested:
+1. the app-state notification: Wine's stub never invokes the callback the image registered
+   (`routine 0x6FFFF5167C70`, context `0x6FFFFA108C78`), so a state change the engine waits for
+   never arrives;
+2. a task queue from the runtime that nothing dispatches.

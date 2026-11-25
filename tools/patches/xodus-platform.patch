@@ -1,18 +1,19 @@
 diff --git a/src/main.cpp b/src/main.cpp
-index c51613d..f531b35 100644
+index c51613d..838c1c4 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -20,6 +20,9 @@
+@@ -20,6 +20,10 @@
  
  #include <initguid.h>
  #include "private.h"
 +#include <xgame.h>
++#include <xnetworking.h>
 +#include <xpersistentlocalstorage.h>
 +#include <xpackage.h>
  
  #ifdef __cplusplus
  extern "C" {
-@@ -70,6 +73,206 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
+@@ -70,6 +74,295 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
      return InitializeApiImplEx2( gdkVer, gsVer, 0, NULL );
  }
  
@@ -190,6 +191,95 @@ index c51613d..f531b35 100644
 +
 +static XPersistentLocalStorageObject storage_object;
 +
++/* XNetworking: the image asks for this class early. Every method answers without a game
++ * service behind it: a preferred port, an empty connectivity hint, and settings it can read
++ * back, so the engine's networking bring-up does not fail on a missing interface. */
++class XNetworkingObject : public IXNetworkingImpl2
++{
++public:
++    HRESULT STDMETHODCALLTYPE QueryInterface( REFIID iid, void **out ) override
++    {
++        if ( !out ) return E_POINTER;
++        if ( IsEqualIID( iid, IID_IUnknown ) || IsEqualIID( iid, IID_IXNetworkingImpl2 )
++             || IsEqualIID( iid, IID_IXNetworkingImpl ) )
++        {
++            *out = static_cast<IXNetworkingImpl2 *>( this );
++            return S_OK;
++        }
++        *out = NULL;
++        return E_NOINTERFACE;
++    }
++    ULONG STDMETHODCALLTYPE AddRef() override { return 1; }
++    ULONG STDMETHODCALLTYPE Release() override { return 1; }
++
++    HRESULT STDMETHODCALLTYPE XNetworkingQueryPreferredLocalUdpMultiplayerPort( UINT16 *port ) override
++    {
++        if ( port ) *port = 3074;
++        return S_OK;
++    }
++    HRESULT STDMETHODCALLTYPE XNetworkingQueryPreferredLocalUdpMultiplayerPortAsync( XAsyncBlock *async ) override
++    { (void)async; return S_OK; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQueryPreferredLocalUdpMultiplayerPortAsyncResult(
++        XAsyncBlock *async, UINT16 *port ) override
++    { (void)async; if ( port ) *port = 3074; return S_OK; }
++    HRESULT STDMETHODCALLTYPE XNetworkingRegisterPreferredLocalUdpMultiplayerPortChanged(
++        XTaskQueueHandle queue, void *context, XNetworkingPreferredLocalUdpMultiplayerPortChangedCallback *callback,
++        XTaskQueueRegistrationToken *token ) override
++    { (void)queue; (void)context; (void)callback; if ( token ) token->token = 1; return S_OK; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQuerySecurityInformationForUrlAsync( const char *url,
++                                                                             XAsyncBlock *async ) override
++    { (void)url; (void)async; return E_NOTIMPL; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQuerySecurityInformationForUrlAsyncResultSize(
++        XAsyncBlock *async, SIZE_T *size ) override
++    { (void)async; if ( size ) *size = 0; return E_NOTIMPL; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQuerySecurityInformationForUrlAsyncResult(
++        XAsyncBlock *async, SIZE_T size, SIZE_T *used, UINT8 *buffer,
++        XNetworkingSecurityInformation **information ) override
++    { (void)async; (void)size; (void)buffer; if ( used ) *used = 0;
++      if ( information ) *information = NULL; return E_NOTIMPL; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQuerySecurityInformationForUrlUtf16Async( const WCHAR *url,
++                                                                                   XAsyncBlock *async ) override
++    { (void)url; (void)async; return E_NOTIMPL; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQuerySecurityInformationForUrlUtf16AsyncResultSize(
++        XAsyncBlock *async, SIZE_T *size ) override
++    { (void)async; if ( size ) *size = 0; return E_NOTIMPL; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQuerySecurityInformationForUrlUtf16AsyncResult(
++        XAsyncBlock *async, SIZE_T size, SIZE_T *used, UINT8 *buffer,
++        XNetworkingSecurityInformation **information ) override
++    { (void)async; (void)size; (void)buffer; if ( used ) *used = 0;
++      if ( information ) *information = NULL; return E_NOTIMPL; }
++    HRESULT STDMETHODCALLTYPE XNetworkingVerifyServerCertificate(
++        void *request, const XNetworkingSecurityInformation *information ) override
++    { (void)request; (void)information; return S_OK; }
++    HRESULT STDMETHODCALLTYPE XNetworkingGetConnectivityHint(
++        XNetworkingConnectivityHint *hint ) override
++    {
++        if ( hint ) memset( hint, 0, sizeof( *hint ) );
++        return S_OK;
++    }
++    HRESULT STDMETHODCALLTYPE XNetworkingRegisterConnectivityHintChanged(
++        XTaskQueueHandle queue, void *context, XNetworkingConnectivityHintChangedCallback *callback,
++        XTaskQueueRegistrationToken *token ) override
++    { (void)queue; (void)context; (void)callback; if ( token ) token->token = 1; return S_OK; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQueryConfigurationSetting(
++        XNetworkingConfigurationSetting setting, UINT64 *value ) override
++    { (void)setting; if ( value ) *value = 0; return S_OK; }
++    HRESULT STDMETHODCALLTYPE XNetworkingSetConfigurationSetting(
++        XNetworkingConfigurationSetting setting, UINT64 value ) override
++    { (void)setting; (void)value; return S_OK; }
++    BOOLEAN STDMETHODCALLTYPE XNetworkingUnregisterPreferredLocalUdpMultiplayerPortChanged(
++        XTaskQueueRegistrationToken token, BOOLEAN wait ) override
++    { (void)token; (void)wait; return TRUE; }
++    BOOLEAN STDMETHODCALLTYPE XNetworkingUnregisterConnectivityHintChanged(
++        XTaskQueueRegistrationToken token, BOOLEAN wait ) override
++    { (void)token; (void)wait; return TRUE; }
++    HRESULT STDMETHODCALLTYPE XNetworkingQueryStatistics( XNetworkingStatisticsType type,
++                                                          XNetworkingStatisticsBuffer *buffer ) override
++    { (void)type; if ( buffer ) memset( buffer, 0, sizeof( *buffer ) ); return S_OK; }
++};
++
++static XNetworkingObject networking_object;
++
 +class XGameObject : public IXGameImpl
 +{
 +public:
@@ -219,10 +309,15 @@ index c51613d..f531b35 100644
  HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
  {
      // ------------ FOR FUTURE REFERENCES ------------
-@@ -103,6 +306,33 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
+@@ -103,6 +396,38 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
          return x_threading_impl->QueryInterface( iid, out );
      }
  
++    if ( IsEqualGUID( clsid, CLSID_XNetworkingImpl ) )
++    {
++        return networking_object.QueryInterface( iid, out );
++    }
++
 +    if ( IsEqualGUID( clsid, CLSID_XSystemImpl ) )
 +    {
 +        return system_object.QueryInterface( iid, out );
