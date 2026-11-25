@@ -15,8 +15,8 @@ Last updated: 2026-11-24.
 - **Script schema:** 1,012/1,012 records parse the seven-chunk chain; 63,288 typed rows,
   42 % of them with a named property.
 - **Names:** 36,952 hash→name pairs with confidence; 4.3 % of hash values named.
-- **Tests:** `tools/rage.py test --tier unit|corpus|all` — 114 checks; the gate is
-  `tools/check.sh`, which also runs `cargo test`.
+- **Tests:** `tools/rage.py test --tier unit|corpus|all`; the gate is
+  `tools/check.sh`, which also runs `cargo test` and the docs build.
 - **Executable:** console image (`xg_xs`, `d3d12_xs`, `xapu`, `xmem`, `AcpHal`,
   `XCRDAPI`, `XboxBvhBuilder`, `Bink2Scarlett`); `tools/rage.py play` classifies it.
 

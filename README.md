@@ -36,7 +36,7 @@ Full walkthrough: **[From first principles](docs/explained.md)**.
 | Names | one registry of **36,952** hash→name pairs, with a flag for JOAAT collisions |
 | Script metadata | chunk chain `PSIN→LSCH→LENM→LSNS→LGID→LRSC→CHKS` recovered from the writer in the executable; **1,012/1,012** records parse, and the chain lands on the last byte of every body (zero slack). 63,288 typed rows with the type word **last**, 42 % naming their property |
 | Pack layout | every header field is code-confirmed; buffer A is a 0x40-byte header plus four sections sized by a formula from the binary, which fits **654/654** headers; buffer B is a suffix of buffer A, `align16(N × stride)` |
-| Provenance | `handoff/` carries 114 tables with an enforced manifest — **105 generated, 4 curated, 5 legacy**, 0 unclassified |
+| Provenance | `handoff/` carries 121 tables with an enforced manifest — **112 generated, 4 curated, 5 legacy**, 0 unclassified |
 | GPU | shader decompilation lives in its own repository, [`rdna2-spirv`](rdna2-spirv/) |
 
 ## What is solved, and what is not

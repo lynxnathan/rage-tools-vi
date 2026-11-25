@@ -11,6 +11,7 @@ with thousands separators) somewhere in `docs/` or `README.md`.
 
 import argparse
 import csv
+import re
 import sys
 from pathlib import Path
 
@@ -67,6 +68,45 @@ def collect():
     return claims
 
 
+def provenance_counts():
+    """(tables, generated, curated, legacy) from the handoff manifest."""
+    path = ROOT / "handoff/provenance.tsv"
+    if not path.is_file():
+        return None
+    counts = {"generated": 0, "curated": 0, "legacy": 0}
+    total = 0
+    with path.open() as handle:
+        for row in csv.DictReader(handle, delimiter="\t"):
+            total += 1
+            status = row.get("status", "")
+            if status in counts:
+                counts[status] += 1
+    return total, counts["generated"], counts["curated"], counts["legacy"]
+
+
+def check_provenance_sentence():
+    """The one hand-written sentence that states the manifest counts, checked exactly.
+
+    A bare number somewhere in the docs proves nothing: 121 appears in half the tables in
+    `handoff/`. The counts are therefore read from the manifest and compared against the
+    numbers on the line that claims them.
+    """
+    derived = provenance_counts()
+    if derived is None:
+        return []
+    tables, generated, curated, legacy = derived
+    for path in [ROOT / "README.md"] + list((ROOT / "docs").rglob("*.md")):
+        for line in path.read_text().splitlines():
+            if "handoff/" not in line or "tables with an enforced manifest" not in line:
+                continue
+            numbers = [int(value.replace(",", "")) for value in re.findall(r"\d[\d,]*", line)]
+            if sorted(numbers) != sorted([tables, generated, curated, legacy, 0]):
+                return [(f"{path.name}: manifest counts", f"{tables}, {generated}, "
+                         f"{curated}, {legacy}, 0 (line says {numbers})")]
+            return []
+    return [("README manifest sentence", "not found")]
+
+
 def docs_text():
     parts = []
     for path in list((ROOT / "docs").rglob("*.md")) + [ROOT / "README.md"]:
@@ -90,7 +130,7 @@ def main():
         return 0
 
     text = docs_text()
-    missing = []
+    missing = check_provenance_sentence()
     for label, value in claims:
         formatted = f"{value:,}"
         if formatted not in text:
@@ -100,7 +140,8 @@ def main():
         for label, formatted in missing:
             print(f"  {label:24s} {formatted}")
         return 1
-    print(f"all {len(claims)} published counts match the artifacts")
+    print(f"all {len(claims)} published counts match the artifacts, and the manifest "
+          f"sentence states them exactly")
     return 0
 
 
