@@ -57,7 +57,8 @@ for the translation step. Hand-written stubs for the GDK surface stay off this p
 Each needs a specific input, not more effort.
 
 - [ ] Play the game: needs a PC build, or the console system software implemented by a
-  recompilation project.
+  recompilation project. Guard patching moves the stop but not the requirement, and the
+  unattended loop needs its backtrace parser fixed first (`tools/boot_loop.py`).
 - [ ] RPF9 table of contents: content unidentified; `Front B` is a per-entry table for 206
   of 654 packs and composite for the other 448.
 - [ ] Read the stream class: its `Read` at `+0x60`, and the three words at `+0x10`,

@@ -1,0 +1,137 @@
+"""Iterate the console image's guard asserts: patch one, run, find the next.
+
+The image stops at `swi(3)` sites that follow a failed initialisation call. Each stop names
+one expectation of the platform. Patching that byte in a copy turns the stop into the next
+line of the log, so the loop measures the whole chain instead of one stop at a time.
+
+A stop that is not `0x80000003` inside `game.exe` ends the loop: an access violation is a
+real fault, not a guard, and patching it would hide the cause.
+
+    python3 tools/boot_loop.py --game-dir <dump> --rounds 12
+"""
+
+import argparse
+import os
+import re
+import shutil
+import struct
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+from rage import proton_wine  # noqa: E402
+from patch_guard import rva_to_offset  # noqa: E402
+
+BREAKPOINT = "0x80000003"
+
+
+def run_round(exe, game_dir, stubs, log_path, timeout):
+    for dll in stubs.glob("*.dll"):
+        target = game_dir / dll.name
+        if not target.is_file() or target.stat().st_size != dll.stat().st_size:
+            subprocess.run(["cp", "-f", str(dll), str(game_dir)], check=False)
+    wine = proton_wine()
+    if wine is None:
+        raise SystemExit("no Proton wine found; set PROTON_WINE")
+    env = dict(os.environ, WINEPREFIX=os.environ.get("PROTON_PREFIX",
+                                                    str(Path.home() / ".proton-vi/pfx")),
+               STUB_TRACE="1", WINEDEBUG="+seh")
+    result = subprocess.run([str(wine), str(exe)], cwd=str(game_dir), env=env,
+                            capture_output=True, text=True, timeout=timeout)
+    log = result.stdout + result.stderr
+    log_path.write_text(log)
+    return result.returncode, log
+
+
+def next_guard(log):
+    """(rva or None, exception code, address) for the *unhandled* stop in the log.
+
+    The log also carries handled exceptions, including the debug-print exception the image
+    raises for every trace line, so only the block that follows "Unhandled exception"
+    counts.
+    """
+    lines = log.splitlines()
+    for index in range(len(lines) - 1, -1, -1):
+        match = re.search(r"Unhandled exception 0x([0-9a-f]+) in thread .* at address ([0-9a-f]+)",
+                          lines[index])
+        if not match:
+            continue
+        code = match.group(1)
+        address = int(match.group(2), 16)
+        rip = None
+        base = None
+        for line in reversed(lines[:index]):
+            if rip is None:
+                found = re.search(r"dispatch_exception rip=([0-9a-f]+)", line)
+                if found:
+                    rip = int(found.group(1), 16)
+                    continue
+            found = re.search(r'virtual_unwind backtrace: ([0-9A-F]+): L"game\.exe" \+ ([0-9A-F]+)', line)
+            if found:
+                base = int(found.group(1), 16) - int(found.group(2), 16)
+                break
+        if rip is None or base is None:
+            return None, code, address
+        return rip - base, code, address
+    return None, None, None
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--game-dir", type=Path, required=True)
+    parser.add_argument("--exe", type=Path, default=ROOT / "cache/exe/game_scarlett_master.exe")
+    parser.add_argument("--rounds", type=int, default=10)
+    parser.add_argument("--timeout", type=int, default=120)
+    args = parser.parse_args()
+
+    stubs = ROOT / "cache/stubs"
+    build = subprocess.run([sys.executable, str(ROOT / "tools/stub_dlls.py"),
+                            str(args.exe), "--out", str(stubs)],
+                           capture_output=True, text=True)
+    if build.returncode != 0:
+        print(build.stdout[-400:], build.stderr[-400:])
+        return 1
+    print(f"stub DLLs: {len(list(stubs.glob('*.dll')))}")
+
+    original = bytearray(args.exe.read_bytes())
+    patches = []
+    work = Path(tempfile.mkdtemp(prefix="bootloop-"))
+    exe = work / "game.exe"
+    exe.write_bytes(original)
+    log_path = work / "run.log"
+
+    for round_index in range(1, args.rounds + 1):
+        rva, code, address = (None, None, None)
+        try:
+            returncode, log = run_round(exe, args.game_dir, stubs, log_path, args.timeout)
+        except subprocess.TimeoutExpired:
+            print(f"round {round_index}: still running at {args.timeout}s — no stop")
+            return 0
+        rva, code, address = next_guard(log)
+        if code != "80000003":
+            print(f"round {round_index}: stop is {code} at {address:#x} — not a guard, loop ends")
+            shutil.copy(log_path, ROOT / "cache/boot-loop.log")
+            return 2
+        if rva is None:
+            print(f"round {round_index}: guard outside the image ({address:#x}) — loop ends")
+            shutil.copy(log_path, ROOT / "cache/boot-loop.log")
+            return 2
+        data = bytearray(exe.read_bytes())
+        offset = rva_to_offset(data, rva)
+        data[offset] = 0x90
+        exe.write_bytes(data)
+        patches.append(rva)
+        print(f"round {round_index}: guard at image+{rva:#x} patched "
+              f"({len(patches)} total, exit was {returncode})")
+
+    print(f"{len(patches)} guards patched: " + ", ".join(hex(rva) for rva in patches))
+    shutil.copy(log_path, ROOT / "cache/boot-loop.log")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

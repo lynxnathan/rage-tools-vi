@@ -9471,3 +9471,24 @@ the only description of the front region: the *stream* also carries three words 
 That closes one ambiguity and opens exactly one question: which class sets `stream+0x10`,
 `+0x18` and `+0x20`. It is the same object whose `Read` at `+0x60` is still unread, so a
 single decompilation of that class answers both.
+
+### Guard patching: measured limits (2026-11-24)
+
+Two experiments on a copy of the image, never on the original.
+
+**Blanket patch.** Every `0xCC` inside `.text` replaced by `nop`: 3,269,969 bytes, most of
+them alignment padding. The process then jumps out of `.text` and faults at
+`game.exe+0x5F40544`, i.e. past the end of the code — removing every guard removes the
+reason the code was still coherent.
+
+**Guard-shaped patch.** Only `74 01 CC` / `75 01 CC` (`jne`/`je` over a single `int3`, the
+shape seen at `game.exe+0x2237178`): 194 sites. The process advances past the first stop
+and stops again at `0x6FFFF5174518`, which lands on an ordinary epilogue
+(`add rsp,0xc8; pop…; ret`) — so the reported address is not the `int3` site, and the
+backtrace lines that would resolve it are missing from that run.
+
+Conclusion: guard patching is not a substitute for real interface layouts. It can move the
+stop, but without a symbolicated backtrace each step costs a manual round, and the blanket
+form destroys coherence. `tools/patch_guard.py` (patch one named site) and
+`tools/boot_loop.py` (patch, run, read the next stop) stay as tooling; the loop needs the
+backtrace parser fixed before it can run unattended.

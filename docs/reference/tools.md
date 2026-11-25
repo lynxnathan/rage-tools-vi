@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-174 scripts.
+176 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -41,6 +41,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`bone_table.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_table.py) | Decode the class-0 0x5387a04e bone table and its 0x1ebb416b point arrays. |  |
 | [`bone_template_families.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_template_families.py) | Cluster class-0 roots into near-identical bone-template families. |  |
 | [`bone_templates.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bone_templates.py) | Group class-0 roots by exact bone-hash sets and report shared templates. |  |
+| [`boot_loop.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/boot_loop.py) | Iterate the console image's guard asserts: patch one, run, find the next. | --game-dir --rounds |
 | [`bruteforce_bink_framing.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bruteforce_bink_framing.py) | Parallel framing sweep for AWC payload -> Bink Audio decoder. |  |
 | [`bruteforce_ueba.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bruteforce_ueba.py) | Sweep AWC data payload offsets through a synthetic UEBA/Bink Audio wrapper. |  |
 | [`bulk_extract.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/bulk_extract.py) | Parallel bounded-memory extraction of every zlib span in an index. |  |
@@ -126,6 +127,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`pack_model_fit.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pack_model_fit.py) | Which simple entry model fits each pack exactly? | --out |
 | [`pair_arrays.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pair_arrays.py) | Export every 0x8f18aff0 (u32 hash, f32) pair array with root context. |  |
 | [`pair_entry_manifest.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pair_entry_manifest.py) | Emit entry manifests for packs whose entry count verifies exactly. |  |
+| [`patch_guard.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/patch_guard.py) | Patch a guard `int3` in a copy of the image, and run the copy. | --at --exe --out |
 | [`pe_audit.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pe_audit.py) | Static audit of a PE image — no execution, no network. |  |
 | [`pe_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pe_scan.py) | Correct PE section mapping + pattern scans, so negatives can be trusted. |  |
 | [`pi_archive_audit.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/pi_archive_audit.py) | Archive-only reproduction for the RPF9 payload audit. |  |
