@@ -37,6 +37,17 @@ static void *reserve(void *address, size_t size)
 {
     DWORD flags = MEM_RESERVE | MEM_COMMIT;
     void *p;
+    {
+        /* Experiment knob: cap what is actually reserved, to see whether the title's own
+         * allocator fails because the address space is already taken by these reservations. */
+        const char *cap = getenv("STUB_XMEM_CAP");
+        if (cap != NULL)
+        {
+            unsigned long long limit = strtoull(cap, NULL, 0);
+            if (limit != 0 && size > (size_t)limit)
+                size = (size_t)limit;
+        }
+    }
     if (size > COMMIT_ON_TOUCH_LIMIT)
         flags = MEM_RESERVE;
     p = VirtualAlloc(address, size, flags, PAGE_READWRITE);
