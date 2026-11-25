@@ -15,7 +15,22 @@ static unsigned long long generic(void)
 static void *vtable[512];
 static void *object[1];
 
-long long ord_1(void **out, unsigned long long flags)
+/* The image caches the interface in a global and releases it during teardown; when the
+ * global is still null the release dereferences null at image+0x5925903. Seeding the
+ * global with our object keeps teardown consistent with what the game would see after a
+ * successful create. */
+static void seed_global(void)
+{
+    unsigned char *base = (unsigned char *)GetModuleHandleA(NULL);
+    void **slot;
+    if (!base) return;
+    slot = (void **)(base + 0x9AB15E8);
+    if (object[0]) *slot = object[0];
+    if (getenv("STUB_TRACE"))
+        fprintf(stderr, "gameinput!seed global %p = %p\n", (void *)slot, *slot);
+}
+
+long long ord_1(unsigned long long first, void **second)
 {
     unsigned i;
     if (!object[0]) {
@@ -24,7 +39,9 @@ long long ord_1(void **out, unsigned long long flags)
         object[0] = vtable;
     }
     if (getenv("STUB_TRACE"))
-        fprintf(stderr, "[%lx] gameinput!ord_1(out=%p, flags=%llx)\n", (void *)out, flags);
-    if (out) *out = object;
+        fprintf(stderr, "[%lx] gameinput!ord_1(first=%llx second=%p)\n",
+                GetCurrentThreadId(), first, (void *)second);
+    if (second) *second = object;
+    seed_global();
     return 0;
 }

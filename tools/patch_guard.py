@@ -40,17 +40,31 @@ def main():
     parser.add_argument("--out", type=Path)
     parser.add_argument("--byte", type=lambda v: int(v, 0), default=0x90,
                         help="replacement byte (default 0x90, a nop)")
+    parser.add_argument("--jump", type=int, default=0,
+                        help="replace N bytes starting at --at with a short jump over them")
+    parser.add_argument("--input", type=Path,
+                        help="start from an already patched image instead of --exe")
     args = parser.parse_args()
 
-    data = bytearray(args.exe.read_bytes())
+    source = args.input or args.exe
+    data = bytearray(source.read_bytes())
     for token in args.at.split(","):
         rva = int(token, 0)
         offset = rva_to_offset(data, rva)
+        if args.jump:
+            if not 2 <= args.jump <= 127:
+                raise SystemExit("--jump must be 2..127 bytes")
+            data[offset] = 0xEB
+            data[offset + 1] = args.jump - 2
+            for index in range(2, args.jump):
+                data[offset + index] = 0x90
+            print(f"{rva:#x} -> file {offset:#x}: jump over {args.jump} bytes")
+            continue
         before = data[offset]
         data[offset] = args.byte
         print(f"{rva:#x} -> file {offset:#x}: {before:#04x} -> {data[offset]:#04x}")
         if before != 0xCC:
-            print(f"  warning: the byte there was not 0xCC")
+            print("  warning: the byte there was not 0xCC")
     out = args.out or args.exe.with_name(args.exe.stem + ".patched.exe")
     out.write_bytes(data)
     print(f"wrote {out} ({len(data):,} B)")

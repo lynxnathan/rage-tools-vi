@@ -47,10 +47,11 @@ Last updated: 2026-11-24.
 
 Each line is a route, what would settle it, and where it stands.
 
-- [ ] **GameInput path.** `FUN_1459258a0` caches the object in `DAT_149ab15e8`; after the
-  patched guard the code takes the "object is null" branch and calls through null at
-  `image+0x5925903`. Settle by finding which global the successful path writes — the stub's
-  out-slot argument (`0x6fffffaf6440`) is not the one the code reads.
+- [ ] **GameInput creation.** `FUN_1459258a0` is a setter whose callers treat it as a
+  getter (`FUN_142211b40` calls it with no argument and uses the result), so execution
+  dereferences a null `rsi` at `image+0x5925903`. The ordinal-1 create call is never
+  reached, so the object never exists. Settle by finding what is supposed to create it
+  before those callers run.
 - [ ] **Interface layouts.** Six GUIDs, slot 2 called as `(object, buffer, 0x20)`. Settle by
   decompiling the callers at `+0x55DEB6E` and `+0x55DE0xx`, which read the returned fields.
 - [ ] **Stream class.** The archive ctor passes `stream+0x10/+0x18/+0x20` into the region

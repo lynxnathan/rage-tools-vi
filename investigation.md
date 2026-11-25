@@ -9524,3 +9524,29 @@ is reached and one of its fields is zero. Reverted to the measured shape.
 That leaves the field itself. `FUN_1459258a0` caches the object in `DAT_149ab15e8`, calls
 vtable slot `+0x10`, and the caller then reads a field from it. Filling that field requires
 its offset, which is one decompilation of the caller at `image+0x5925903`.
+
+### `FUN_1459258a0` is a setter, and its callers call it as a getter (2026-11-24)
+
+The disassembly of `FUN_1459258a0` reads `rsi` as its argument: it compares the argument
+with the cached global, calls `vtbl+8` on it (add reference), releases the previous value
+through `vtbl+0x10`, stores the argument, and releases again at `+0x63`. The fault at
+`image+0x5925903` is `mov (%rsi),%rax` with `rsi = 0` — the argument is null.
+
+Callers such as `FUN_142211b40` invoke it with **no argument** and immediately use the
+result:
+
+```
+plVar2 = FUN_1459258a0();
+iVar1  = (*plVar2->vtbl[0x20])(plVar2, 0x40000, param_1 + 0x20, &local_28);
+```
+
+So the image calls the setter as if it returned the cached object. Ghidra decompiled the
+tail of the function as a read of the global, which is why the shape looked like a getter.
+
+Patching the null release (a 9-byte jump over it) moves the fault 0xD2 bytes earlier, to
+`image+0x5925831`, i.e. the same function still dereferences the null argument. There is no
+single site to patch: the object must exist.
+
+That makes the requirement concrete: the GameInput interface has to be created before any
+caller reaches this path, and the create call is the ordinal-1 import, which the image does
+**not** reach in the current run (no `gameinput!ord_1` line in the log).

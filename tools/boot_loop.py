@@ -139,6 +139,8 @@ def main():
     parser.add_argument("--exe", type=Path, default=ROOT / "cache/exe/game_scarlett_master.exe")
     parser.add_argument("--rounds", type=int, default=10)
     parser.add_argument("--timeout", type=int, default=120)
+    parser.add_argument("--start", type=Path,
+                        help="start from this image instead of --exe (already patched)")
     parser.add_argument("--base", type=lambda v: int(v, 0), default=0x6FFFF2F50000,
                         help="load base of the image; Wine mapped it there in every run here")
     args = parser.parse_args()
@@ -152,7 +154,7 @@ def main():
         return 1
     print(f"stub DLLs: {len(list(stubs.glob('*.dll')))}")
 
-    original = bytearray(args.exe.read_bytes())
+    original = bytearray((args.start or args.exe).read_bytes())
     patches = []
     work = Path(tempfile.mkdtemp(prefix="bootloop-"))
     exe = work / "game.exe"

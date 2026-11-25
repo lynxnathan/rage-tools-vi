@@ -50,7 +50,9 @@ unsigned long long XMemVirtualFree(void *p, size_t size, unsigned long long type
 
 void XMemFreeDefault(void *p) { VirtualFree(p, 0, MEM_RELEASE); }
 
-unsigned long long XMemIsToolsMemAvailable(void) { return 0; }
+/* "Tools memory" is the dev-kit scratch pool. Reporting it present is the shape a
+ * development console reports; the image asking for it suggests a capability check. */
+unsigned long long XMemIsToolsMemAvailable(void) { return 1; }
 
 unsigned long long XMemGetWorkingSetStatistics(void *out, unsigned long long size)
 {
