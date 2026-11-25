@@ -34,6 +34,12 @@ else
     note "rust tests" "FAIL"; tail -4 /tmp/check-rust.log | sed 's/^/    /'; fail=1
 fi
 
+if $PY tests/test_boot_pixels.py >/tmp/check-pixels.log 2>&1; then
+    note "pixel check" "PASS ($(grep -c '^  ok' /tmp/check-pixels.log) checks)"
+else
+    note "pixel check" "FAIL"; tail -4 /tmp/check-pixels.log | sed 's/^/    /'; fail=1
+fi
+
 # The acceptance scoreboard proves it can pass before it is trusted to say anything about the
 # image: a harness that has never seen a window cannot report on one.
 if [ -n "${DISPLAY:-}" ]; then

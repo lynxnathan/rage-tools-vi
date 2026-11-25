@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-183 scripts.
+184 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -161,6 +161,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`run_dir.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/run_dir.py) | Stage a game directory so a run never writes into the dump. | --game-dir --out |
 | [`scan_libmagic.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/scan_libmagic.py) | Report file(1) signatures for every regular file in a local extraction. |  |
 | [`schema_names.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/schema_names.py) | Match JOAAT field names in the decoded PSIN sections. |  |
+| [`screen_audit.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/screen_audit.py) | Audit the screen in pixels: did anything change while the image ran? | --game-dir --interval --seconds --threshold |
 | [`script_bone_namespace_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/script_bone_namespace_probe.py) | Cross-check skeleton family hashes against the named vehicle mover tables. |  |
 | [`script_meta.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/script_meta.py) | Parse the script metadata resource by its writer's own rules. | --dump --index |
 | [`script_pair.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/script_pair.py) | Inspect the two entries in the script.rpf pack at 0x1000. |  |

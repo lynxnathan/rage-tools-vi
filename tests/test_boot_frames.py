@@ -288,6 +288,29 @@ def selftest(args, method, display, screen):
     return 0 if not FAILED else 1
 
 
+def similarity(frame, reference):
+    """(SSIM, PSNR) between two images, the metrics a visual-regression test uses.
+
+    SSIM answers "is this the same picture structurally" (1.0 identical); PSNR answers "how
+    far apart are the pixels in dB". Both come from ffmpeg's filters, so no extra tool is
+    needed and the numbers are comparable with any other run of the same filters.
+    """
+    ssim = subprocess.run(["ffmpeg", "-v", "info", "-i", frame, "-i", reference,
+                           "-lavfi", "ssim", "-f", "null", "-"], capture_output=True, text=True)
+    psnr = subprocess.run(["ffmpeg", "-v", "info", "-i", frame, "-i", reference,
+                           "-lavfi", "psnr", "-f", "null", "-"], capture_output=True, text=True)
+    def value(text, tag):
+        for line in text.splitlines():
+            if tag in line and ":" in line:
+                part = line.rsplit(":", 1)[-1].strip().split()[0]
+                try:
+                    return float(part)
+                except ValueError:
+                    return None
+        return None
+    return value(ssim.stderr, "SSIM"), value(psnr.stderr, "PSNR")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -303,6 +326,10 @@ def main():
     parser.add_argument("--min-spread", type=int, default=24)
     parser.add_argument("--min-lit", type=float, default=0.02,
                         help="share of pixels above a quarter of full scale")
+    parser.add_argument("--compare-frame", metavar="FILE:REFERENCE",
+                        help="visual-regression comparison of a kept frame against a "
+                             "reference image, by SSIM and PSNR (ffmpeg's filters)")
+    parser.add_argument("--min-ssim", type=float, default=0.99)
     parser.add_argument("--assert-pixel", metavar="FILE:X,Y=R,G,B",
                         help="assert one pixel of a saved frame, the way "
                              "tools/explorer_image_fixture.py --assert-screenshot does")
@@ -323,6 +350,17 @@ def main():
     parser.add_argument("--max-motion", type=float, default=1.0,
                         help="mean frame difference that still counts as static, 0-255")
     args = parser.parse_args()
+
+    if args.compare_frame:
+        frame, _, reference = args.compare_frame.partition(":")
+        ssim, psnr = similarity(frame, reference)
+        if ssim is None:
+            print(f"  FAIL  could not compare {frame} with {reference}")
+            return 1
+        ok = ssim >= args.min_ssim
+        print(f"  {'ok  ' if ok else 'FAIL'}  SSIM {ssim:.4f} (wanted >= {args.min_ssim}), "
+              f"PSNR {'n/a' if psnr is None else f'{psnr:.1f} dB'}")
+        return 0 if ok else 1
 
     if args.assert_pixel:
         target, _, expected = args.assert_pixel.rpartition("=")
