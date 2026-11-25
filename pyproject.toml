@@ -5,6 +5,7 @@ description = "RPF9 archive extraction, payload reconstruction and name recovery
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.0",          # XMA2 WAVE wrapper and numeric checks
+    "pillow>=10",          # frame difference and the black-screen check
 ]
 
 [dependency-groups]

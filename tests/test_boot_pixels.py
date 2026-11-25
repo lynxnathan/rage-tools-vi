@@ -58,6 +58,12 @@ def assert_compare(frame, reference, min_ssim):
     return result.returncode == 0, (result.stdout + result.stderr).strip()
 
 
+def run_frames(*arguments):
+    result = subprocess.run([sys.executable, str(FRAMES), *arguments],
+                            capture_output=True, text=True)
+    return result.returncode == 0, (result.stdout + result.stderr).strip()
+
+
 def main():
     work = Path(tempfile.mkdtemp(prefix="pixels-"))
     white = work / "white.png"
@@ -78,6 +84,20 @@ def main():
     ok, output = assert_pixel(work / "absent.png", 0, 0, (0, 0, 0))
     check("a missing frame fails rather than passing quietly", not ok, output.splitlines()[-1])
 
+    # Bitwise-style difference and the black-screen test (cv2.absdiff semantics via PIL).
+    ok, output = run_frames("--diff-frame", f"{white}:{white}")
+    check("identical frames differ by 0 %", ok and "0.0000%" in output,
+          output.splitlines()[-1] if output else "")
+    ok, output = run_frames("--diff-frame", f"{white}:{dark}")
+    check("white against black differs everywhere", ok and "100.0000%" in output,
+          output.splitlines()[-1] if output else "")
+    ok, _ = run_frames("--black", str(dark), "--expect", "black")
+    check("a solid black frame is detected as black", ok)
+    ok, _ = run_frames("--black", str(rendered), "--expect", "content")
+    check("a rendered frame is not called black", ok)
+    ok, _ = run_frames("--black", str(dark), "--expect", "content")
+    check("a black frame fails the content expectation", not ok)
+
     # SSIM/PSNR against a reference: identical passes, a changed frame fails.
     ok, output = assert_compare(white, white, 0.99)
     check("an identical frame passes SSIM 1.0", ok, output.splitlines()[-1] if output else "")
@@ -91,6 +111,25 @@ def main():
         distinct = len({data[i:i + 3] for i in range(0, len(data), 3)})
         check(f"{name} has {expect_distinct} distinct colour(s)", distinct == expect_distinct,
               f"({distinct})")
+
+    # Real artwork as the positive control: the package's own splash, not a white rectangle.
+    splash = Path("/run/media/lynxnathan/Mammoth/GTA6.Acceptance.Test/xbs_splash.png")
+    if splash.is_file():
+        small = work / "splash-small.png"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(splash), "-vf", "scale=320:180",
+                        str(small)], check=True)
+        ok, output = run_frames("--black", str(small), "--expect", "content")
+        check("the package's splash is content, not a black screen", ok,
+              output.splitlines()[-1] if output else "")
+        ok, output = run_frames("--diff-frame", f"{small}:{dark}")
+        check("the splash differs from a black frame almost everywhere",
+              ok and float(output.split("%")[0].split()[-1]) > 90.0,
+              output.splitlines()[-1] if output else "")
+        ok, output = run_frames("--diff-frame", f"{small}:{small}")
+        check("the splash against itself differs nowhere", ok and "0.0000%" in output,
+              output.splitlines()[-1] if output else "")
+    else:
+        print("  skipped (no package artwork available for the positive control)")
 
     print()
     print("PASS" if not FAILED else f"FAIL: {len(FAILED)} check(s)")

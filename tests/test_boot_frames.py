@@ -289,6 +289,45 @@ def selftest(args, method, display, screen):
     return 0 if not FAILED else 1
 
 
+def frame_difference(frame, reference, tolerance=8):
+    """(ratio of differing pixels, bounding box, mean level) the way cv2.absdiff + threshold
+    would report it, using PIL so no extra dependency is needed.
+
+    A black screen is not the game running: `mean` and `ratio` are here so a uniform frame can
+    be rejected on the numbers instead of on a human's impression.
+    """
+    try:
+        from PIL import Image, ImageChops
+    except ImportError:
+        return None, None, None
+    left = Image.open(frame).convert("L")
+    right = Image.open(reference).convert("L")
+    if left.size != right.size:
+        right = right.resize(left.size)
+    difference = ImageChops.difference(left, right)
+    histogram = difference.histogram()
+    total = sum(histogram)
+    differing = sum(count for level, count in enumerate(histogram) if level > tolerance)
+    box = difference.point(lambda value: 255 if value > tolerance else 0).getbbox()
+    mean = sum(level * count for level, count in enumerate(histogram)) / total if total else 0
+    return (differing / total if total else 0.0), box, mean
+
+
+def is_black(frame):
+    """True when the frame is uniform and dark: nothing was drawn."""
+    ratio, _box, mean = frame_difference(frame, frame, tolerance=0)
+    if mean is None:
+        return None
+    try:
+        from PIL import Image
+        import statistics
+    except ImportError:
+        return mean < 8
+    values = list(Image.open(frame).convert("L").getdata())
+    deviation = statistics.pstdev(values)
+    return mean < 8 and deviation < 4
+
+
 def similarity(frame, reference):
     """(SSIM, PSNR) between two images, the metrics a visual-regression test uses.
 
@@ -331,6 +370,12 @@ def main():
                         help="reference artwork the frame is compared against (default: the "
                              "package's xbs_splash.png); SSIM per kept frame, best kept")
     parser.add_argument("--min-splash-ssim", type=float, default=0.80)
+    parser.add_argument("--diff-frame", metavar="FILE:REFERENCE",
+                        help="cv2.absdiff-style comparison: ratio of differing pixels, their "
+                             "bounding box, and the mean level (PIL, no extra dependency)")
+    parser.add_argument("--black", metavar="FILE",
+                        help="report whether a kept frame is uniform and dark")
+    parser.add_argument("--expect", choices=("black", "content"), default="content")
     parser.add_argument("--compare-frame", metavar="FILE:REFERENCE",
                         help="visual-regression comparison of a kept frame against a "
                              "reference image, by SSIM and PSNR (ffmpeg's filters)")
@@ -355,6 +400,28 @@ def main():
     parser.add_argument("--max-motion", type=float, default=1.0,
                         help="mean frame difference that still counts as static, 0-255")
     args = parser.parse_args()
+
+    if args.black:
+        black = is_black(args.black)
+        if black is None:
+            print("  FAIL  could not read the frame (PIL missing)")
+            return 1
+        wanted = args.expect == "black"
+        ok = black is wanted
+        print(f"  {'ok  ' if ok else 'FAIL'}  {args.black} is "
+              f"{'black and uniform (nothing drawn)' if black else 'carrying content'}"
+              f", expected {args.expect}")
+        return 0 if ok else 1
+
+    if args.diff_frame:
+        frame, _, reference = args.diff_frame.partition(":")
+        ratio, box, mean = frame_difference(frame, reference)
+        if ratio is None:
+            print("  FAIL  could not read the frames (PIL missing)")
+            return 1
+        print(f"  {args.diff_frame}: {ratio:.4%} of pixels differ, "
+              f"box {box or 'none'}, mean difference {mean:.1f}")
+        return 0
 
     if args.compare_frame:
         frame, _, reference = args.compare_frame.partition(":")
