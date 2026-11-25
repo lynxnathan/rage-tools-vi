@@ -30,7 +30,7 @@ index d4da943..abc25bf 100644
      referenced_ptr<ITaskQueuePortContext> portContextHolder(portContext);
  
 diff --git a/src/main.cpp b/src/main.cpp
-index c51613d..de5ebef 100644
+index c51613d..99a2506 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -20,6 +20,11 @@
@@ -45,7 +45,7 @@ index c51613d..de5ebef 100644
  
  #ifdef __cplusplus
  extern "C" {
-@@ -70,6 +75,371 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
+@@ -70,6 +75,405 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
      return InitializeApiImplEx2( gdkVer, gsVer, 0, NULL );
  }
  
@@ -296,6 +296,9 @@ index c51613d..de5ebef 100644
 +
 +static XUserObject user_object;
 +
++struct ConnectivityDelivery { void *context; XNetworkingConnectivityHintChangedCallback *callback; };
++static ConnectivityDelivery connectivity_delivery;
++
 +class XNetworkingObject : public IXNetworkingImpl2
 +{
 +public:
@@ -365,10 +368,41 @@ index c51613d..de5ebef 100644
 +        if ( hint ) memset( hint, 0, sizeof( *hint ) );
 +        return S_OK;
 +    }
++    /* The image registers for connectivity-hint changes and then waits on an event until the
++     * callback arrives: measured, that wait is the whole startup barrier. The callback is
++     * therefore delivered once, shortly after registration, with the hint a wired console
++     * would report. */
++
++    static DWORD WINAPI deliver( LPVOID parameter )
++    {
++        ConnectivityDelivery copy = *(ConnectivityDelivery *)parameter;
++        XNetworkingConnectivityHint hint;
++        Sleep( 500 );
++        memset( &hint, 0, sizeof( hint ) );
++        hint.connectivityLevel = XNetworkingConnectivityLevelHint::InternetAccess;
++        hint.connectivityCost = XNetworkingConnectivityCostHint::Unrestricted;
++        hint.ianaInterfaceType = 6;   /* ethernet */
++        hint.networkInitialized = TRUE;
++        hint.connectivityLevel = XNetworkingConnectivityLevelHint::InternetAccess;
++        if ( copy.callback )
++        {
++            TRACE( "delivering the connectivity hint to %p.\n", copy.callback );
++            copy.callback( copy.context, &hint );
++        }
++        return 0;
++    }
++
 +    HRESULT STDMETHODCALLTYPE XNetworkingRegisterConnectivityHintChanged(
 +        XTaskQueueHandle queue, void *context, XNetworkingConnectivityHintChangedCallback *callback,
 +        XTaskQueueRegistrationToken *token ) override
-+    { (void)queue; (void)context; (void)callback; if ( token ) token->token = 1; return S_OK; }
++    {
++        (void)queue;
++        connectivity_delivery.context = context;
++        connectivity_delivery.callback = callback;
++        if ( token ) token->token = 1;
++        CloseHandle( CreateThread( NULL, 0, deliver, &connectivity_delivery, 0, NULL ) );
++        return S_OK;
++    }
 +    HRESULT STDMETHODCALLTYPE XNetworkingQueryConfigurationSetting(
 +        XNetworkingConfigurationSetting setting, UINT64 *value ) override
 +    { (void)setting; if ( value ) *value = 0; return S_OK; }
@@ -417,7 +451,7 @@ index c51613d..de5ebef 100644
  HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
  {
      // ------------ FOR FUTURE REFERENCES ------------
-@@ -103,10 +473,70 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
+@@ -103,10 +507,70 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
          return x_threading_impl->QueryInterface( iid, out );
      }
  

@@ -429,7 +429,8 @@ static void remember_event(HANDLE handle, BOOL manual, BOOL initial)
     if (handle && handle != INVALID_HANDLE_VALUE && manual && !initial && g_event_count < 16)
     {
         g_events[g_event_count++] = handle;
-        note("event: manual-reset %p created (initial 0)", handle);
+        note("event: manual-reset %p created (initial 0) by caller %p", handle,
+             __builtin_return_address(0));
     }
 }
 

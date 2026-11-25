@@ -10471,3 +10471,26 @@ That makes the next question sharper than "why NULL": the allocator blocks waiti
 something the platform is expected to provide — most plausibly the GPU-visible memory pool the
 public harness implements with pagefile sections, since the console allocator and the GPU share
 one address space and this one is being asked for both.
+
+### The barrier was the connectivity hint, and delivering it starts the engine (2026-11-25)
+
+The function that creates the event and waits on it (`image+0x1cf8f00`) asks the runtime for a
+class first, and the two GUIDs it passes identify it exactly:
+
+```
+image+0x5f41170  class 37e56907-2f10-41e8-b72f-36edb185331a   (XNetworkingImpl)
+image+0x5f41180  iid   bf2346b2-39af-4658-b5ea-44713c7e83b3   (IXNetworkingImpl2)
+```
+
+so it calls `XNetworkingRegisterConnectivityHintChanged(queue, context, callback, &token)`,
+creates a manual-reset event as its completion, and waits infinite on it. Our implementation
+returned `S_OK` and a token but never invoked the callback — the engine was waiting for a
+connectivity hint that nothing delivered. That is the barrier the whole session sat behind.
+
+`XNetworkingRegisterConnectivityHintChanged` now delivers the hint once, on a thread, half a
+second after registration (`InternetAccess`, `Unrestricted`, Ethernet, `networkInitialized`).
+Measured afterwards, with no other probe: **16 worker threads appear without the event kick**,
+and the run proceeds to the same fault storm (5,484 → 8,091 handled faults) and exit 5.
+
+So the startup barrier is solved by supplying the platform's answer rather than by signalling
+its event: the engine was waiting on us.
