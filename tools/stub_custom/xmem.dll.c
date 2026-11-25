@@ -55,6 +55,27 @@ static void *reserve(void *address, size_t size)
      * mapping the "block after" header lands in unmapped space (measured at image+0x69fe5). */
     size = (size + 0xffff) & ~(size_t)0xffff;
     size += 0x10000;
+    /* Console allocations are 2 MiB-aligned (large-page granularity), and the title passes
+     * 0x20402000 attributes asking for that kind of memory. Reserve with slack and hand back a
+     * 2 MiB-aligned base inside it, so an alignment check sees console granularity. */
+    if (address == NULL && size >= 0x200000)
+    {
+        void *raw = VirtualAlloc(NULL, size + 0x200000, MEM_RESERVE, PAGE_READWRITE);
+        if (raw != NULL)
+        {
+            uintptr_t aligned = ((uintptr_t)raw + 0x1fffff) & ~(uintptr_t)0x1fffff;
+            p = VirtualAlloc((void *)aligned, size, MEM_RESERVE, PAGE_READWRITE);
+            if (p != NULL)
+            {
+                track(p, size, 1);
+                if (getenv("STUB_TRACE"))
+                    fprintf(stderr, "[%lx] xmem!alloc(%p, %llx, aligned) -> %p\n",
+                            GetCurrentThreadId(), address, (unsigned long long)size, p);
+                return p;
+            }
+            VirtualFree(raw, 0, MEM_RELEASE);
+        }
+    }
     p = VirtualAlloc(address, size, flags, PAGE_READWRITE);
     if (!p && address)
         p = VirtualAlloc(NULL, size, flags, PAGE_READWRITE);
