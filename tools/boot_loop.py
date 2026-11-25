@@ -98,6 +98,35 @@ def stop_of(log):
     return None, None
 
 
+def handled_breakpoint(log):
+    """(code, address) of the last handled `int3` the image's own handler caught.
+
+    Once the image registers its crash reporter it *handles* the guard's breakpoint instead
+    of letting it go unhandled, and the process then exits quietly. The stop is the same
+    instruction, so it is read from the dispatch line and its `rip`, which names the `int3`
+    itself (the `addr` field is one past it).
+    """
+    lines = log.splitlines()
+    for index in range(len(lines) - 1, -1, -1):
+        match = re.search(r"dispatch_exception code=(80000003) .*addr=([0-9a-fA-F]+)", lines[index])
+        if not match:
+            continue
+        for follower in lines[index:index + 4]:
+            found = re.search(r"dispatch_exception rip=([0-9a-fA-F]+)", follower)
+            if found:
+                return match.group(1), int(found.group(1), 16)
+        return match.group(1), int(match.group(2), 16)
+    return None, None
+
+
+def stop_in(log):
+    """(code, address) of the stop, unhandled first, then a handled breakpoint."""
+    code, address = stop_of(log)
+    if code is not None:
+        return code, address
+    return handled_breakpoint(log)
+
+
 def next_guard(log):
     """(rva or None, exception code, address) for the *unhandled* stop in the log.
 
@@ -181,7 +210,7 @@ def _loop(args, stubs, original, patches, keep):
             keep.write_bytes(exe.read_bytes())
             exe.unlink(missing_ok=True)
             return 0
-        code, address = stop_of(log)
+        code, address = stop_in(log)
         # The /proc base is only a hint: Wine may have mapped the image elsewhere by the
         # time the process is gone. The declared base is authoritative unless the address
         # does not fall inside the image at all.
@@ -192,7 +221,7 @@ def _loop(args, stubs, original, patches, keep):
         if rva is not None and not (0 <= rva < 0x5F3F966):
             rva = None
         if code is None:
-            print(f"round {round_index}: no unhandled stop (exit {returncode}) — loop ends")
+            print(f"round {round_index}: no stop found (exit {returncode}) — loop ends")
             shutil.copy(log_path, ROOT / "cache/boot-loop.log")
             keep.write_bytes(exe.read_bytes())
             exe.unlink(missing_ok=True)

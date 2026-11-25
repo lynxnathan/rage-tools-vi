@@ -9828,3 +9828,38 @@ stop with no upload line in the log. And `STUB_ARENA=pattern` in the `xgamerunti
 the returned arena with 0..255, so a field the image consumes can be recognised by its offset
 — `TitleID` and `Sandbox` in the crash context did **not** change under that pattern, so they
 do not come from that arena.
+
+### The loop can now follow handled guards, and where five of them lead (2026-11-25)
+
+`tools/boot_loop.py` only recognised stops that Wine logs as `Unhandled exception`, and once
+the image registers its crash reporter it *handles* the guard's `int3` instead, so the loop
+reported "no unhandled stop" and stopped patching. It now falls back to the handled
+`code=80000003` dispatch and takes the address from that record's `rip` (which names the `int3`
+itself; the `addr` field is one past it). The same five guards are walkable again:
+`0x2237178`, `0x2224517`, `0x1d5cc69`, `0x22106e0`, `0x2219650`.
+
+With all five patched, the run no longer raises a breakpoint at all. It ends in the CRT:
+
+```
+EXCEPTION_ACCESS_VIOLATION at VCRUNTIME140.dll + 0x1989   (write to 0, the raise path)
+frame 0x5B29847  <- 0x2240EFC <- 0x81B253 <- 0x53EC04F <- 0x53EBF3A <- 0x661F0
+     <- 0x1D109C9 <- 0x5A91C0D <- 0x56A1E5A   (CRT start)
+then _XcptFilter returns 1 and the process exits
+```
+
+`0x661F0` is the abort path recorded earlier, so the patched image dies in an abort, not in
+one of its guards. The crash context for that run is still `Game State: System Init`,
+`Frame: 0`.
+
+What the package itself says the configuration should be — `MicrosoftGame.Config`, in the
+package, read here rather than guessed:
+
+```
+TitleId   7952987A                      MSAAppId 000000004060F900
+StoreId   9NL3WWNZLZZN                  Identity RockstarGamesInc.28872443D20A7
+Executable  game_scarlett_master.exe  TargetDeviceFamily Scarlett
+VirtualMachine  XboxAnacondaTitleMemory Advanced   (SMTEnabled true)
+```
+
+`TitleID: unknown` and `Sandbox: unknown` in the crash context are therefore not a limitation
+of the package: the values are on disk and the stub answers the query with zeros.

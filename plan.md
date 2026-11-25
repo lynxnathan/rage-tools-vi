@@ -60,8 +60,14 @@ Each line is a route, what would settle it, and where it stands.
   in the container at `image+0x56eb30` for `L"D:\LocalDumps"`, which the image never asks the
   filesystem for. Settle by reading the container's fill site and the value it wants.
 - [ ] **Title and sandbox answers.** The crash context reports `TitleID: unknown`,
-  `Sandbox: unknown`, `System Language: Unknown State` in `System Init`. Settle by answering
-  those `xgameruntime` queries and seeing the same fields filled in the next crash log.
+  `Sandbox: unknown`, `System Language: Unknown State` in `System Init`, while
+  `MicrosoftGame.Config` in the package carries `7952987A`, the identity and the store id.
+  Settle by answering that query from the config and seeing the fields filled in the next
+  crash log; the package's own `microsoft_gameconfig.bin` has the same values in GDK form.
+- [ ] **The abort after five guards.** With the five guards patched the image raises no
+  breakpoint and dies in the CRT (`VCRUNTIME140+0x1989`, handler `_XcptFilter` returns 1).
+  Settle by identifying the uncaught exception that reaches that path — the frames read
+  `0x2240EFC <- 0x81B253 <- 0x53EC04F <- 0x53EBF3A <- 0x661F0`, all inside the image.
 - [ ] **The `_xs` shim is written, not exercised.** `tools/d3d12_xs.c` forwards the
   root-signature and device entry points to vkd3d-proton, but no run has called
   `D3D12XboxCreateDevice`: the only `d3d12_xs` call reached so far is
