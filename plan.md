@@ -52,6 +52,12 @@ Each line is a route, what would settle it, and where it stands.
   reports no window at all; the unpatched image stops on the first guard
   (`image+0x2237178`) inside a second. Settle by finding what should fill the object field
   that guard tests (`obj+0xc`), which is zero from the constructor at `image+0x582a610`.
+- [ ] **The startup barrier is signalable.** The main thread creates two auto-reset events and
+  one manual-reset event (`04ec` in Wine's server log) and waits infinite on the manual one.
+  Signalling it (`STUB_EVENT_KICK=<ms>`) makes the engine create 16 worker threads and run game
+  code; it then faults ~8,100 times, 543 of which are one write through a NULL allocator
+  result at `image+0x554bdcb`. Settle by finding what signals that event on the platform, then
+  why the engine's allocator returns NULL once its threads run.
 - [ ] **The four port pieces, in order.** Each comes from the public harness
   `OnlyMoisties/GTA6-BootTest`, which reaches this build's first UI screen on Windows:
   (1) `xmem` with a GPU-visible pool mapped through vkd3d plus the `G:` package-root
