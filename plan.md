@@ -40,12 +40,13 @@ Last updated: 2026-11-25.
 
 ## Boot thread
 
-- [ ] Turn stage 3 of `tests/test_boot_stages.py` green: the aggregate-return ABI is adapted
-  and the title now stops at its own assert (`image+0x2478b7b`) because console device slot
-  `0x248` (command-list creator) has no PC entry. Implement the console creators from the
-  public table — queue `0x180` (forwarded), command list `0x248`, PSO `0x1b8`/`0x1c8`/`0x1f0`/
-  `0x218`/`0x2b0`, allocators `0x270`/`0x278`, resources `0x3f8`/`0x428` — and apply the ABI
-  thunk to `0x360` (`GetResourceAllocationInfo1`).
+- [ ] Turn stage 3 of `tests/test_boot_stages.py` green: stage 2 is now green; the title stops
+  because its console command list is called at slot `0x420`, which a PC list does not have.
+  Choose the list representation (probe object with a large generic table, or a real console
+  proxy over vkd3d), then implement the remaining console creators from the public table —
+  queue `0x180` (forwarded), command list `0x248`, PSO `0x1b8`/`0x1c8`/`0x1f0`/`0x218`/`0x2b0`,
+  allocators `0x270`/`0x278`, resources `0x3f8`/`0x428` — and apply the ABI thunk to `0x360`
+  (`GetResourceAllocationInfo1`).
 - [ ] Pass `tests/test_boot_frames.py` (a real window, content frames, then a static screen
   after the videos): land the four port pieces in order — `xmem` GPU-visible pool plus the
   `G:` redirect; `d3d12_xs` COM device/queue/command-list objects with `PresentX`;

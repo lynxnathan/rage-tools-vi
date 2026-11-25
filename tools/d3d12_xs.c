@@ -283,11 +283,33 @@ static IUnknown *first_dxgi_adapter(void)
     return (IUnknown *)adapter;
 }
 
-/* vkd3d-proton implements the two aggregate-returning ID3D12Device methods with an explicit
- * return pointer after `this` (WIDL_EXPLICIT_AGGREGATE_RETURNS), while the title uses the MSVC
- * convention (hidden return pointer first, `this` second). A call therefore lands with the two
- * arguments swapped and the callee writes its result over the object. A thunk that swaps RCX
- * and RDX and jumps to the original slot converts one convention to the other. */
+/* The console command-list creator at slot 0x248 takes a 16-byte descriptor in RDX where
+ * the PC CreateCommandList takes (nodeMask, type) in RDX/R8. Translate while the console
+ * descriptor layout is still being measured. */
+typedef HRESULT (WINAPI *create_command_list_t)(void *, UINT, UINT, void *, void *,
+                                                const GUID *, void **);
+static create_command_list_t g_create_command_list;
+
+static HRESULT WINAPI console_create_command_list(void *self, const UINT *desc, void *allocator,
+                                                  void *initial, const GUID *iid, void **out)
+{
+    note("d3d12_xs! console command list desc %x %x %x %x allocator %p initial %p",
+         desc[0], desc[1], desc[2], desc[3], allocator, initial);
+    static const GUID iid_pc_command_list =
+        { 0x5b160d0f, 0xac1b, 0x4185, { 0x8b, 0xa8, 0xb3, 0xae, 0x42, 0xa5, 0xa4, 0x55 } };
+    if (g_create_command_list == NULL)
+        return E_NOTIMPL;
+    {
+        HRESULT result = g_create_command_list(self, desc[2], desc[0], allocator, initial,
+                                               &iid_pc_command_list, out);
+        note("d3d12_xs!  CreateCommandList(node %x, type %x) -> %lx (list %p)",
+             desc[2], desc[0], (unsigned long)result, out ? *out : NULL);
+        return result;
+    }
+}
+
+/* Replace one entry in a device vtable; the table is in .rdata, so the page is made writable
+ * for the store and its old protection is restored afterwards. */
 static void patch_entry(void **vtable, int slot, void *target)
 {
     DWORD old;
@@ -300,6 +322,11 @@ static void patch_entry(void **vtable, int slot, void *target)
     VirtualProtect(&vtable[slot], sizeof(void *), old, &old);
 }
 
+/* vkd3d-proton implements the aggregate-returning ID3D12Device methods with an explicit return
+ * pointer after `this` (WIDL_EXPLICIT_AGGREGATE_RETURNS), while the title uses the MSVC
+ * convention (hidden return pointer first, `this` second). A call therefore lands with the two
+ * arguments swapped and the callee writes its result over the object. A thunk that swaps RCX
+ * and RDX and jumps to the original slot converts one convention to the other. */
 static void patch_slot(void **vtable, int slot)
 {
     unsigned char *thunk = VirtualAlloc(NULL, 16, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -398,6 +425,8 @@ __declspec(dllexport) HRESULT WINAPI D3D12XboxCreateDevice(IUnknown *adapter, co
          * (desc, IID, out) shape as CreateCommandQueue; the PC table has no such entry.
          * Forward it to the PC method while the console table is unidentified. */
         patch_entry(device_vtable, 0x180 / 8, device_vtable[0x40 / 8]);
+        g_create_command_list = (create_command_list_t)device_vtable[0x60 / 8];
+        patch_entry(device_vtable, 0x248 / 8, (void *)console_create_command_list);
     }
     return result;
 }

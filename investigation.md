@@ -10816,3 +10816,30 @@ creators over vkd3d objects (queue and allocator forward, command list needs the
 descriptor translated), or give the title a probe object for the ones vkd3d cannot back. The
 public report says its harness takes the second route and reaches a black window; this tree's
 target still needs the first for real rendering.
+
+### Slot 0x248 is the command-list creator, and a PC list is not a console list (2026-11-25)
+
+The public table's slot 73 (`0x248`) is the command-list creator. The title's call carries a
+16-byte descriptor `{0, 2, 1, 0}` in `rdx`, the allocator in `r8`, zero in `r9`, then the console
+list IID `c3827890-4024-474c-98cf-645b51dc4874` and the out pointer on the stack. The descriptor
+fields that make the PC method accept the call are `desc[2]` as node mask and `desc[0]` as the
+command-list type, but the PC method also needs its own IID: with
+`5b160d0f-ac1b-4185-8ba8-b3ae42a5a455` (`ID3D12GraphicsCommandList`) the forward returns
+`S_OK` and a real vkd3d list:
+
+```
+d3d12_xs! console command list desc 0000000000000000 0000000000000002 0000000000000001 0000000000000000 allocator 0x6e7d8460 initial 0
+d3d12_xs!  CreateCommandList(node 1, type 0) -> 0x0 (list 0x6e7d8700)
+```
+
+The title then calls slot `0x420` on that list with `(list, 0x700000, 0, 0, 0xffffffffff00)`.
+A PC `ID3D12GraphicsCommandList` table ends far below `0x420`, so the call lands in unrelated
+`d3d12core` code, reads address `0xc3c8`, and the run ends in the Breakpad dump (exit 5). Stage 2
+of `tests/test_boot_stages.py` is green for the first time; stage 3 is red for a new reason.
+
+That is the same conclusion the public report reaches from its probe: the console command list is
+an extended interface, not the PC one. Two routes follow, and they should be chosen deliberately:
+give the title a probe list object with a large generic table (the public harness does this and
+reaches a black window), or transcribe the console command-list layout into a real proxy over
+vkd3d. The current forwarding is kept because it proves slot `0x248`'s role and gets the title
+one step further; it is not a rendering path.
