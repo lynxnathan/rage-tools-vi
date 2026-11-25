@@ -10230,3 +10230,29 @@ threads that would signal those 67 completions were never started: the engine qu
 waits for workers that do not exist. That is the same platform gap the parked note in
 `AGENTS.md` describes, now measured: not a drive, a registry key, a shim return value or a
 message pump.
+
+### Prior art found by search, and it names our hang (2026-11-25)
+
+Three public sources bear directly on the work, and one of them describes the exact symptom:
+
+* **`xodus-gaming/xgameruntime-docs`** (GPL-3.0) documents `xgameruntime.dll`'s COM classes:
+  one entry per class with its class id, the interfaces it implements, and a **Layout** — the
+  method order after `IUnknown`'s three slots. That is the "public layout source" the parked
+  note in `AGENTS.md` asked for before this thread may be reopened.
+* **`xodus-gaming/xgameruntime#21`** — a WinGDK title creates an `XTaskQueue` with
+  `dispatchMode = 0` (Manual), schedules async work onto it, and then **never dispatches**: the
+  main thread waits on an event nothing signals. A commenter's trace for another title shows
+  the same shape, down to `XNetworkingQueryPreferredLocalUdpMultiplayerPortAsync` →
+  `XAsyncSchedule` on the manual queue → nothing pumps it. That is our semaphore wait.
+* A sibling project ships **`tools/gdk_runtime_calls.py`**, which finds the `QueryApiImpl`
+  thunks inside a PE statically and lists every (class id, interface id, slot) the image calls
+  — the same measurement our runtime logs give at run time, but before running and complete.
+
+Also relevant: issue #22 (`XSystemGetXboxLiveSandboxId` returning `E_POINTER` when the optional
+`used` out is NULL) and #25 (`XNetworkingGetConnectivityHint` stubbed to `E_NOTIMPL` breaks
+libcurl) are both already handled by our classes — we write the optional out only when present
+and answer the hint with `S_OK`.
+
+The manual-queue experiment (run `QueueItem` callbacks inline for a Manual port,
+`XGAMERUNTIME_MANUAL_QUEUE=queue` to restore the old behaviour) did **not** reach the image's
+wait: no inline callback ran, so that wait is not fed by an `XTaskQueue` callback.

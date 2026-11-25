@@ -303,6 +303,10 @@ def main():
     parser.add_argument("--min-spread", type=int, default=24)
     parser.add_argument("--min-lit", type=float, default=0.02,
                         help="share of pixels above a quarter of full scale")
+    parser.add_argument("--assert-pixel", metavar="FILE:X,Y=R,G,B",
+                        help="assert one pixel of a saved frame, the way "
+                             "tools/explorer_image_fixture.py --assert-screenshot does")
+    parser.add_argument("--tolerance", type=int, default=10)
     parser.add_argument("--selftest", action="store_true",
                         help="run a known windowing program instead of the image, so a pass "
                              "proves the harness can see a window, capture it and score content")
@@ -319,6 +323,23 @@ def main():
     parser.add_argument("--max-motion", type=float, default=1.0,
                         help="mean frame difference that still counts as static, 0-255")
     args = parser.parse_args()
+
+    if args.assert_pixel:
+        target, _, expected = args.assert_pixel.rpartition("=")
+        path, _, point = target.rpartition(":")
+        x, _, y = point.partition(",")
+        wanted = tuple(int(value) for value in expected.split(","))
+        pixel = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-vf",
+                                f"crop=1:1:{int(x)}:{int(y)}", "-frames:v", "1",
+                                "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+                               capture_output=True).stdout
+        if len(pixel) != 3:
+            print(f"  FAIL  no pixel at {x},{y} of {path}")
+            return 1
+        ok = all(abs(a - b) <= args.tolerance for a, b in zip(pixel, wanted))
+        print(f"  {'ok  ' if ok else 'FAIL'}  pixel {x},{y} of {path} is {list(pixel)}, "
+              f"wanted {list(wanted)} +-{args.tolerance}")
+        return 0 if ok else 1
 
     display = os.environ.get("DISPLAY", "")
     if not display:

@@ -1,3 +1,34 @@
+diff --git a/src/System/Threading/XTaskQueue.cpp b/src/System/Threading/XTaskQueue.cpp
+index d4da943..abc25bf 100644
+--- a/src/System/Threading/XTaskQueue.cpp
++++ b/src/System/Threading/XTaskQueue.cpp
+@@ -254,6 +254,26 @@ HRESULT TaskQueuePortImpl::QueueItem(
+ ) {
+     RETURN_IF_FAILED(VerifyNotTerminated(portContext));
+ 
++    /* A manual port queues work that only XTaskQueueDispatch would run, and titles that create
++     * a manual queue and never dispatch it wait forever on the completion (measured: the image
++     * waits INFINITE on a semaphore, 67 times, with no worker threads at all). Running the
++     * callback here makes the queue behave as "Immediate" for such titles, which is what the
++     * console runtime effectively does for work nothing else pumps. Opt out with
++     * XGAMERUNTIME_MANUAL_QUEUE=queue. */
++    if ( m_dispatchMode == XTaskQueueDispatchMode::Manual && callback )
++    {
++        const char *mode = getenv( "XGAMERUNTIME_MANUAL_QUEUE" );
++        if ( !mode || strcmp( mode, "queue" ) != 0 )
++        {
++            TRACE( "manual port: running the callback inline (%p).\n", callback );
++            if ( waitMs == 0 )
++            {
++                callback( callbackContext, false );
++                return S_OK;
++            }
++        }
++    }
++
+     QueueEntry entry;
+     referenced_ptr<ITaskQueuePortContext> portContextHolder(portContext);
+ 
 diff --git a/src/main.cpp b/src/main.cpp
 index c51613d..eb5c5c8 100644
 --- a/src/main.cpp
