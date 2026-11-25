@@ -66,12 +66,15 @@ overwrite the device. See the `2026-11-25` journal entry for the store that prov
 The new stop is the **console device table**. The title creates a `DIRECT` queue through PC slot
 `0x40`, a `COPY` queue through slot `0x180` (forwarded to `0x40` for now), an allocator through
 `0x48`, then calls slot `0x248` with `(desc, allocator, 0, IID c3827890-4024-474c-98cf-645b51dc4874, out)`.
-That slot has no PC equivalent and returns failure, and the title asserts. The console device IID
-(`5405c344-d457-444e-b4dd-2366e45aee39`) is also absent from the PC headers.
+That slot has no PC equivalent and returns failure, and the title asserts. The public harness
+`OnlyMoisties/GTA6-BootTest` names the additions in its `REPORT.md`: `0x180` queue, `0x248`
+command list, `0x1b8`/`0x1c8`/`0x1f0`/`0x218`/`0x2b0` PSOs, `0x270`/`0x278` allocators,
+`0x360` `GetResourceAllocationInfo1`, `0x3f8`/`0x428` resource variants. The slot map is recorded
+in the `2026-11-25` journal entry; the clone lives in `cache/GTA6-BootTest` (untracked).
 
-Order of work: name the extended device slots (start with `0x180` and `0x248`, then the returned
-object's `0x420`), or take the interface descriptors from a public source. `tests/test_boot_stages.py`
-is the scoreboard: stage 3 turns green when the title stops asserting, then the frames test decides
+Order of work: implement those console creators over vkd3d objects (queue and allocator forward;
+command list needs its descriptor translated), and add the ABI thunk to `0x360`. Then
+`tests/test_boot_stages.py` decides whether the title stops asserting, and the frames test decides
 the rest.
 
 The pagefile-section pool from `OnlyMoisties/GTA6-BootTest` is still the candidate for the

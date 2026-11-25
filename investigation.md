@@ -10781,3 +10781,38 @@ The current stop is therefore *layout*, not memory: the extended device table ha
 (slot `0x180` forwards cleanly, slot `0x248` is the next unknown), or the title's interface
 descriptors have to come from a public source. Stage 3 remains red, now at exit 3 with the
 title's own assert instead of a jump to 0.
+
+### The public harness names the extended device table (2026-11-25)
+
+`OnlyMoisties/GTA6-BootTest` publishes a `REPORT.md` with the same device IID
+(`5405C344-D457-444E-B4DD-2366E45AEE39`) and the observed Xbox additions after the 44 public
+`ID3D12Device` slots. It is public source, cloned locally under `cache/GTA6-BootTest` for
+reference and never committed. The table it reports:
+
+| slot | meaning |
+| --- | --- |
+| 48 (`0x180`) | queue creator `(desc, riid, ppv)` — matches the call this repository forwards |
+| 55 (`0x1b8`) | PSO creator `(?, ?, desc, riid, ppv)` |
+| 57, 67, 86 | PSO creators `(desc, riid, ppv)` |
+| 62 (`0x1f0`) | PSO creator `(desc, 0, 0, riid, ppv)`, used by `XboxBvhBuilder` |
+| 70 (`0x230`) | not a creator; fills an out-structure |
+| 73 (`0x248`) | command-list creator `(?, ?, ?, riid, ppv)` — the current assert |
+| 78, 79 | command-allocator creators |
+| 108 (`0x360`) | `GetResourceAllocationInfo1`, aggregate return |
+| 127 (`0x3f8`) | committed-resource variant, ten arguments |
+| 133 (`0x428`) | placed-resource variant, argument 0 is the GPU address |
+
+It also states the same register convention measured here: aggregate returns use `rcx` as the
+out buffer and `rdx` as `this`, which is why the thunk in `tools/d3d12_xs.c` is needed rather
+than a behavioural stub. Two consequences for this tree:
+
+- slot `0x180` is genuinely the queue creator, so forwarding it to the PC
+  `CreateCommandQueue` is the right shape, not a guess;
+- slot `0x248` is the command-list creator, and its immediate use of the returned object at
+  vtable offset `0x420` is consistent with an extended console command list.
+
+The next piece is therefore a decision, not a measurement: either implement the console
+creators over vkd3d objects (queue and allocator forward, command list needs the console
+descriptor translated), or give the title a probe object for the ones vkd3d cannot back. The
+public report says its harness takes the second route and reaches a black window; this tree's
+target still needs the first for real rendering.
