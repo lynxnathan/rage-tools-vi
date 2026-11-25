@@ -10568,3 +10568,28 @@ FAIL  a frame matches the menu reference (gta-6-pause-menu.webp) beyond SSIM 0.5
 
 Both are zero because no frame exists — the honest reading, and the check will say something
 real the moment one does.
+
+### Three more negatives on the heap fault, all measured (2026-11-25)
+
+The fault after device creation is the engine's own heap arithmetic:
+
+```
+image+0x69fe5  mov %r14d,(%r14)   with r14 = rdx + rbx + 0x10
+r14=0x1bf7080  rdx=0x1be7070  rbx=0x10000  rcx=0x1bf7080
+```
+
+i.e. the header for the block after a 0x10000-byte block lands at `0x1bf7080`, and that address
+is not part of any mapping. Three candidate causes were tried and none changed the count:
+
+* commit-on-touch restricted to the ranges this stub reserved (table of 32 ranges),
+* commit-on-touch extended to any page the system reports as `MEM_RESERVE`,
+* `XMemFree`/`XMemVirtualFree` no longer releasing (the title hands back sub-blocks of its own
+  reservations, and releasing the containing range would free memory it still writes to).
+
+`XMemFree` staying a no-op is kept anyway: releasing a containing reservation on a sub-block free
+is a real hazard, and a console keeps those placeholders for the life of the process.
+
+The block-after computation landing outside the mapping points at the *sizes*: the title believes
+its block is followed by another header, so whatever XMemAlloc returned was not the size it asked
+for — which is where the public harness's "placeholders, physical pages, commit-on-touch" model
+differs from a plain `VirtualAlloc` and is the next thing to copy.

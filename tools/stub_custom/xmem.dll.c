@@ -72,15 +72,18 @@ static void report_failed_allocation(EXCEPTION_POINTERS *info)
     uintptr_t base = (uintptr_t)image;
     if (reported >= 3 || base == 0)
         return;
-    if (rip != base + 0x554bdcb)
+    if (rip != base + 0x554bdcb && rip != base + 0x69fe5)
         return;
     reported++;
     if (getenv("STUB_TRACE"))
-        fprintf(stderr, "[%lx] xmem! allocation failed: rax=%p rbx=%llx r15=%llx rcx=%llx\n",
-                GetCurrentThreadId(), (void *)info->ContextRecord->Rax,
+        fprintf(stderr, "[%lx] xmem! fault at %llx: rax=%p rbx=%llx rcx=%llx rdx=%llx r14=%llx rip=%llx\n",
+                GetCurrentThreadId(), (unsigned long long)rip,
+                (void *)info->ContextRecord->Rax,
                 (unsigned long long)info->ContextRecord->Rbx,
-                (unsigned long long)info->ContextRecord->R15,
-                (unsigned long long)info->ContextRecord->Rcx);
+                (unsigned long long)info->ContextRecord->Rcx,
+                (unsigned long long)info->ContextRecord->Rdx,
+                (unsigned long long)info->ContextRecord->R14,
+                (unsigned long long)rip);
 }
 
 static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
@@ -93,10 +96,17 @@ static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
     {
         LONG index;
         int inside = 0;
+        MEMORY_BASIC_INFORMATION info;
         for (index = 0; index < g_range_count && index < TRACKED_RANGES; index++)
             if ((uintptr_t)fault >= g_ranges[index].begin &&
                 (uintptr_t)fault < g_ranges[index].end)
                 inside = 1;
+        /* A console heap hands out virtual space and expects a write to commit it, wherever the
+         * space came from. Asking the system whether the faulting page is merely reserved covers
+         * ranges that arrived by another route (the title's own XMemAlloc wrappers included). */
+        if (!inside && VirtualQuery(page, &info, sizeof(info)) != 0 &&
+            info.State == MEM_RESERVE)
+            inside = 1;
         if (!inside)
             return EXCEPTION_CONTINUE_SEARCH;
     }
@@ -143,19 +153,24 @@ void *XMemAllocDefault(size_t size, unsigned long long alignment)
     return reserve(NULL, size);
 }
 
+/* Frees are not returned to the system: the title hands back sub-blocks of its own large
+ * reservations, and releasing the containing range frees memory the title still writes to
+ * (measured: a fault at image+0x69fe5 inside a range that had been released). Keeping the
+ * placeholders alive is what a console does for the life of the process. */
 unsigned long long XMemFree(void *p, size_t size, unsigned long long type)
 {
-    (void)size; (void)type;
-    return VirtualFree(p, 0, MEM_RELEASE) ? 0 : 1;
+    if (getenv("STUB_TRACE"))
+        fprintf(stderr, "[%lx] xmem!free(%p, %llx, %llx) kept mapped\n", GetCurrentThreadId(),
+                p, (unsigned long long)size, type);
+    return 0;
 }
 
 unsigned long long XMemVirtualFree(void *p, size_t size, unsigned long long type)
 {
-    (void)size; (void)type;
-    return VirtualFree(p, 0, MEM_RELEASE) ? 0 : 1;
+    return XMemFree(p, size, type);
 }
 
-void XMemFreeDefault(void *p) { VirtualFree(p, 0, MEM_RELEASE); }
+void XMemFreeDefault(void *p) { (void)XMemFree(p, 0, 0); }
 
 /* "Tools memory" is the dev-kit scratch pool. Reporting it present is the shape a
  * development console reports; the image asking for it suggests a capability check. */
