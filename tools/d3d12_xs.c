@@ -329,16 +329,23 @@ static DWORD WINAPI appstate_thread(LPVOID unused)
      * (measured: int3 at image+0x1e1d574). STUB_APPSTATE=1 turns the delivery on. */
     if (getenv("STUB_APPSTATE") == NULL)
         return 0;
-    Sleep(2000);
-    if (g_constrained_routine)
+    { const char *d = getenv("STUB_APPSTATE_DELAY"); Sleep(d ? (DWORD)atoi(d) : 2000); }
     {
-        note("appstate: calling the constrained routine (FALSE)");
-        g_constrained_routine(FALSE, g_constrained_context);
-    }
-    if (g_state_routine)
-    {
-        note("appstate: calling the state routine (FALSE = active)");
-        g_state_routine(FALSE, g_state_context);
+        const char *raw = getenv("STUB_APPSTATE_VALUE");
+        const char *other = getenv("STUB_APPSTATE_CONSTRAINED");
+        BOOLEAN value = raw ? (BOOLEAN)atoi(raw) : FALSE;
+        BOOLEAN constrained = other ? (BOOLEAN)atoi(other) : value;
+        if (g_constrained_routine)
+        {
+            note("appstate: calling the constrained routine (%s)",
+                 constrained ? "TRUE" : "FALSE");
+            g_constrained_routine(constrained, g_constrained_context);
+        }
+        if (g_state_routine)
+        {
+            note("appstate: calling the state routine (%s)", value ? "TRUE" : "FALSE");
+            g_state_routine(value, g_state_context);
+        }
     }
     Sleep(1500);
     if (g_semaphore_count > 0)

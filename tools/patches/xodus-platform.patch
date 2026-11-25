@@ -30,7 +30,7 @@ index d4da943..abc25bf 100644
      referenced_ptr<ITaskQueuePortContext> portContextHolder(portContext);
  
 diff --git a/src/main.cpp b/src/main.cpp
-index c51613d..1780a2e 100644
+index c51613d..de5ebef 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -20,6 +20,11 @@
@@ -417,7 +417,7 @@ index c51613d..1780a2e 100644
  HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
  {
      // ------------ FOR FUTURE REFERENCES ------------
-@@ -103,6 +473,43 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
+@@ -103,10 +473,70 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
          return x_threading_impl->QueryInterface( iid, out );
      }
  
@@ -461,3 +461,45 @@ index c51613d..1780a2e 100644
      FIXME( "%s not implemented, returning E_NOINTERFACE.\n", debugstr_guid( &clsid ) );
      return REGDB_E_CLASSNOTREG;
  }
+ 
++/* Two names the image resolves by name, which the runtime did not export at all: the title
++ * looks up XGameRuntimeInitialize and XSystemGetConsoleId directly (their strings are in the
++ * binary), so a GetProcAddress for them has to succeed. */
++extern "C" HRESULT WINAPI XGameRuntimeInitialize( void )
++{
++    return InitializeApiImplEx2( 10002, 7874, 0, NULL );
++}
++
++extern "C" HRESULT WINAPI XSystemGetConsoleId( UINT32 size, char *consoleId, SIZE_T *used )
++{
++    return system_object.XSystemGetConsoleId( ( INT32 )size, consoleId, used );
++}
++
++extern "C" HRESULT WINAPI XSystemGetXboxLiveSandboxId( UINT32 size, char *sandboxId, SIZE_T *used )
++{
++    return system_object.XSystemGetXboxLiveSandboxId( ( INT32 )size, sandboxId, used );
++}
++
++extern "C" HRESULT WINAPI XSystemGetAppSpecificDeviceId( UINT32 size, char *deviceId, SIZE_T *used )
++{
++    return system_object.XSystemGetAppSpecificDeviceId( ( INT32 )size, deviceId, used );
++}
++
+ HRESULT WINAPI UninitializeApiImpl()
+ {
+     TRACE("stub!\n");
+diff --git a/src/xgameruntime.def b/src/xgameruntime.def
+index 043f790..0b52524 100644
+--- a/src/xgameruntime.def
++++ b/src/xgameruntime.def
+@@ -6,4 +6,8 @@ EXPORTS
+     InitializeApiImplEx
+     InitializeApiImplEx2
+     UninitializeApiImpl
+-    XErrorReport
+\ No newline at end of file
++    XErrorReport
++    XGameRuntimeInitialize
++    XSystemGetConsoleId
++    XSystemGetXboxLiveSandboxId
++    XSystemGetAppSpecificDeviceId

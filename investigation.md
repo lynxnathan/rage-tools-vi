@@ -10324,3 +10324,20 @@ dir G:\ /b -> acphal.dll, amd_fidelityfx_loader_xbox.dll, …, anim.rpf
 It changed nothing in the run: with `G:` usable, `WINEDEBUG=+file` still shows the image opening
 **no** file on `G:` at all, and no window appears. So the drive was a real defect and not this
 wall: whatever the image does before it touches the package, it does not get to the package.
+
+### The runtime did not export two names the image looks up (2026-11-25)
+
+The image carries the strings `XGameRuntimeInitialize` and `XSystemGetConsoleId`, i.e. it
+`GetProcAddress`es them from `xgameruntime.dll` — and the runtime exported neither (only
+`QueryApiImpl`, `InitializeApiImpl*`, `UninitializeApiImpl`, `XErrorReport`). Both are now
+exported, with `XSystemGetXboxLiveSandboxId` and `XSystemGetAppSpecificDeviceId` beside them,
+each forwarding to the implementation the classes already have.
+
+Measured after: the image still waits (`WaitForSingleObject` on the count-0 semaphore once),
+never calls `XSystemGetConsoleId` through the export, and the crash context's `Sandbox` reads
+`unknown` again rather than `RETRIAL` — the run now stops before the sandbox query. So the
+export gap was real and is closed, but the image does not reach it.
+
+The pattern across this session is worth stating plainly: every layer that is fixed (drives,
+interfaces, exports, factory objects, queue dispatch) is a real defect, and none of them is the
+one that stops this image, because the stop happens early and the same way each time.
