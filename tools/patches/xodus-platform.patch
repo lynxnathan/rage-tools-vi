@@ -1,0 +1,180 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index c51613d..9e724c8 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -20,6 +20,7 @@
+ 
+ #include <initguid.h>
+ #include "private.h"
++#include <xgame.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -70,6 +71,138 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
+     return InitializeApiImplEx2( gdkVer, gsVer, 0, NULL );
+ }
+ 
++/* A class this runtime does not implement yet gets an object with numbered slots instead of
++ * REGDB_E_CLASSNOTREG: the image then names the methods it expects, in order, by calling
++ * them. That is how the interface order is recovered (see the note in QueryApiImpl). */
++#define PROBE_SLOT(n) \
++    static long long WINAPI probe_##n( void *self, unsigned long long a, unsigned long long b, \
++                                       unsigned long long c ) \
++    { \
++        TRACE( "probe slot %d caller=%p args=%llx,%llx,%llx\n", n, \
++               __builtin_return_address( 0 ), a, b, c ); \
++        return 0; \
++    }
++PROBE_SLOT(0) PROBE_SLOT(1) PROBE_SLOT(2) PROBE_SLOT(3) PROBE_SLOT(4) PROBE_SLOT(5)
++PROBE_SLOT(6) PROBE_SLOT(7) PROBE_SLOT(8) PROBE_SLOT(9) PROBE_SLOT(10) PROBE_SLOT(11)
++PROBE_SLOT(12) PROBE_SLOT(13) PROBE_SLOT(14) PROBE_SLOT(15) PROBE_SLOT(16) PROBE_SLOT(17)
++PROBE_SLOT(18) PROBE_SLOT(19) PROBE_SLOT(20) PROBE_SLOT(21) PROBE_SLOT(22) PROBE_SLOT(23)
++
++static void *probe_vtable[512];
++
++static void *probe_object( void )
++{
++    unsigned i;
++    if ( !probe_vtable[0] )
++    {
++        for ( i = 0; i < sizeof(probe_vtable) / sizeof(probe_vtable[0]); i++ )
++            probe_vtable[i] = ( void * )probe_0;
++#define PROBE_SET( n ) probe_vtable[n] = ( void * )probe_##n
++        PROBE_SET( 0 ); PROBE_SET( 1 ); PROBE_SET( 2 ); PROBE_SET( 3 ); PROBE_SET( 4 );
++        PROBE_SET( 5 ); PROBE_SET( 6 ); PROBE_SET( 7 ); PROBE_SET( 8 ); PROBE_SET( 9 );
++        PROBE_SET( 10 ); PROBE_SET( 11 ); PROBE_SET( 12 ); PROBE_SET( 13 ); PROBE_SET( 14 );
++        PROBE_SET( 15 ); PROBE_SET( 16 ); PROBE_SET( 17 ); PROBE_SET( 18 ); PROBE_SET( 19 );
++        PROBE_SET( 20 ); PROBE_SET( 21 ); PROBE_SET( 22 ); PROBE_SET( 23 );
++#undef PROBE_SET
++    }
++    return probe_vtable;
++}
++
++/* XSystem: the console's own identity. The interface order comes from include/xsystem.idl
++ * (IXSystemImpl5), so the object answers with real strings instead of E_NOINTERFACE. */
++static void write_string( char *buffer, INT32 size, SIZE_T *used, const char *text )
++{
++    SIZE_T length = strlen( text );
++    SIZE_T copy = length;
++
++    if ( buffer && size > 0 )
++    {
++        if ( copy > ( SIZE_T )size - 1 ) copy = ( SIZE_T )size - 1;
++        memcpy( buffer, text, copy );
++        buffer[copy] = 0;
++    }
++    if ( used ) *used = length;
++}
++
++class XSystemObject : public IXSystemImpl5
++{
++public:
++    HRESULT STDMETHODCALLTYPE QueryInterface( REFIID iid, void **out ) override
++    {
++        if ( !out ) return E_POINTER;
++        if ( IsEqualIID( iid, IID_IUnknown ) || IsEqualIID( iid, IID_IXSystemImpl5 )
++             || IsEqualIID( iid, IID_IXSystemImpl4 ) || IsEqualIID( iid, IID_IXSystemImpl3 )
++             || IsEqualIID( iid, IID_IXSystemImpl2 ) || IsEqualIID( iid, IID_IXSystemImpl ) )
++        {
++            *out = static_cast<IXSystemImpl5 *>( this );
++            return S_OK;
++        }
++        *out = NULL;
++        return E_NOINTERFACE;
++    }
++    ULONG STDMETHODCALLTYPE AddRef() override { return 1; }
++    ULONG STDMETHODCALLTYPE Release() override { return 1; }
++
++    HRESULT STDMETHODCALLTYPE XSystemGetConsoleId( INT32 size, char *id, SIZE_T *used ) override
++    {
++        write_string( id, size, used, "7B6A2C5E1F3D4A8B9C0D1E2F3A4B5C6D" );
++        return S_OK;
++    }
++    HRESULT STDMETHODCALLTYPE XSystemGetXboxLiveSandboxId( INT32 size, char *id, SIZE_T *used ) override
++    {
++        write_string( id, size, used, "RETRIAL" );
++        return S_OK;
++    }
++    HRESULT STDMETHODCALLTYPE XSystemGetAppSpecificDeviceId( INT32 size, char *id, SIZE_T *used ) override
++    {
++        write_string( id, size, used, "4b1f8a52-0d76-4c61-9b0d-2f0a5c1e77aa" );
++        return S_OK;
++    }
++    HRESULT STDMETHODCALLTYPE XSystemHandleTrack( XSystemHandleCallback *callback, void *context ) override
++    {
++        (void)callback; (void)context;
++        return S_OK;
++    }
++    BOOLEAN STDMETHODCALLTYPE XSystemIsHandleValid( XSystemHandle handle ) override
++    {
++        (void)handle;
++        return TRUE;
++    }
++    void STDMETHODCALLTYPE XSystemAllowFullDownloadBandwidth( BOOLEAN enable ) override
++    {
++        (void)enable;
++    }
++};
++
++static XSystemObject system_object;
++
++/* XGame: the title id. From the package's own MicrosoftGame.Config (TitleId 7952987A), which
++ * is what the console's service would report. */
++class XGameObject : public IXGameImpl
++{
++public:
++    HRESULT STDMETHODCALLTYPE QueryInterface( REFIID iid, void **out ) override
++    {
++        if ( !out ) return E_POINTER;
++        if ( IsEqualIID( iid, IID_IUnknown ) || IsEqualIID( iid, IID_IXGameImpl ) )
++        {
++            *out = static_cast<IXGameImpl *>( this );
++            return S_OK;
++        }
++        *out = NULL;
++        return E_NOINTERFACE;
++    }
++    ULONG STDMETHODCALLTYPE AddRef() override { return 1; }
++    ULONG STDMETHODCALLTYPE Release() override { return 1; }
++
++    HRESULT STDMETHODCALLTYPE XGameGetXboxTitleId( UINT32 *titleId ) override
++    {
++        if ( titleId ) *titleId = 0x7952987A;
++        return S_OK;
++    }
++};
++
++static XGameObject game_object;
++
+ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
+ {
+     // ------------ FOR FUTURE REFERENCES ------------
+@@ -103,6 +236,28 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
+         return x_threading_impl->QueryInterface( iid, out );
+     }
+ 
++    if ( IsEqualGUID( clsid, CLSID_XSystemImpl ) )
++    {
++        return system_object.QueryInterface( iid, out );
++    }
++
++    if ( IsEqualGUID( clsid, CLSID_XGameImpl ) )
++    {
++        return game_object.QueryInterface( iid, out );
++    }
++
++    /* Probing is opt-in: a class handed back as numbered slots tells the image's callers
++     * nothing about the real interface, and at least one of them dereferences a field it
++     * expected instead of calling a method (measured: image+0x5A2090 reading -1). */
++    if ( getenv( "XGAMERUNTIME_PROBE" ) )
++    {
++        FIXME( "%s not implemented; returning the numbered probe object.\n",
++               debugstr_guid( &clsid ) );
++        if ( out )
++            *out = probe_object();
++        return S_OK;
++    }
++
+     FIXME( "%s not implemented, returning E_NOINTERFACE.\n", debugstr_guid( &clsid ) );
+     return REGDB_E_CLASSNOTREG;
+ }

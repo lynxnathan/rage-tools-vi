@@ -44,12 +44,31 @@ def installed():
     return path if path.is_file() else None
 
 
+PATCH = ROOT / "tools/patches/xodus-platform.patch"
+
+
+def apply_patch():
+    """Apply the platform patch: XSystem and XGame answer instead of refusing, and unknown
+    classes can be handed back as numbered slots when XGAMERUNTIME_PROBE is set."""
+    if not PATCH.is_file():
+        return
+    applied = subprocess.run(["git", "apply", "--reverse", "--check", str(PATCH)],
+                             cwd=CHECKOUT, capture_output=True, text=True)
+    if applied.returncode == 0:
+        return
+    result = subprocess.run(["git", "apply", str(PATCH)], cwd=CHECKOUT,
+                            capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(f"could not apply {PATCH}:\n{result.stderr[-600:]}")
+
+
 def build(rebuild=False):
     if not CHECKOUT.is_dir():
         CHECKOUT.parent.mkdir(parents=True, exist_ok=True)
         run(["git", "clone", "--depth", "1", URL, str(CHECKOUT)])
     elif not rebuild and installed() is not None:
         return installed()
+    apply_patch()
     preset = ["--preset", "win64", "-DCMAKE_C_FLAGS=-Dthread_local=_Thread_local"]
     if rebuild or not (CHECKOUT / "build/windows-x64").is_dir():
         run(["cmake", *preset], cwd=CHECKOUT)

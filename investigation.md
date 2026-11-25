@@ -10122,3 +10122,27 @@ takes the early exit at `image+0x2236e75`, and the postcondition assert at `imag
 fires because the object was never initialised. Note the path: the engine has devices for its
 own mounts (packs on `G:`), and none for `D:`, which is exactly the device set the platform
 layer is supposed to establish — the same five GDK classes the runtime still refuses.
+
+### Two platform classes now answer, and `Sandbox` proves it (2026-11-25)
+
+The runtime refused every class but `XThreading`. Two are now implemented inside it, with the
+method order taken from the IDL that declares them — not guessed:
+
+* `XSystemImpl` (`xsystem.idl`, `IXSystemImpl5`): console id, sandbox id, app-specific device id,
+  handle tracking, `XSystemIsHandleValid`, and the bandwidth switch.
+* `XGameImpl` (`xgame.idl`, `IXGameImpl`): `XGameGetXboxTitleId` answers the package's own
+  `7952987A`.
+
+The proof that a class is really being used is the crash context, which now reads:
+
+```
+TitleID: unknown
+Sandbox: RETRIAL
+```
+
+`Sandbox` was `unknown` in every earlier run and is now the string the implementation returns,
+so the image is querying `XSystemGetXboxLiveSandboxId` through our object. `TitleID` is still
+`unknown` because that query happens after the point where the run currently stops.
+
+The changes live in `tools/patches/xodus-platform.patch`, applied (and idempotently re-applied)
+by `tools/xgameruntime.py`, so the runtime is reproducible from the clone plus that one file.
