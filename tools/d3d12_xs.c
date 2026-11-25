@@ -246,11 +246,41 @@ __declspec(dllexport) HRESULT WINAPI D3D12EnableExperimentalFeatures(
 __declspec(dllexport) HRESULT WINAPI D3D12GetInterface(const GUID *clsid, const GUID *iid,
                                                        void **out)
 {
-    typedef HRESULT (WINAPI *function_t)(const GUID *, const GUID *, void **);
-    function_t function = (function_t)host_export("D3D12GetInterface");
-    if (function == NULL)
-        return E_NOTIMPL;
-    return function(clsid, iid, out);
+    /* vkd3d-proton's d3d12core aborts on this entry point in this build ("unimplemented
+     * function d3d12core.dll.D3D12GetInterface"), and the console title only uses it for
+     * optional interfaces, so it answers "not supported" instead of taking the process down. */
+    (void)iid;
+    note("d3d12_xs!D3D12GetInterface(%p) -> E_NOTIMPL", clsid);
+    if (out)
+        *out = NULL;
+    return E_NOTIMPL;
+}
+
+/* The console passes no adapter, and this prefix's vkd3d-proton refuses every 12_x level for a
+ * null adapter. A DXGI adapter is the PC equivalent of "the console's GPU", so try that too. */
+static IUnknown *first_dxgi_adapter(void)
+{
+    typedef HRESULT (WINAPI *factory_t)(REFIID, void **);
+    typedef HRESULT (WINAPI *enum_t)(void *, unsigned, void **);
+    static const GUID iid_factory1 =
+        { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
+    HMODULE dxgi = LoadLibraryA("dxgi.dll");
+    factory_t create;
+    void *factory = NULL;
+    void **vtable;
+    enum_t enumerate;
+    void *adapter = NULL;
+    if (dxgi == NULL)
+        return NULL;
+    create = (factory_t)GetProcAddress(dxgi, "CreateDXGIFactory1");
+    if (create == NULL || create(&iid_factory1, &factory) != 0 || factory == NULL)
+        return NULL;
+    vtable = *(void ***)factory;
+    enumerate = (enum_t)vtable[12];
+    if (enumerate == NULL || enumerate(factory, 0, &adapter) != 0)
+        adapter = NULL;
+    note("d3d12_xs!  dxgi adapter %p", adapter);
+    return (IUnknown *)adapter;
 }
 
 __declspec(dllexport) HRESULT WINAPI D3D12XboxCreateDevice(IUnknown *adapter, const void *params,
@@ -278,20 +308,37 @@ __declspec(dllexport) HRESULT WINAPI D3D12XboxCreateDevice(IUnknown *adapter, co
          device ? *device : NULL);
     if (result != 0)
     {
-        /* Try every level the host may accept, highest first, and report what it answers. */
-        static const UINT32 levels[] = { 0xc200, 0xc100, 0xc000, 0xb100, 0xb000 };
+        /* Highest level first: 12_x with the console's null adapter, then 12_x with a real DXGI
+         * adapter, then the older levels. The log says which adapter answered. */
+        static const UINT32 modern[] = { 0xc200, 0xc100, 0xc000 };
+        static const UINT32 legacy[] = { 0xb100, 0xb000 };
         static const GUID iid_device =
             { 0x189819f1, 0x1db6, 0x4b57, { 0xbe, 0x54, 0x18, 0x21, 0x33, 0x9b, 0x85, 0xf7 } };
+        IUnknown *dxgi = NULL;
         unsigned index;
-        for (index = 0; index < sizeof(levels) / sizeof(levels[0]); index++)
+        for (index = 0; index < sizeof(modern) / sizeof(modern[0]) && result != 0; index++)
         {
-            HRESULT attempt = function(adapter, levels[index], &iid_device, device);
-            note("d3d12_xs!  level %x -> %lx", (unsigned)levels[index], (unsigned long)attempt);
-            if (attempt == 0)
+            result = function(adapter, modern[index], &iid_device, device);
+            note("d3d12_xs!  level %x (console adapter) -> %lx", (unsigned)modern[index],
+                 (unsigned long)result);
+        }
+        if (result != 0)
+        {
+            dxgi = first_dxgi_adapter();
+            for (index = 0; index < sizeof(modern) / sizeof(modern[0]) && result != 0; index++)
             {
-                result = attempt;
-                break;
+                if (dxgi == NULL)
+                    break;
+                result = function(dxgi, modern[index], &iid_device, device);
+                note("d3d12_xs!  level %x (dxgi adapter) -> %lx", (unsigned)modern[index],
+                     (unsigned long)result);
             }
+        }
+        for (index = 0; index < sizeof(legacy) / sizeof(legacy[0]) && result != 0; index++)
+        {
+            result = function(adapter, legacy[index], &iid_device, device);
+            note("d3d12_xs!  level %x (console adapter) -> %lx", (unsigned)legacy[index],
+                 (unsigned long)result);
         }
     }
     if (result != 0 && iid != NULL)

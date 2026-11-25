@@ -10516,3 +10516,30 @@ which is the next thing to look at if the engine needs 12_1/12_2 features.
 
 The physical-page call is also answered now (`XMemAllocatePhysicalPages` returns a real
 reservation instead of 0), which is what raised the assert at `image+0x5eb27be` before.
+
+### With vkd3d-proton's own d3d12 loaded, the console device call succeeds (2026-11-25)
+
+The 12_x refusals were not the adapter and not the feature level: the prefix carries Wine's
+builtin `d3d12.dll` next to vkd3d-proton's `d3d12core.dll`, so a direct `wine` launch (no Proton
+overrides) got Wine's builtin implementation, which stops at 11_1. With the native overrides
+Proton itself sets —
+
+```
+WINEDLLOVERRIDES=d3d12=n,b;d3d12core=n,b;dxgi=n,b
+```
+
+— the *original* call succeeds on the first try:
+
+```
+d3d12_xs!D3D12XboxCreateDevice -> 0x00000000 (device 0x00000000706b0080)
+```
+
+and vkd3d-proton starts up for real (pipeline-cache thread, disk cache setup, the RADV device
+behind it). So the image has a genuine D3D12 device at the level it asked for.
+
+Two smaller things came out of the same pass: `D3D12GetInterface` now answers `E_NOTIMPL` rather
+than forwarding (vkd3d-proton's `d3d12core` aborts on it when the pair is mismatched), and the
+acceptance test sets the overrides itself, since a direct `wine` run has to.
+
+Remaining stop: the engine's own heap arithmetic faults at `image+0x69fe5`
+(`mov %r14d,(%r14)` with an invalid block pointer), still `System Init`, frame 0, exit 5.

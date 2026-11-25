@@ -451,8 +451,14 @@ def main():
     log_path = work / "run.log"
     exe = game / "bootframe.exe"
     exe.write_bytes(args.exe.read_bytes())
+    # The prefix carries vkd3d-proton beside Wine's own d3d12; without the native overrides
+    # Wine loads its builtin, which refuses every 12_x feature level. Proton sets these when it
+    # launches, so a direct `wine` run has to set them here.
+    overrides = os.environ.get("WINEDLLOVERRIDES",
+                               "d3d12=n,b;d3d12core=n,b;dxgi=n,b")
     env = dict(os.environ, WINEPREFIX=os.environ.get(
-        "PROTON_PREFIX", str(Path.home() / ".proton-vi/pfx")), STUB_TRACE="1")
+        "PROTON_PREFIX", str(Path.home() / ".proton-vi/pfx")), STUB_TRACE="1",
+        WINEDLLOVERRIDES=overrides)
 
     launch = [str(wine)]
     if not args.online:
