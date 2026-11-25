@@ -7,20 +7,52 @@
 #include <windows.h>
 #include <stdio.h>
 
+/* The console reserves much more than it touches: this image asks for 24 GiB before it
+ * creates a device. Committing that much fails, and Wine then relocates the request, which
+ * breaks the title's GPU address arithmetic. Reserve only above 1 GiB and commit on touch, so
+ * the reservation keeps the address the title asked for and stays sparse like the console's. */
+#define COMMIT_ON_TOUCH_LIMIT (1024ull * 1024 * 1024)
+
 static void *reserve(void *address, size_t size)
 {
-    void *p = VirtualAlloc(address, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    DWORD flags = MEM_RESERVE | MEM_COMMIT;
+    void *p;
+    if (size > COMMIT_ON_TOUCH_LIMIT)
+        flags = MEM_RESERVE;
+    p = VirtualAlloc(address, size, flags, PAGE_READWRITE);
     if (!p && address)
-        p = VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+        p = VirtualAlloc(NULL, size, flags, PAGE_READWRITE);
     if (getenv("STUB_TRACE"))
-        fprintf(stderr, "[%lx] xmem!alloc(%p, %llx) -> %p\n", GetCurrentThreadId(), address,
-                (unsigned long long)size, p);
+        fprintf(stderr, "[%lx] xmem!alloc(%p, %llx, %s) -> %p\n", GetCurrentThreadId(), address,
+                (unsigned long long)size, flags == MEM_RESERVE ? "reserve" : "commit", p);
     return p;
+}
+
+/* Committing on touch: the title writes anywhere in a reservation and expects memory. */
+static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
+{
+    void *fault = (void *)info->ExceptionRecord->ExceptionInformation[1];
+    void *page = (void *)((uintptr_t)fault & ~(uintptr_t)0xfff);
+    if (info->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION || fault == NULL)
+        return EXCEPTION_CONTINUE_SEARCH;
+    if (VirtualAlloc(page, 0x1000, MEM_COMMIT, PAGE_READWRITE) == NULL)
+        return EXCEPTION_CONTINUE_SEARCH;
+    return EXCEPTION_CONTINUE_EXECUTION;
+}
+
+static void install_touch_handler(void)
+{
+    static int installed;
+    if (installed)
+        return;
+    AddVectoredExceptionHandler(1, commit_on_touch);
+    installed = 1;
 }
 
 void *XMemVirtualAlloc(void *address, size_t size, unsigned long long a, unsigned long long b)
 {
     (void)a; (void)b;
+    install_touch_handler();
     return reserve(address, size);
 }
 

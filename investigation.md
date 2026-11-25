@@ -10352,3 +10352,27 @@ one our IAT hooks cannot see, the CRT's `_beginthreadex`.
 So the 67 infinite waits on the count-0 semaphore are not "waiting for workers to finish": there
 are no workers, and there never were. Whatever signals that semaphore, it is not a thread this
 image starts.
+
+### The corpus volume unmounted mid-session, so some of these runs are not evidence (2026-11-25)
+
+`/run/media/lynxnathan/Mammoth` (the NTFS volume holding the package) was **not mounted** during
+part of this session: `lsblk` showed `sdb2` with no mount point and the staging directory's
+symlinks dangled. Every run in that window executed against a package that was not there, which
+is why several of those runs reported `Sandbox: unknown`, opened nothing on `G:` and never
+touched an archive — those observations are artifacts of the missing volume, not of the image.
+
+Re-mounted read-only (`udisksctl mount -b /dev/sdb2 -o ro`), re-staged, re-run:
+
+```
+exit -15, window none, grabs 0, content frames 0, lit 0.0%, settled no
+FAIL  a window opens on the session display
+FAIL  a frame matches the package's artwork (xbs_splash.png) beyond SSIM 0.8 (best 0.0000)
+```
+
+So the conclusion survives with the data present — no window, no frame — but the intermediate
+measurements taken while the volume was gone should not be cited. From here, any run that
+reports missing archives or an empty `G:` should be treated as an environment fault first.
+
+Also carried out in this window and worth keeping: `xmem` now reserves (not commits) anything
+over 1 GiB, which keeps the address the title asked for instead of letting Wine relocate a
+24 GiB commit, and installs a commit-on-touch vectored handler for the rest.
