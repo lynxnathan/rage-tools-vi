@@ -50,6 +50,11 @@ static void *reserve(void *address, size_t size)
     }
     if (size > COMMIT_ON_TOUCH_LIMIT)
         flags = MEM_RESERVE;
+    /* A console allocation is page-granular and the title writes bookkeeping headers just past
+     * the blocks it carves, so round up and keep a spare page at the end: with an exact-size
+     * mapping the "block after" header lands in unmapped space (measured at image+0x69fe5). */
+    size = (size + 0xffff) & ~(size_t)0xffff;
+    size += 0x10000;
     p = VirtualAlloc(address, size, flags, PAGE_READWRITE);
     if (!p && address)
         p = VirtualAlloc(NULL, size, flags, PAGE_READWRITE);

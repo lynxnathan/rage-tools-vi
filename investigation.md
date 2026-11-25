@@ -10593,3 +10593,16 @@ The block-after computation landing outside the mapping points at the *sizes*: t
 its block is followed by another header, so whatever XMemAlloc returned was not the size it asked
 for — which is where the public harness's "placeholders, physical pages, commit-on-touch" model
 differs from a plain `VirtualAlloc` and is the next thing to copy.
+
+### Allocation granularity is not it either (2026-11-25)
+
+Padding every XMem allocation up to 64 KiB plus a spare 64 KiB (a console hands out page-granular
+space, and the title writes a header just past each block) changed nothing: still 34 faults, 16
+threads, exit 5, and the same `0x1bf7080` write. Confirmed the stub was the one running — the log
+shows the padded sizes (`0x600010000`) and the frees staying mapped.
+
+So the block-after address is inside space the title believes it owns but that no mapping covers,
+and it is not the allocation size, not the free semantics, not the range tracking and not the
+handler's scope. The next thing to copy from the public harness is its *physical page* model:
+`XMemAllocatePhysicalPages` is called with arguments this stub ignores, and the title's heap
+appears to be laid out over pages it asked for explicitly.
