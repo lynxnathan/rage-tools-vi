@@ -22,6 +22,8 @@ Last updated: 2026-11-24.
 
 ## Open
 
+Resume sheet for this thread: [handoff/boot-thread-resume.md](handoff/boot-thread-resume.md).
+
 - [ ] Settle whether the typed row's `c` word is a declaration index or a value.
 - [ ] Identify the `CHKS` tag.
 - [ ] Explain the 36.7 % partial match on the `LSCH` `+0x18` word.
