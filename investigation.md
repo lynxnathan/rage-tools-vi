@@ -9936,3 +9936,22 @@ rather than guessed:
 other class, with a comment that the interface order has to be recovered by querying each class
 and watching what the game calls. That is the work: the image names five classes it expects and
 the runtime has one.
+
+### The D: drive in this prefix was a raw device, and the guard outlived every fix (2026-11-25)
+
+The prefix's `dosdevices/` carried **`d::` -> `/dev/sdb1`** — Wine's record of a raw block device.
+That entry wins over a plain `d:` symlink, so the drive did not exist for Windows programs at all
+(`winepath` mapped `drive_d` to `Z:`, and `cmd /c if exist D:\LocalDumps` said missing). Removing
+`d::` and leaving `d:` -> `../drive_d` fixes it: `D:\LocalDumps` now resolves.
+
+That was worth knowing and it changed nothing: with `D:\LocalDumps` visible, the guard at
+`image+0x2237178` still fires. So its failed lookup is not the directory's existence, and the WER
+`LocalDumps` registry value is not read either (`WINEDEBUG=+reg` shows no query for it). The
+registration call it guards is `image+0x142213030`, whose packed argument is built from flags a few
+instructions earlier, and whose zero result is stored in `object+0xc`.
+
+Two attempts to run it under `gdb` failed for mechanical reasons and are recorded so the next
+attempt starts past them: a catchpoint on `SIGTRAP` never fires because Wine installs its own
+handler and gdb's default architecture becomes `i386` when the 32-bit preloader execs, so breakpoints
+and casts misfire. A working instrument needs `set architecture i386:x86-64` after the exec and a
+hardware breakpoint at the guard, not a signal catch.
