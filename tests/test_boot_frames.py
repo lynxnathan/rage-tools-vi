@@ -15,7 +15,10 @@ What is measured, about once per second, from that window's rectangle only:
                does not, so `--settle` seconds of low-motion content frames is what counts
                as "dropped into the menu";
   * identity — after the process exits, the same rectangle must change. If it still shows
-               what was scored, that content was never the game's.
+               what was scored, that content was never the game's;
+  * answer   — once the picture settles (the menu, after the attract videos) the harness clicks
+               it and requires the picture to change. A menu that ignores input has not been
+               reached: the pass is video -> menu -> "we are here".
 
 Capture: Wine's windows are X11 (XWayland on a Wayland session). A plain `x11grab` of a
 Wayland session reads a black framebuffer, so on Wayland the screen is captured through
@@ -298,6 +301,11 @@ def main():
     parser.add_argument("--online", action="store_true",
                         help="allow the image's network access (its crash reporter posts "
                              "minidumps to submit.backtrace.io); off by default")
+    parser.add_argument("--click", action="store_true", default=True,
+                        help="click the menu once it settles; a menu that does nothing on "
+                             "input has not been reached")
+    parser.add_argument("--response-seconds", type=int, default=8,
+                        help="how long the menu has to react to the click")
     parser.add_argument("--settle", type=int, default=3,
                         help="consecutive content frames with motion below --max-motion")
     parser.add_argument("--max-motion", type=float, default=1.0,
@@ -391,6 +399,9 @@ def main():
     best = (0, 0.0, 0.0)
     still = 0
     settled_at = None
+    clicked = False
+    answered = False
+    clicked_at = None
     minimized = 0
     previous = None
     last = None
@@ -437,6 +448,14 @@ def main():
             still = still + 1 if (carries and delta <= args.max_motion) else 0
             if settled_at is None and still >= args.settle:
                 settled_at = time.time()
+            if settled_at and not clicked and args.click:
+                x, y, width, height = rect
+                subprocess.run(["xdotool", "mousemove", str(x + width // 2),
+                                str(y + height // 2), "click", "1"], capture_output=True)
+                clicked = True
+                clicked_at = time.time()
+            elif clicked and not answered and delta > args.max_motion:
+                answered = True
             timeline.append(f"    {len(timeline):3d}  contrast {contrast:3d}  lit {lit:5.1%}  "
                             f"motion {delta:6.2f}{'  still' if still else ''}"
                             f"{'  minimized' if hidden else ''}")
@@ -469,6 +488,8 @@ def main():
           f"({best[2]:.1%} lit)")
     check(f"the content settles for {args.settle} s after the videos",
           settled_at is not None, "(the menu)")
+    check("the menu answers a click", answered,
+          "(the picture changed after the click)" if clicked else "(never clicked)")
     if minimized:
         print(f"  note  the window was minimized for {minimized} samples; those do not count")
     if last is not None:
