@@ -67,12 +67,13 @@ Each line is a route, what would settle it, and where it stands.
 - [ ] **Recompilation project.** Its runtime is the same surface done once; settle by
   comparing its interface expectations with the six GUIDs.
 
-## Status of "the window"
+## Status of the boot thread
 
-No window has ever opened. The acceptance test (`tests/test_boot_frames.py`) reports
-`lit 0.0 %` with the process exiting in under a second. Guard patches, stub traces and
-slot arguments are instrumentation: they show where the image stops, not progress toward
-drawing. Until a frame with content appears, every boot-thread claim is provisional.
+No window has ever opened, and the window is a proxy, not the goal: what the project is
+for is knowing what every byte of these archives is, with claims that hold up. On that
+measure the boot thread has produced a map (which libraries the image needs, which guards
+fire, which interfaces it queries) and nothing that runs. `tests/test_boot_frames.py`
+reports `lit 0.0 %`, and the process exits in under a second.
 
 ## Running the game
 
