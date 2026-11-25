@@ -9492,3 +9492,24 @@ stop, but without a symbolicated backtrace each step costs a manual round, and t
 form destroys coherence. `tools/patch_guard.py` (patch one named site) and
 `tools/boot_loop.py` (patch, run, read the next stop) stay as tooling; the loop needs the
 backtrace parser fixed before it can run unattended.
+
+### The unattended guard loop works and finds the real fault (2026-11-24)
+
+`tools/boot_loop.py` now parses the *unhandled* stop only (the image raises a handled
+debug-print exception for every trace line), reads the trap as the byte before the
+reported address, and patches a copy — never the original. Two rounds, then a real fault:
+
+```
+round 1  guard at image+0x5a91c21 patched     (CRT abort after the GDK loader)
+round 2  guard at image+0x5925915 patched
+round 3  page fault, read from 0x0 at image+0x5925903 — not a guard
+```
+
+The fault sits 12 bytes before the second guard, inside the GameInput path
+(`FUN_1459258a0`): the object exists, but the code reads a field from it and gets zero.
+That is the shape of every remaining stop — a stubbed interface answers, the caller
+dereferences a field the stub never filled.
+
+Fixed on the way: the address in the log is uppercase hex, so `[0-9a-f]` truncated it to
+`00006`; the `/proc` base is only a hint because the process is gone by the time it is
+read; and the trap byte is one before the reported address.

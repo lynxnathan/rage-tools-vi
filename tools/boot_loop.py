@@ -28,6 +28,40 @@ from patch_guard import rva_to_offset  # noqa: E402
 BREAKPOINT = "0x80000003"
 
 
+def image_base(exe_name, wait=8.0):
+    """Load base of the image as the running process mapped it, read from /proc.
+
+    The log's backtrace lines are not always emitted, so the base is taken from the
+    process itself: the lowest `maps` entry whose path ends with the executable name.
+    """
+    import time
+    deadline = time.time() + wait
+    while time.time() < deadline:
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdigit():
+                continue
+            try:
+                command = (entry / "cmdline").read_bytes().decode("utf-8", "replace")
+            except OSError:
+                continue
+            if exe_name not in command.replace("\x00", " "):
+                continue
+            try:
+                maps = (entry / "maps").read_text()
+            except OSError:
+                continue
+            bases = []
+            for line in maps.splitlines():
+                parts = line.split()
+                if len(parts) >= 6 and parts[5].endswith(exe_name):
+                    bases.append(int(parts[0].split("-")[0], 16))
+            if bases:
+                return min(bases)
+        import time as _t
+        _t.sleep(0.05)
+    return None
+
+
 def run_round(exe, game_dir, stubs, log_path, timeout):
     for dll in stubs.glob("*.dll"):
         target = game_dir / dll.name
@@ -39,11 +73,30 @@ def run_round(exe, game_dir, stubs, log_path, timeout):
     env = dict(os.environ, WINEPREFIX=os.environ.get("PROTON_PREFIX",
                                                     str(Path.home() / ".proton-vi/pfx")),
                STUB_TRACE="1", WINEDEBUG="+seh")
-    result = subprocess.run([str(wine), str(exe)], cwd=str(game_dir), env=env,
-                            capture_output=True, text=True, timeout=timeout)
-    log = result.stdout + result.stderr
-    log_path.write_text(log)
-    return result.returncode, log
+    with open(log_path, "w") as sink:
+        process = subprocess.Popen([str(wine), str(exe)], cwd=str(game_dir), env=env,
+                                   stdout=sink, stderr=subprocess.STDOUT)
+        base = image_base(exe.name)
+        try:
+            process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+            raise
+    log = log_path.read_text()
+    return process.returncode, log, base
+
+
+def stop_of(log):
+    """(exception code, fault address) of the last unhandled stop in the log."""
+    lines = log.splitlines()
+    for index in range(len(lines) - 1, -1, -1):
+        match = re.search(r"Unhandled exception 0x([0-9a-fA-F]+) in thread [0-9a-fA-F]+ at address ([0-9a-fA-F]+)",
+                          lines[index])
+        if not match:
+            continue
+        return match.group(1), int(match.group(2), 16)
+    return None, None
 
 
 def next_guard(log):
@@ -55,7 +108,7 @@ def next_guard(log):
     """
     lines = log.splitlines()
     for index in range(len(lines) - 1, -1, -1):
-        match = re.search(r"Unhandled exception 0x([0-9a-f]+) in thread .* at address ([0-9a-f]+)",
+        match = re.search(r"Unhandled exception 0x([0-9a-fA-F]+) in thread [0-9a-fA-F]+ at address ([0-9a-fA-F]+)",
                           lines[index])
         if not match:
             continue
@@ -86,6 +139,8 @@ def main():
     parser.add_argument("--exe", type=Path, default=ROOT / "cache/exe/game_scarlett_master.exe")
     parser.add_argument("--rounds", type=int, default=10)
     parser.add_argument("--timeout", type=int, default=120)
+    parser.add_argument("--base", type=lambda v: int(v, 0), default=0x6FFFF2F50000,
+                        help="load base of the image; Wine mapped it there in every run here")
     args = parser.parse_args()
 
     stubs = ROOT / "cache/stubs"
@@ -107,11 +162,25 @@ def main():
     for round_index in range(1, args.rounds + 1):
         rva, code, address = (None, None, None)
         try:
-            returncode, log = run_round(exe, args.game_dir, stubs, log_path, args.timeout)
+            returncode, log, base_hint = run_round(exe, args.game_dir, stubs, log_path, args.timeout)
         except subprocess.TimeoutExpired:
             print(f"round {round_index}: still running at {args.timeout}s — no stop")
+            shutil.copy(log_path, ROOT / "cache/boot-loop.log")
             return 0
-        rva, code, address = next_guard(log)
+        code, address = stop_of(log)
+        # The /proc base is only a hint: Wine may have mapped the image elsewhere by the
+        # time the process is gone. The declared base is authoritative unless the address
+        # does not fall inside the image at all.
+        base = args.base
+        if address is not None and not (base <= address < base + 0x72A0000) and base_hint:
+            base = base_hint
+        rva = address - base if address is not None else None
+        if rva is not None and not (0 <= rva < 0x5F3F966):
+            rva = None
+        if code is None:
+            print(f"round {round_index}: no unhandled stop (exit {returncode}) — loop ends")
+            shutil.copy(log_path, ROOT / "cache/boot-loop.log")
+            return 2
         if code != "80000003":
             print(f"round {round_index}: stop is {code} at {address:#x} — not a guard, loop ends")
             shutil.copy(log_path, ROOT / "cache/boot-loop.log")
@@ -121,7 +190,12 @@ def main():
             shutil.copy(log_path, ROOT / "cache/boot-loop.log")
             return 2
         data = bytearray(exe.read_bytes())
+        # The reported address is the instruction after the trap, so the trap itself is
+        # the byte before it when it is an 0xCC.
         offset = rva_to_offset(data, rva)
+        if data[offset] != 0xCC and data[offset - 1] == 0xCC:
+            offset -= 1
+            rva -= 1
         data[offset] = 0x90
         exe.write_bytes(data)
         patches.append(rva)
