@@ -34,6 +34,16 @@ else
     note "rust tests" "FAIL"; tail -4 /tmp/check-rust.log | sed 's/^/    /'; fail=1
 fi
 
+if [ -n "${RAGE_GAME_DIR:-}" ]; then
+    if $PY tests/test_boot_frames.py --game-dir "$RAGE_GAME_DIR" --seconds 20 >/tmp/check-frames.log 2>&1; then
+        note "boot frames" "PASS"
+    else
+        note "boot frames" "FAIL"; tail -4 /tmp/check-frames.log | sed 's/^/    /'; fail=1
+    fi
+else
+    note "boot frames" "skipped (set RAGE_GAME_DIR)"
+fi
+
 if $PY tests/test_robustness.py >/tmp/check-fuzz.log 2>&1; then
     note "parser robustness" "PASS ($(grep -c '  ok' /tmp/check-fuzz.log) checks)"
 else

@@ -47,6 +47,9 @@ Last updated: 2026-11-24.
 
 Each line is a route, what would settle it, and where it stands.
 
+- [ ] **Frames.** `tests/test_boot_frames.py` is the scoreboard (contrast and lit pixels).
+  It reports `lit 0.0 %` and the run aborts inside ntdll on the CRT abort path; settle by
+  finding what the image aborts over, before any rendering call is made.
 - [ ] **Five guards walked.** `image+0x2237178`, `+0x2224517`, `+0x1d5cc69`, `+0x22106e0`,
   `+0x2219650` are bypassed in one unattended run; the next stop is a write to 0 inside a
   system library. Settle by identifying which argument the image passes before that call.

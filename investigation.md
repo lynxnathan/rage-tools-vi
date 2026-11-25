@@ -9598,3 +9598,32 @@ this is the first honest measurement of how far the image goes under stubs.
 The slot traces at that point show the interface being used repeatedly with a
 `(object, buffer, 0x20)` call, so those five asserts sit downstream of the API-query layer,
 not in place of it.
+
+### Acceptance test for "it runs": boot and frames (2026-11-24)
+
+`tests/test_boot_frames.py` defines the goal measurably: start the image under a virtual
+display, grab frames once per second, and require both that the process stays alive and that
+the screen carries content. Content is the discriminating number — a pointer cursor gives
+contrast with zero lit pixels:
+
+```
+contrast = max - min        (a cursor alone reaches 255)
+lit      = share of pixels above 64/255   (a cursor gives 0.0 %)
+```
+
+Default thresholds: at least 3 frames with `contrast >= 24` and `lit >= 2 %`.
+
+Current measurement, on the image patched by `tools/boot_loop.py` (five guards) and booted
+with the stubs beside it:
+
+```
+exit 5, frames above threshold 0, best contrast 255, deviation 0.0, lit 0.0 %
+```
+
+The run stops with an access violation **inside ntdll** (`0x6FFFFFFD1989`, a write to 0)
+whose backtrace lands on the CRT abort path (`image+0x661F0` → `+0x1D109C9` → `+0x5A91C0D`),
+i.e. the image aborts first and the abort path is what faults. Registers at the stop:
+`rax=0x10d918 rbx=0x7ffc0000 rdx=0`.
+
+That is the next thing to chase: the abort happens before any frame is drawn, so the defect
+is still upstream of rendering.

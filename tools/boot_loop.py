@@ -158,8 +158,14 @@ def main():
 
     original = bytearray((args.start or args.exe).read_bytes())
     patches = []
-    # The image loads its DLLs from its own directory, so the working copy has to live
-    # there: a copy in /tmp gets Wine's builtins instead of the stubs.
+    keep = ROOT / "cache/boot-patched.exe"
+    try:
+        return _loop(args, stubs, original, patches, keep)
+    finally:
+        pass
+
+
+def _loop(args, stubs, original, patches, keep):
     work = Path(tempfile.mkdtemp(prefix="bootloop-"))
     exe = args.game_dir / "bootloop.exe"
     exe.write_bytes(original)
@@ -172,6 +178,8 @@ def main():
         except subprocess.TimeoutExpired:
             print(f"round {round_index}: still running at {args.timeout}s — no stop")
             shutil.copy(log_path, ROOT / "cache/boot-loop.log")
+            keep.write_bytes(exe.read_bytes())
+            exe.unlink(missing_ok=True)
             return 0
         code, address = stop_of(log)
         # The /proc base is only a hint: Wine may have mapped the image elsewhere by the
@@ -186,14 +194,20 @@ def main():
         if code is None:
             print(f"round {round_index}: no unhandled stop (exit {returncode}) — loop ends")
             shutil.copy(log_path, ROOT / "cache/boot-loop.log")
+            keep.write_bytes(exe.read_bytes())
+            exe.unlink(missing_ok=True)
             return 2
         if code != "80000003":
             print(f"round {round_index}: stop is {code} at {address:#x} — not a guard, loop ends")
             shutil.copy(log_path, ROOT / "cache/boot-loop.log")
+            keep.write_bytes(exe.read_bytes())
+            exe.unlink(missing_ok=True)
             return 2
         if rva is None:
             print(f"round {round_index}: guard outside the image ({address:#x}) — loop ends")
             shutil.copy(log_path, ROOT / "cache/boot-loop.log")
+            keep.write_bytes(exe.read_bytes())
+            exe.unlink(missing_ok=True)
             return 2
         data = bytearray(exe.read_bytes())
         # The reported address is the instruction after the trap, so the trap itself is
@@ -209,7 +223,11 @@ def main():
               f"({len(patches)} total, exit was {returncode})")
 
     print(f"{len(patches)} guards patched: " + ", ".join(hex(rva) for rva in patches))
+    # Keep the patched image: it is what the frame test boots when the goal is to see how
+    # far rendering gets, and a copy in the game directory is what the stubs sit beside.
+    keep.write_bytes(exe.read_bytes())
     exe.unlink(missing_ok=True)
+    print(f"kept {keep}")
     shutil.copy(log_path, ROOT / "cache/boot-loop.log")
     return 0
 
