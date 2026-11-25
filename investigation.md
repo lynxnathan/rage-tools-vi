@@ -10047,3 +10047,32 @@ real out pointer (`out=0x6ffffa845e78`) and IID `62959d11-d45f-4884-a0a3-f7862ea
 factory object is never used — no slot of its vtable is called in the whole run. DirectStorage
 is a probe at this stage, not the blocker; the previous entry's claim that it "feeds everything
 else" is not supported by the trace.
+
+### The reporter guard stopped firing, and DirectStorage slot 8 is the next wall (2026-11-25)
+
+With `xcrdapi` answering a vtable-backed factory object instead of nothing, the guard at
+`image+0x2237178` **no longer fires at all**: three consecutive runs show zero
+`EXCEPTION_BREAKPOINT`, 15 handled access violations and exit 5, where the same image used to
+stop at the guard every time. The image now reaches its crash reporter's upload stage and a new
+fault:
+
+```
+EXCEPTION_ACCESS_VIOLATION  addr=00006FFFF4CDE515  info[1]=FFFFFFFFFFFFFFFF
+rip=image+0x1D8E515   rcx=0x6ffff2bde040
+```
+
+The code there is unambiguous about what it wants next:
+
+```
+mov  rcx, [factory]          ; the DirectStorage factory
+test rcx, rcx ; je int3      ; must be non-null
+mov  rax, [rcx]              ; vtable
+mov  edx, 0x2000000          ; 32 MiB
+call *0x40(%rax)             ; slot 8  -> SetStagingBufferSize(32 MiB)
+test eax, eax ; jns ok ; int3
+```
+
+So the image asks the factory for a **32 MiB staging buffer** through vtable slot 8 immediately
+after `DStorageGetFactory` returns, and faults inside that call because the object it holds is
+not a COM object with a real vtable. The next piece is therefore a genuine
+`IDStorageFactory` (IUnknown at slots 0–2, `SetStagingBufferSize` at 8), not a vtable of zeros.

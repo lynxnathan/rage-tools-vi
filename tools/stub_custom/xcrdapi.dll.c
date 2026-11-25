@@ -22,7 +22,7 @@ static unsigned char g_arena[0x2000];
     static unsigned long long slot_##n(unsigned long long a, unsigned long long b, \
                                        unsigned long long c, unsigned long long d) \
     { TRACE("slot %d caller=%p args=%llx,%llx,%llx,%llx", n, __builtin_return_address(0), \
-            a, b, c, d); return (unsigned long long)(uintptr_t)g_arena; }
+            a, b, c, d); return 0; }
 
 SLOT(0) SLOT(1) SLOT(2) SLOT(3) SLOT(4) SLOT(5) SLOT(6) SLOT(7)
 SLOT(8) SLOT(9) SLOT(10) SLOT(11) SLOT(12) SLOT(13) SLOT(14) SLOT(15)
