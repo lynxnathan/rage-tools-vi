@@ -50,6 +50,5 @@ long long ord_1(void **out, unsigned long long flags)
         fprintf(stderr, "[%lx] gameinput!ord_1(out=%p flags=%llx)\n",
                 GetCurrentThreadId(), (void *)out, flags);
     if (out) *out = object;
-    seed_global();
     return 0;
 }

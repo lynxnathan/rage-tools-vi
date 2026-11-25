@@ -9575,3 +9575,26 @@ Two more shapes measured directly:
 
 An explicit `WINEDLLOVERRIDES=<name>=n` for these libraries makes Wine skip them; the
 stubs load natively on their own and the override must not be set.
+
+### With the stubs really loaded, the image walks five guards (2026-11-24)
+
+`tools/boot_loop.py` now places the working copy beside the game files, so the stubs load.
+Removing the global seed as well (the image sets its own cache once the create succeeds),
+one unattended run produces:
+
+```
+round 1  guard at image+0x2237178
+round 2  guard at image+0x2224517
+round 3  guard at image+0x1d5cc69
+round 4  guard at image+0x22106e0
+round 5  guard at image+0x2219650
+round 6  page fault: write to 0x0 at 0x6FFFFFFD1989 (system library)
+```
+
+Five asserts in a row, then a fault inside a system library rather than the image. Compared
+with the earlier runs — which stopped at the first guard because no stub was ever loaded —
+this is the first honest measurement of how far the image goes under stubs.
+
+The slot traces at that point show the interface being used repeatedly with a
+`(object, buffer, 0x20)` call, so those five asserts sit downstream of the API-query layer,
+not in place of it.

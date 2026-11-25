@@ -47,6 +47,9 @@ Last updated: 2026-11-24.
 
 Each line is a route, what would settle it, and where it stands.
 
+- [ ] **Five guards walked.** `image+0x2237178`, `+0x2224517`, `+0x1d5cc69`, `+0x22106e0`,
+  `+0x2219650` are bypassed in one unattended run; the next stop is a write to 0 inside a
+  system library. Settle by identifying which argument the image passes before that call.
 - [ ] **GameInput creation.** `FUN_1459258a0` lazily creates the interface through the
   ordinal-1 import and caches it in `image+0x9ab15e8`; with the stubs loaded the create is
   called and execution stops at `image+0x592591B` reading `0xFFFFFFFFFFFFFFFF`. Settle by
