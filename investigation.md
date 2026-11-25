@@ -10452,3 +10452,22 @@ this stub reserved (now tracked, and the count is unchanged), and `VirtualAlloc`
 image's IAT (hooked; the image never calls it — its heap grows by another path).
 
 The crash context after all this is still `System Init`, frame 0.
+
+### Past the barrier, the main thread waits inside the allocator (2026-11-25)
+
+With the manual-reset event signalled, `RtlCaptureStackBackTrace` gives the engine's own frame
+chain at the wait, which the unix debugger cannot see:
+
+```
+0x56A1E5A (CRT start) -> 0x5A91C0D -> 0x1D109C0 -> 0x21EEF9 -> 0x12D886E -> 0x5D821D5
+  -> 0x215ECA -> 0x4FC215D -> 0x21C246 -> 0x554ADB9 -> 0x1D821A3 -> 0x4FAC3D7 -> 0x69DA8 -> 0x54BD6
+```
+
+`0x554adb9` is the same function whose later instruction (`0x554bdcb`) writes through a NULL
+allocation 543 times, so the main thread is not merely calling the allocator — it is waiting
+inside it. The image's allocator blocks, and every caller behind it then faults on a NULL result.
+
+That makes the next question sharper than "why NULL": the allocator blocks waiting for
+something the platform is expected to provide — most plausibly the GPU-visible memory pool the
+public harness implements with pagefile sections, since the console allocator and the GPU share
+one address space and this one is being asked for both.
