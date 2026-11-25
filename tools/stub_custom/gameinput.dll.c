@@ -12,6 +12,14 @@ static unsigned long long generic(void)
                 "gameinput", __builtin_return_address(0));
     return 0;
 }
+BOOL WINAPI DllMain(HINSTANCE module, DWORD reason, LPVOID reserved)
+{
+    (void)module; (void)reserved;
+    if (reason == DLL_PROCESS_ATTACH && getenv("STUB_TRACE"))
+        fprintf(stderr, "gameinput!loaded\n");
+    return TRUE;
+}
+
 static void *vtable[512];
 static void *object[1];
 
@@ -30,7 +38,7 @@ static void seed_global(void)
         fprintf(stderr, "gameinput!seed global %p = %p\n", (void *)slot, *slot);
 }
 
-long long ord_1(unsigned long long first, void **second)
+long long ord_1(void **out, unsigned long long flags)
 {
     unsigned i;
     if (!object[0]) {
@@ -39,9 +47,9 @@ long long ord_1(unsigned long long first, void **second)
         object[0] = vtable;
     }
     if (getenv("STUB_TRACE"))
-        fprintf(stderr, "[%lx] gameinput!ord_1(first=%llx second=%p)\n",
-                GetCurrentThreadId(), first, (void *)second);
-    if (second) *second = object;
+        fprintf(stderr, "[%lx] gameinput!ord_1(out=%p flags=%llx)\n",
+                GetCurrentThreadId(), (void *)out, flags);
+    if (out) *out = object;
     seed_global();
     return 0;
 }

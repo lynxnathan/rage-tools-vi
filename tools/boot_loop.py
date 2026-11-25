@@ -70,6 +70,8 @@ def run_round(exe, game_dir, stubs, log_path, timeout):
     wine = proton_wine()
     if wine is None:
         raise SystemExit("no Proton wine found; set PROTON_WINE")
+    # Measured: an explicit native override for these names makes Wine skip them, so the
+    # stubs are left to load from the game directory on their own (verified with +loaddll).
     env = dict(os.environ, WINEPREFIX=os.environ.get("PROTON_PREFIX",
                                                     str(Path.home() / ".proton-vi/pfx")),
                STUB_TRACE="1", WINEDEBUG="+seh")
@@ -156,8 +158,10 @@ def main():
 
     original = bytearray((args.start or args.exe).read_bytes())
     patches = []
+    # The image loads its DLLs from its own directory, so the working copy has to live
+    # there: a copy in /tmp gets Wine's builtins instead of the stubs.
     work = Path(tempfile.mkdtemp(prefix="bootloop-"))
-    exe = work / "game.exe"
+    exe = args.game_dir / "bootloop.exe"
     exe.write_bytes(original)
     log_path = work / "run.log"
 
@@ -205,6 +209,7 @@ def main():
               f"({len(patches)} total, exit was {returncode})")
 
     print(f"{len(patches)} guards patched: " + ", ".join(hex(rva) for rva in patches))
+    exe.unlink(missing_ok=True)
     shutil.copy(log_path, ROOT / "cache/boot-loop.log")
     return 0
 

@@ -47,11 +47,10 @@ Last updated: 2026-11-24.
 
 Each line is a route, what would settle it, and where it stands.
 
-- [ ] **GameInput creation.** `FUN_1459258a0` is a setter whose callers treat it as a
-  getter (`FUN_142211b40` calls it with no argument and uses the result), so execution
-  dereferences a null `rsi` at `image+0x5925903`. The ordinal-1 create call is never
-  reached, so the object never exists. Settle by finding what is supposed to create it
-  before those callers run.
+- [ ] **GameInput creation.** `FUN_1459258a0` lazily creates the interface through the
+  ordinal-1 import and caches it in `image+0x9ab15e8`; with the stubs loaded the create is
+  called and execution stops at `image+0x592591B` reading `0xFFFFFFFFFFFFFFFF`. Settle by
+  reading what the image stores next to that global before releasing the old object.
 - [ ] **Interface layouts.** Six GUIDs, slot 2 called as `(object, buffer, 0x20)`. Settle by
   decompiling the callers at `+0x55DEB6E` and `+0x55DE0xx`, which read the returned fields.
 - [ ] **Stream class.** The archive ctor passes `stream+0x10/+0x18/+0x20` into the region

@@ -9550,3 +9550,28 @@ single site to patch: the object must exist.
 That makes the requirement concrete: the GameInput interface has to be created before any
 caller reaches this path, and the create call is the ordinal-1 import, which the image does
 **not** reach in the current run (no `gameinput!ord_1` line in the log).
+
+### The stubs must live beside the working image (2026-11-24)
+
+The image resolves its DLLs from **its own directory**, not from the working directory. A
+patched copy placed in `/tmp` silently gets Wine's builtins, so `GameInputCreate` is never
+our stub and the run looks identical to having no stubs at all. Placing the working copy in
+the game directory changes the very first round:
+
+```
+before  round 1: guard at image+0x5a91c21   (our stubs not loaded)
+after   round 1: no guard; page fault, read from 0xFFFFFFFFFFFFFFFF at image+0x592591B
+```
+
+Two more shapes measured directly:
+
+- the ordinal-1 import thunk is at `image+0x5f3fed0` and jumps to the IAT slot
+  `0x146793f10`, i.e. it is the GameInput IAT entry and our stub receives `out` in `rcx`
+  (`first=0x10fc48 second=0x6fffffaf6440` in the trace);
+- seeding the image's cache global (`image+0x9ab15e8`) with the stub object moves the stop
+  from a null read to a read of `0xFFFFFFFFFFFFFFFF` at `image+0x592591B`, inside the same
+  function — so the object is reached and the stub's vtable is used, and what fails is the
+  value the image keeps in that global's neighbours.
+
+An explicit `WINEDLLOVERRIDES=<name>=n` for these libraries makes Wine skip them; the
+stubs load natively on their own and the override must not be set.
