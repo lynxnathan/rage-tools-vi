@@ -64,6 +64,8 @@ are appended here.
   Do not reopen this thread without a concrete input: a PC build, or a public layout
   source for the six queried interfaces. The reproduction stays available
   (`tools/rage.py play --stubs`) and the evidence is in `investigation.md`.
+- 2026-11-24: English only — every reply, commit message, doc, journal entry and bus
+  message is written in English.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling
