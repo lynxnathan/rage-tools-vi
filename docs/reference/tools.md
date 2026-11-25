@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-176 scripts.
+179 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -59,6 +59,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`corpus_table.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/corpus_table.py) | Assemble `handoff/corpus-pass.tsv` from the per-archive products. |  |
 | [`coverage_gaps.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/coverage_gaps.py) | Report unclassified extraction spans by archive and largest gaps. |  |
 | [`crypt_battery.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/crypt_battery.py) | Cipher battery for the masked RPF9 regions. | --dir --suffix |
+| [`d3d12_shim.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/d3d12_shim.py) | Build the d3d12_xs.dll shim that backs the console D3D12 entry points with vkd3d-proton. | --check |
 | [`data_awc_ace1_ir.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_awc_ace1_ir.py) | Test an inverse real FFT on a bounded set of codec 0x02 controls. |  |
 | [`data_awc_opus_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_awc_opus_probe.py) | Test little-endian length-prefixed Opus in one GTA VI ADAT container. |  |
 | [`data_awc_trim_controls.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/data_awc_trim_controls.py) | Measure trim ambiguity and the 0x02 ACE1 trailer on named controls. |  |
@@ -155,6 +156,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`root_classes.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/root_classes.py) | Classify object-tree roots by their child part/bone signatures. |  |
 | [`root_names.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/root_names.py) | Match the script.rpf object-tree root IDs against JOAAT names. |  |
 | [`rotation_parts.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/rotation_parts.py) | Analyze +0x18 named records and their direct rotation targets. |  |
+| [`run_dir.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/run_dir.py) | Stage a game directory so a run never writes into the dump. | --game-dir --out |
 | [`scan_libmagic.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/scan_libmagic.py) | Report file(1) signatures for every regular file in a local extraction. |  |
 | [`schema_names.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/schema_names.py) | Match JOAAT field names in the decoded PSIN sections. |  |
 | [`script_bone_namespace_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/script_bone_namespace_probe.py) | Cross-check skeleton family hashes against the named vehicle mover tables. |  |
@@ -191,4 +193,5 @@ so `python3 tools/<name>.py` works without arguments.
 | [`verify_quadtree.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_quadtree.py) | Verify the class-0 quadtree JSON against the geometry source. |  |
 | [`vtable_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vtable_scan.py) | Enumerate vtables in the executable and resolve chosen slots. | --find --limit --min-slots --slot |
 | [`wrapper_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/wrapper_probe.py) | Probe 32-byte +0x10 wrappers for a signature that predicts rotation leaves. |  |
+| [`xref.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/xref.py) | Find the code that references an image RVA: call/jmp rel32, and rip-relative operands. | --kind --limit --to |
 | [`zipcrypto_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/zipcrypto_probe.py) | Test passwords against a ZipCrypto entry without extracting anything. | --wordlist --words |

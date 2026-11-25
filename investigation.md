@@ -9679,3 +9679,57 @@ writes to that volume; the stubs stay behind. The log it keeps is
 `cache/boot-frames.log`.
 
 Everything in the run is still instrumentation: `lit 0.0 %` means nothing has been drawn.
+
+### The scoreboard is a window on the real desktop, and the stack is real (2026-11-25)
+
+Two changes follow from what the goal actually is: the executable opening, with DXVK and
+vkd3d-proton for the graphics basics rather than hand-written stand-ins.
+
+**The test looks at a real window.** `tests/test_boot_frames.py` no longer starts `Xvfb`.
+It launches the image on the session display, finds the window it opened, and scores only
+that rectangle: contrast, lit share, frame-to-frame motion, and `--settle` seconds of
+low-motion content frames as the menu after the attract videos. On Wayland a plain X11 grab
+of the screen is black, so the screen is captured through `flameshot` and cropped to the
+window; `--capture x11` forces the direct path. Attribution is by the process id, title, or
+`WM_CLASS` — never merely "a new large window", which could be the operator's. After the
+process exits the same rectangle must change, so content that was never the game's cannot
+pass.
+
+Measured now:
+
+```
+capture desktop on :0, screen 2560x1440
+exit 3, window none, grabs 0, content frames 0, best contrast 0, lit 0.0%, settled no
+FAIL: a window opens on the session display
+```
+
+**The stack is provided, not stubbed.** `tools/d3d12_xs.c` implements the image's three
+`d3d12_xs` imports: `D3D12ConfigureVirtualMemoryX` reports its arguments and returns
+`S_OK`, and `D3D12SerializeVersionedRootSignature` / `D3D12XboxCreateDevice` forward to the
+prefix's `d3d12.dll` (vkd3d-proton), the device at feature level 12_0 with the caller's
+IID. The first call is now real and logged:
+
+```
+d3d12_xs!D3D12ConfigureVirtualMemoryX(0x10fe00, 0x14d8b0, 0x3c, 0x3c) -> S_OK
+```
+
+**The launchers no longer write into the dump.** `tools/run_dir.py` stages a directory of
+symlinks plus the stub DLLs; `rage.py play --stubs`, `boot_loop.py` and the frames test all
+run from there. This is late: the earlier launchers copied stubs *over* the package's own
+console DLLs, and fifteen shipped binaries (`d3d12_xs`, `xg_xs`, `xmem`, `gameinput`,
+`xgameruntime`, `acphal`, `xapu`, `chad`, `xcrdapi`, `xboxbvhbuilder`, `mfplat`,
+`mfreadwrite`, `bink2scarlett`, `libhttpclient.gdk`, `amd_fidelityfx_loader_xbox`) are now
+231 KiB mingw stubs on that volume. No other copy exists locally, so they are lost until
+the package is dumped again.
+
+**The first guard is not a platform-call result.** `image+0x2237178` is
+`test al,al; jne ok; int3` over `FUN_140006170`, which is `return ecx != 0`; `ecx` comes
+from `[rsi+0xc]` where `rsi` is the object handed to `image+0x2236e00`. That object is
+allocated 0x28 bytes at `image+0x2236d85`, zeroed by the constructor at `image+0x582a610`
+(`vmovups ymm0`, `movq $0,+0x20`), stored in `image+0x7453e58`, and the method is called
+immediately — with no store to `+0xc` anywhere between, and none inside the method. So the
+assert cannot be satisfied by a better graphics shim; either the field is meant to be filled
+by another subsystem first, or this branch is not the path a working platform takes.
+
+Files: `tools/run_dir.py`, `tools/d3d12_shim.py` + `tools/d3d12_xs.c`, `tools/xref.py`
+(which found the single caller of the guarded method).

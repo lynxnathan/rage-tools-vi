@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 from rage import proton_wine  # noqa: E402
 from patch_guard import rva_to_offset  # noqa: E402
+from run_dir import stage  # noqa: E402
 
 BREAKPOINT = "0x80000003"
 
@@ -63,10 +64,6 @@ def image_base(exe_name, wait=8.0):
 
 
 def run_round(exe, game_dir, stubs, log_path, timeout):
-    for dll in stubs.glob("*.dll"):
-        target = game_dir / dll.name
-        if not target.is_file() or target.stat().st_size != dll.stat().st_size:
-            subprocess.run(["cp", "-f", str(dll), str(game_dir)], check=False)
     wine = proton_wine()
     if wine is None:
         raise SystemExit("no Proton wine found; set PROTON_WINE")
@@ -155,6 +152,9 @@ def main():
         print(build.stdout[-400:], build.stderr[-400:])
         return 1
     print(f"stub DLLs: {len(list(stubs.glob('*.dll')))}")
+    run_dir, links, placed = stage(args.game_dir, ROOT / "cache/run", stubs)
+    print(f"run directory: {run_dir} ({links} linked, {placed} stubs); the dump is not written")
+    args.game_dir = run_dir
 
     original = bytearray((args.start or args.exe).read_bytes())
     patches = []

@@ -150,14 +150,12 @@ def cmd_play(args):
             print(built.stdout[-400:], built.stderr[-400:])
             return 1
         dlls = sorted(stub_build.glob("*.dll"))
-        changed = [dll for dll in dlls
-                   if not (game / dll.name).is_file()
-                   or (game / dll.name).stat().st_size != dll.stat().st_size]
-        if changed:
-            # The game directory is an external volume; copying through the shell keeps
-            # the write path that already works there.
-            run(["cp", "-f", *[str(dll) for dll in changed], str(game)])
-        print(f"stub DLLs {len(dlls)}, {len(changed)} refreshed in {game}", flush=True)
+        # Stage instead of copying into the dump: the package's own console DLLs are shipped
+        # binaries, and an earlier launcher overwrote fifteen of them with stubs.
+        from run_dir import stage
+        game, links, placed = stage(args.game_dir, ROOT / "cache/run", stub_build)
+        print(f"stub DLLs {len(dlls)}; run directory {game} ({links} linked, {placed} placed); "
+              f"the dump is not written", flush=True)
         wine = proton_wine()
         if wine is None:
             print(f"{len(dlls)} stub DLLs written; no Proton wine found "
