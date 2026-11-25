@@ -10256,3 +10256,21 @@ and answer the hint with `S_OK`.
 The manual-queue experiment (run `QueueItem` callbacks inline for a Manual port,
 `XGAMERUNTIME_MANUAL_QUEUE=queue` to restore the old behaviour) did **not** reach the image's
 wait: no inline callback ran, so that wait is not fed by an `XTaskQueue` callback.
+
+### XUser is served now, and the wait does not move (2026-11-25)
+
+`XUserImpl` (`xuser.idl`, `IXUserImpl6`, 34 methods from the header plus the 13 that the later
+interface versions add) is now implemented in the runtime and dispatched by `QueryApiImpl`.
+`XUserGetMaxUsers` answers 4; the rest answer `S_OK` with zeroed outputs or `E_NOTIMPL` where the
+operation needs a service.
+
+The image still stops at the same place: `WaitForSingleObject(handle 0x4b4, INFINITE)` on a
+semaphore with count 0, from `image+0x56a0d`, and it asks for no class we refuse afterwards (the
+run logs no `not implemented` refusal at all). So the block is not a missing class query; it is
+whatever is supposed to signal that semaphore, and the image creates no threads that could.
+
+Also recorded: the runtime checkout had one scare worth noting — `git checkout -- src/main.cpp`
+during an experiment reverted the uncommitted class implementations, and the patch file was the
+only copy. It applied back cleanly and the run returned to its previous state, which is an
+argument for saving `tools/patches/xodus-platform.patch` after every successful build (the tool
+does that implicitly by re-applying it).
