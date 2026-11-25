@@ -43,6 +43,24 @@ Last updated: 2026-11-24.
 - [ ] Give `levels` an entry model (728 of 2,044 packs exact).
 - [ ] Name the remaining ped-rig bones and weight hashes.
 
+## Candidates on the boot thread
+
+Each line is a route, what would settle it, and where it stands.
+
+- [ ] **GameInput path.** `FUN_1459258a0` caches the object in `DAT_149ab15e8`; after the
+  patched guard the code takes the "object is null" branch and calls through null at
+  `image+0x5925903`. Settle by finding which global the successful path writes — the stub's
+  out-slot argument (`0x6fffffaf6440`) is not the one the code reads.
+- [ ] **Interface layouts.** Six GUIDs, slot 2 called as `(object, buffer, 0x20)`. Settle by
+  decompiling the callers at `+0x55DEB6E` and `+0x55DE0xx`, which read the returned fields.
+- [ ] **Stream class.** The archive ctor passes `stream+0x10/+0x18/+0x20` into the region
+  reader. Settle by decompiling the class and its `Read` at `+0x60`; this also unblocks the
+  RPF9 table of contents.
+- [ ] **PC build.** `tools/rage.py play` re-classifies any image; a PC build removes the
+  whole GDK surface. Settle by pointing the tool at one.
+- [ ] **Recompilation project.** Its runtime is the same surface done once; settle by
+  comparing its interface expectations with the six GUIDs.
+
 ## Running the game
 
 Static recompilation of the console image, on the user's own copy: the CPU is x86-64, so
