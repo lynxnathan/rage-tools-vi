@@ -36,7 +36,11 @@ Last updated: 2026-11-24.
 - [ ] Identify the roles of `0x01393259`, `0x16` and `0xaeb623d8`.
 - [ ] Find the second component's size law in the 440 composite packs.
 - [ ] Identify the four front-region sections (`p3×8`, `p4`, `p5×24`,
-  `(p5-p6)×N×p8`) and what fills the region past them.
+  `(p5-p6)×N×p8`) and what fills the region past them. Open discrepancy: on `data.rpf+0`
+  (`p5=7`, `p6=1`, `N=699`, `p8=2`) the last term gives 12 bytes per record, while the
+  region measured after section 4 is 60,728 bytes ≈ 87 bytes per record, and the earlier
+  corpus census found exactly `N×64` in 79 packs. The term is wrong for this pack; the
+  census numbers and the formula have to be reconciled before either is used.
 - [ ] Decode the remaining ~1.7 M Opus streams; the `0xff25` variant now has a working
   path, the others run through the table rules.
 - [ ] Carve the shader programs. No container magic exists in the plaintext corpus
