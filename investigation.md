@@ -10209,3 +10209,24 @@ Candidates, in the order they can be tested:
    (`routine 0x6FFFF5167C70`, context `0x6FFFFA108C78`), so a state change the engine waits for
    never arrives;
 2. a task queue from the runtime that nothing dispatches.
+
+### The image now runs and then waits on a semaphore nobody signals (2026-11-25)
+
+With `XNetworking` answered, the process stays up, and the wait is now identified exactly. The
+main thread calls
+
+```
+WaitForSingleObject(handle 0x4b4, INFINITE)   caller image+0x56a0d
+```
+
+and `NtQueryObject` says the handle is a **semaphore**, created with count 0. The caller is a
+loop (`image+0x569f0`: `call *%rbx` with `edx = -1`, then `dec %esi; jne`) — the image waits
+once per queued job. Draining it with a probe (`STUB_KICK=1` releases one signal per wait) takes
+**67** signals, and then the engine starts another process and still never calls
+`D3D12XboxCreateDevice` (it is called zero times in any run so far).
+
+Only three threads exist while it waits, two of them Wine's own thread pool, so the worker
+threads that would signal those 67 completions were never started: the engine queued work and
+waits for workers that do not exist. That is the same platform gap the parked note in
+`AGENTS.md` describes, now measured: not a drive, a registry key, a shim return value or a
+message pump.

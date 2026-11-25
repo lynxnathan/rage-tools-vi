@@ -1,5 +1,5 @@
 diff --git a/src/main.cpp b/src/main.cpp
-index c51613d..838c1c4 100644
+index c51613d..eb5c5c8 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -20,6 +20,10 @@
@@ -13,7 +13,7 @@ index c51613d..838c1c4 100644
  
  #ifdef __cplusplus
  extern "C" {
-@@ -70,6 +74,295 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
+@@ -70,6 +74,301 @@ HRESULT WINAPI InitializeApiImpl( ULONG gdkVer, ULONG gsVer )
      return InitializeApiImplEx2( gdkVer, gsVer, 0, NULL );
  }
  
@@ -218,7 +218,13 @@ index c51613d..838c1c4 100644
 +        return S_OK;
 +    }
 +    HRESULT STDMETHODCALLTYPE XNetworkingQueryPreferredLocalUdpMultiplayerPortAsync( XAsyncBlock *async ) override
-+    { (void)async; return S_OK; }
++    {
++        /* Answering S_OK without ever completing the block leaves a caller waiting for a
++         * completion that never comes; E_NOTIMPL sends it down its synchronous path. */
++        if ( async && async->callback )
++            async->callback( async );
++        return E_NOTIMPL;
++    }
 +    HRESULT STDMETHODCALLTYPE XNetworkingQueryPreferredLocalUdpMultiplayerPortAsyncResult(
 +        XAsyncBlock *async, UINT16 *port ) override
 +    { (void)async; if ( port ) *port = 3074; return S_OK; }
@@ -309,7 +315,7 @@ index c51613d..838c1c4 100644
  HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
  {
      // ------------ FOR FUTURE REFERENCES ------------
-@@ -103,6 +396,38 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
+@@ -103,6 +402,38 @@ HRESULT WINAPI QueryApiImpl( REFCLSID clsid, REFIID iid, void **out )
          return x_threading_impl->QueryInterface( iid, out );
      }
  

@@ -22,6 +22,8 @@
 
 #include <windows.h>
 #include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define FL_12_0 0xc000
 
@@ -240,10 +242,277 @@ __declspec(dllexport) HRESULT WINAPI D3D12XboxCreateDevice(IUnknown *adapter, co
     return result;
 }
 
+
+/* ---------------------------------------------------------------------------------------
+ * App-state notification hook.
+ *
+ * The image registers for application state changes and then waits for one; Wine answers
+ * RegisterAppStateChangeNotification with a stub that never invokes the callback, so nothing
+ * ever arrives. Both routines are imported from an api-ms-win-core-psm-appnotify set, whose
+ * IAT entries are patched here as soon as this DLL attaches (it is loaded before the image
+ * registers). Each routine is remembered and called once with "not quiesced" after a moment,
+ * which is what "the title is now active" looks like to the caller.
+ * ------------------------------------------------------------------------------------ */
+
+typedef void (WINAPI *appstate_routine)(BOOLEAN quiesced, PVOID context);
+
+static appstate_routine g_state_routine;
+static PVOID g_state_context;
+static appstate_routine g_constrained_routine;
+static PVOID g_constrained_context;
+static HANDLE g_semaphores[8];
+static int g_semaphore_count;
+
+static long long WINAPI hook_RegisterAppStateChangeNotification(appstate_routine routine,
+                                                                PVOID context, PVOID registration)
+{
+    g_state_routine = routine;
+    g_state_context = context;
+    note("appstate!RegisterAppStateChangeNotification(routine %p, context %p) hooked",
+         routine, context);
+    if (registration)
+        *(PVOID *)registration = (PVOID)(UINT_PTR)1;
+    return 0;
+}
+
+static long long WINAPI hook_RegisterAppConstrainedChangeNotification(appstate_routine routine,
+                                                                      PVOID context,
+                                                                      PVOID registration)
+{
+    g_constrained_routine = routine;
+    g_constrained_context = context;
+    note("appstate!RegisterAppConstrainedChangeNotification(routine %p, context %p) hooked",
+         routine, context);
+    if (registration)
+        *(PVOID *)registration = (PVOID)(UINT_PTR)2;
+    return 0;
+}
+
+static DWORD WINAPI appstate_thread(LPVOID unused)
+{
+    (void)unused;
+    Sleep(2000);
+    if (g_constrained_routine)
+    {
+        note("appstate: calling the constrained routine (FALSE)");
+        g_constrained_routine(FALSE, g_constrained_context);
+    }
+    if (g_state_routine)
+    {
+        note("appstate: calling the state routine (FALSE = active)");
+        g_state_routine(FALSE, g_state_context);
+    }
+    Sleep(1500);
+    if (g_semaphore_count > 0)
+    {
+        LONG previous = -1;
+        ReleaseSemaphore(g_semaphores[0], 1, &previous);
+        note("semaphore: released %p (previous count %ld)", g_semaphores[0], (long)previous);
+    }
+    return 0;
+}
+
+/* Replace one import slot in the running image by name. */
+static void patch_import(HMODULE image, const char *wanted, void *replacement)
+{
+    unsigned char *base = (unsigned char *)image;
+    IMAGE_DOS_HEADER *dos = (IMAGE_DOS_HEADER *)base;
+    IMAGE_NT_HEADERS64 *nt = (IMAGE_NT_HEADERS64 *)(base + dos->e_lfanew);
+    IMAGE_IMPORT_DESCRIPTOR *descriptor = (IMAGE_IMPORT_DESCRIPTOR *)
+        (base + nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+    DWORD old;
+    for (; descriptor->Name; descriptor++)
+    {
+        const char *dll = (const char *)(base + descriptor->Name);
+        IMAGE_THUNK_DATA64 *name_thunk = (IMAGE_THUNK_DATA64 *)(base + descriptor->OriginalFirstThunk);
+        IMAGE_THUNK_DATA64 *address_thunk = (IMAGE_THUNK_DATA64 *)(base + descriptor->FirstThunk);
+        if (descriptor->OriginalFirstThunk == 0)
+            continue;
+        for (; name_thunk->u1.AddressOfData; name_thunk++, address_thunk++)
+        {
+            char *name;
+            if (name_thunk->u1.Ordinal & IMAGE_ORDINAL_FLAG64)
+                continue;
+            name = (char *)(base + (DWORD)name_thunk->u1.AddressOfData + 2);
+            if (strcmp(name, wanted) != 0)
+                continue;
+            if (VirtualProtect(address_thunk, sizeof(*address_thunk), PAGE_READWRITE, &old))
+            {
+                address_thunk->u1.Function = (ULONGLONG)(UINT_PTR)replacement;
+                VirtualProtect(address_thunk, sizeof(*address_thunk), old, &old);
+            }
+            note("appstate: %s patched in %s", wanted, dll);
+            return;
+        }
+    }
+    note("appstate: %s not found in the image's imports", wanted);
+}
+
+
+/* --- wait / message probes -------------------------------------------------------------
+ * The image ends up waiting in a Wine server select. These wrappers say what it waits on,
+ * and how it pumps messages, without changing behaviour: each one logs the first calls and
+ * forwards to the real implementation. */
+static DWORD (WINAPI *real_WaitForMultipleObjects)(DWORD, const HANDLE *, BOOL, DWORD);
+static DWORD (WINAPI *real_WaitForSingleObject)(HANDLE, DWORD);
+static HANDLE (WINAPI *real_CreateSemaphoreW)(void *, LONG, LONG, LPCWSTR);
+
+static HANDLE WINAPI hook_CreateSemaphoreW(void *attributes, LONG initial, LONG maximum,
+                                           LPCWSTR name)
+{
+    HANDLE handle = real_CreateSemaphoreW(attributes, initial, maximum, name);
+    if (g_semaphore_count < 8)
+    {
+        g_semaphores[g_semaphore_count++] = handle;
+        note("semaphore: created %p initial %ld max %ld name %p", handle, (long)initial,
+             (long)maximum, name);
+    }
+    return handle;
+}
+static int g_single_logged;
+
+typedef struct { USHORT length, maximum; PWSTR buffer; } unicode_string_t;
+typedef struct { unicode_string_t name; ULONG index; ULONG total; ULONG nonpaged; } object_type_t;
+
+static void describe_handle(HANDLE handle)
+{
+    typedef LONG (NTAPI *query_t)(HANDLE, ULONG, void *, ULONG, ULONG *);
+    static query_t query;
+    unsigned char buffer[512];
+    ULONG needed = 0;
+    object_type_t *type;
+    query_t function = (query_t)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtQueryObject");
+    if (function == NULL)
+        return;
+    query = function;
+    if (query(handle, 2 /* ObjectTypeInformation */, buffer, sizeof(buffer), &needed) != 0)
+        return;
+    type = (object_type_t *)buffer;
+    if (type->name.buffer)
+    {
+        char name[64];
+        if (WideCharToMultiByte(CP_ACP, 0, type->name.buffer,
+                                type->name.length / sizeof(WCHAR), name, sizeof(name) - 1,
+                                NULL, NULL) > 0)
+        {
+            name[sizeof(name) - 1] = 0;
+            note("wait: handle %p is a %s", handle, name);
+        }
+    }
+}
+
+/* Probe knob: STUB_KICK=1 releases a semaphore the image waits on forever, one signal per
+ * wait, so a "wait for N workers" loop can be drained and the next wall becomes visible. */
+static DWORD WINAPI kick_thread(LPVOID parameter)
+{
+    LONG previous = -1;
+    Sleep(400);
+    ReleaseSemaphore((HANDLE)parameter, 1, &previous);
+    note("semaphore: kicked %p (previous count %ld)", parameter, (long)previous);
+    return 0;
+}
+
+static DWORD WINAPI hook_WaitForSingleObject(HANDLE handle, DWORD milliseconds)
+{
+    DWORD result;
+    if (milliseconds == INFINITE && getenv("STUB_KICK"))
+        CloseHandle(CreateThread(NULL, 0, kick_thread, handle, 0, NULL));
+    if (g_single_logged < 16)
+    {
+        g_single_logged++;
+        note("wait: WaitForSingleObject(handle %p, ms %lu) caller %p", handle,
+             (unsigned long)milliseconds, __builtin_return_address(0));
+        describe_handle(handle);
+    }
+    result = real_WaitForSingleObject(handle, milliseconds);
+    return result;
+}
+static BOOL (WINAPI *real_PeekMessageA)(LPMSG, HWND, UINT, UINT, UINT);
+static LRESULT (WINAPI *real_DispatchMessageA)(const MSG *);
+static int g_wait_logged, g_peek_logged, g_dispatch_logged;
+
+static DWORD WINAPI hook_WaitForMultipleObjects(DWORD count, const HANDLE *handles, BOOL wait_all,
+                                                DWORD milliseconds)
+{
+    DWORD result;
+    if (g_wait_logged < 12)
+    {
+        g_wait_logged++;
+        note("wait: WaitForMultipleObjects(count %lu, all %d, ms %lu) first handle %p",
+             (unsigned long)count, (int)wait_all, (unsigned long)milliseconds,
+             count ? handles[0] : NULL);
+    }
+    result = real_WaitForMultipleObjects(count, handles, wait_all, milliseconds);
+    if (result == WAIT_TIMEOUT)
+        note("wait: timed out after %lu ms", (unsigned long)milliseconds);
+    return result;
+}
+
+static BOOL WINAPI hook_PeekMessageA(LPMSG message, HWND window, UINT first, UINT last,
+                                     UINT remove)
+{
+    BOOL found = real_PeekMessageA(message, window, first, last, remove);
+    if (g_peek_logged < 8)
+    {
+        g_peek_logged++;
+        note("pump: PeekMessageA(hwnd %p, %u..%u, remove %u) -> %d", window, first, last,
+             remove, (int)found);
+    }
+    return found;
+}
+
+static LRESULT WINAPI hook_DispatchMessageA(const MSG *message)
+{
+    if (g_dispatch_logged < 8)
+    {
+        g_dispatch_logged++;
+        note("pump: DispatchMessageA(hwnd %p, msg %#x, wparam %#lx, lparam %#lx)",
+             message ? message->hwnd : NULL, message ? message->message : 0,
+             message ? (unsigned long)message->wParam : 0,
+             message ? (unsigned long)message->lParam : 0);
+    }
+    return real_DispatchMessageA(message);
+}
+
+static void install_wait_hooks(HMODULE image)
+{
+    HMODULE kernel = GetModuleHandleA("kernel32.dll");
+    HMODULE user = GetModuleHandleA("user32.dll");
+    real_WaitForMultipleObjects = (void *)GetProcAddress(kernel, "WaitForMultipleObjects");
+    real_WaitForSingleObject = (void *)GetProcAddress(kernel, "WaitForSingleObject");
+    real_CreateSemaphoreW = (void *)GetProcAddress(kernel, "CreateSemaphoreW");
+    real_PeekMessageA = (void *)GetProcAddress(user, "PeekMessageA");
+    real_DispatchMessageA = (void *)GetProcAddress(user, "DispatchMessageA");
+    if (real_WaitForMultipleObjects)
+        patch_import(image, "WaitForMultipleObjects", (void *)hook_WaitForMultipleObjects);
+    if (real_WaitForSingleObject)
+        patch_import(image, "WaitForSingleObject", (void *)hook_WaitForSingleObject);
+    if (real_CreateSemaphoreW)
+        patch_import(image, "CreateSemaphoreW", (void *)hook_CreateSemaphoreW);
+    if (real_PeekMessageA)
+        patch_import(image, "PeekMessageA", (void *)hook_PeekMessageA);
+    if (real_DispatchMessageA)
+        patch_import(image, "DispatchMessageA", (void *)hook_DispatchMessageA);
+}
+
+static void install_appstate_hooks(void)
+{
+    HMODULE image = GetModuleHandleA(NULL);
+    if (image == NULL)
+        return;
+    patch_import(image, "RegisterAppStateChangeNotification",
+                 (void *)hook_RegisterAppStateChangeNotification);
+    patch_import(image, "RegisterAppConstrainedChangeNotification",
+                 (void *)hook_RegisterAppConstrainedChangeNotification);
+    CloseHandle(CreateThread(NULL, 0, appstate_thread, NULL, 0, NULL));
+    install_wait_hooks(image);
+}
+
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason, LPVOID reserved)
 {
     (void)instance;
-    (void)reason;
     (void)reserved;
+    if (reason == DLL_PROCESS_ATTACH)
+        install_appstate_hooks();
     return TRUE;
 }
