@@ -9655,3 +9655,27 @@ Zero is a clean negative at that floor. So the front region is not a table of th
 name hashes for the names in the registry — which sharpens the open question: either the
 region holds something else (paths, ids, or encrypted keys), or the names in those archives
 are not in the registry.
+
+### Frames scoreboard in a fresh session: the unpatched baseline (2026-11-25)
+
+Re-ran the acceptance check on the console image, unchanged, to have a baseline from a
+clean start rather than from the guard-patched loop:
+
+```
+python3 tests/test_boot_frames.py --game-dir <dump> --seconds 15 --min-frames 2
+  exit 3, frames above threshold 0, best contrast 255, deviation 0.0, lit 0.0%
+  wine: Unhandled exception 0x80000003 ... at address 00006FFFF5187179
+```
+
+`0x6FFFF5187179 - 0x6FFFF2F50000 = 0x2237179`, i.e. the first guard at `image+0x2237178`
+plus one, the return address after its `int3`. So without `tools/boot_loop.py`'s patching
+the image dies on the very first assert, in under a second, long before any frame. The
+earlier `exit 5` reading belongs to the patched run that walks five guards and then aborts
+in ntdll; the two numbers describe different images and should not be compared.
+
+The test also copies the built stub DLLs into the directory passed as `--game-dir` and
+removes the `bootframe.exe` copy afterwards. Pointing it at the Mammoth dump therefore
+writes to that volume; the stubs stay behind. The log it keeps is
+`cache/boot-frames.log`.
+
+Everything in the run is still instrumentation: `lit 0.0 %` means nothing has been drawn.

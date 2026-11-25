@@ -1,8 +1,8 @@
 # Archive containment view
 
-The containment viewer is the archive-level spatial browser delivered by the
-integrator in `4dc3f05`. It uses the same eight verified manifests as the
-inventory and turns each archive into quadrant tiles.
+The containment viewer is the archive-level spatial browser introduced in
+`4dc3f05`. It uses the same eight verified manifests as the inventory and turns
+each archive into quadrant tiles.
 
 ## View contract
 
@@ -26,6 +26,7 @@ python3 tools/extraction_tree.py
 # output/general-extraction/index.html
 ```
 
-!!! note "Ownership"
-    `tools/extraction_tree.py` is integrator-owned. Script owns the inventory,
-    entry point, unclassified triage, and the separate bone-geometry quadtree.
+!!! note "Scope"
+    `tools/extraction_tree.py` builds the containment view from the inventory
+    and the entry triage. The separate bone-geometry quadtree is emitted by its
+    own tool and is not part of this view.

@@ -102,7 +102,3 @@ Each needs a specific input, not more effort.
 - [ ] The 331,728-byte `script.rpf` blob — not any single range in the index.
 - [ ] Script bytecode container — a code-tracing task.
 - [ ] Type-name vocabulary (`root_type`, `type_tag`).
-
-## Not mine
-
-- [ ] `explorer/` — owned by another session.
