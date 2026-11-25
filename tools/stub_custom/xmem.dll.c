@@ -91,10 +91,36 @@ static void report_failed_allocation(EXCEPTION_POINTERS *info)
                 (unsigned long long)rip);
 }
 
+/* An access violation whose faulting address is in the title's heap but whose instruction is
+ * outside the image is the CRT or a system DLL touching that memory; the engine's own frames are
+ * the interesting part, so they are captured here. */
+static void report_foreign_fault(EXCEPTION_POINTERS *info)
+{
+    static int reported;
+    void *frames[16];
+    HMODULE image = GetModuleHandleA(NULL);
+    uintptr_t base = (uintptr_t)image;
+    uintptr_t rip = (uintptr_t)info->ContextRecord->Rip;
+    uintptr_t fault = (uintptr_t)info->ExceptionRecord->ExceptionInformation[1];
+    USHORT captured, index;
+    if (reported >= 2 || base == 0 || fault < 0x1000000 || fault >= 0x80000000ull)
+        return;
+    if (rip >= base && rip < base + 0x72a0000ull)
+        return;
+    reported++;
+    captured = RtlCaptureStackBackTrace(1, 16, frames, NULL);
+    fprintf(stderr, "[%lx] xmem! foreign fault: rip=%llx fault=%llx frames:",
+            GetCurrentThreadId(), (unsigned long long)rip, (unsigned long long)fault);
+    for (index = 0; index < captured; index++)
+        fprintf(stderr, " %llx", (unsigned long long)(uintptr_t)frames[index]);
+    fprintf(stderr, "\n");
+}
+
 static LONG WINAPI commit_on_touch(EXCEPTION_POINTERS *info)
 {
     void *fault = (void *)info->ExceptionRecord->ExceptionInformation[1];
     report_failed_allocation(info);
+    report_foreign_fault(info);
     void *page = (void *)((uintptr_t)fault & ~(uintptr_t)0xfff);
     if (info->ExceptionRecord->ExceptionCode != EXCEPTION_ACCESS_VIOLATION || fault == NULL)
         return EXCEPTION_CONTINUE_SEARCH;

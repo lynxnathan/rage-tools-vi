@@ -10637,3 +10637,30 @@ address this stub had just committed — and its frames are the abort path, not 
 
 Stage 3 of `tests/test_boot_stages.py` therefore stays red for a different reason than it was
 red yesterday: the heap no longer kills the run, the CRT does.
+
+### The abort is `memset` faulting on a page the stub believes is committed (2026-11-25)
+
+Captured from the vectored handler at the moment of the foreign fault:
+
+```
+xmem! foreign fault: rip=6ffffffd1989 fault=2bf7000
+  frames: ntdll ntdll VCRUNTIME140 image+0x554f316 image+0x21cb440 image+0x21cb2e9
+          image+0x21cb182 image+0x2190f0b image+0x81b253 image+0x53ec04f
+          image+0x53ebf3a image+0x661f0 image+0x1d109c9 image+0x5a91c0d image+0x56a1e5a
+```
+
+and the call the frame returns into resolves through the import table:
+
+```
+image+0x5f40580  ->  VCRUNTIME140.dll!memset
+```
+
+So the engine calls `memset(dest, 0xff, size)` and `memset(dest, 0, size)` from its heap code at
+`image+0x554f301`/`+0x554f311`, and the fault is *inside* the CRT's `memset` on address
+`0x2bf7000` — a page this stub logged as committed moments earlier. A page committed with
+`PAGE_READWRITE` cannot fault on a store, so something decommitted it in between: the image
+imports `VirtualFree` directly, which is outside the stub's accounting.
+
+That is the next thing to check: whether the title frees its own ranges with `VirtualFree` (as
+opposed to the XMem wrappers) and whether our commit-on-touch then re-commits a page that a later
+free removed.
