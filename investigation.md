@@ -9627,3 +9627,14 @@ i.e. the image aborts first and the abort path is what faults. Registers at the 
 
 That is the next thing to chase: the abort happens before any frame is drawn, so the defect
 is still upstream of rendering.
+
+### No window: the honest status (2026-11-24)
+
+Checked against the only criterion that matters — a window with content — the result is
+negative. `tests/test_boot_frames.py` reports `lit 0.0 %`, best contrast 255 (a cursor),
+and the process exits with code 5 within a second. Nothing has ever been drawn.
+
+Everything recorded in this thread before that point is instrumentation: which stubs load,
+which guards fire, which slots are called. It is useful for the recompilation route and it
+is not evidence that the game runs. Stated plainly so a later reader does not mistake a
+walked guard for a drawn frame.

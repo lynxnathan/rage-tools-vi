@@ -67,6 +67,13 @@ Each line is a route, what would settle it, and where it stands.
 - [ ] **Recompilation project.** Its runtime is the same surface done once; settle by
   comparing its interface expectations with the six GUIDs.
 
+## Status of "the window"
+
+No window has ever opened. The acceptance test (`tests/test_boot_frames.py`) reports
+`lit 0.0 %` with the process exiting in under a second. Guard patches, stub traces and
+slot arguments are instrumentation: they show where the image stops, not progress toward
+drawing. Until a frame with content appears, every boot-thread claim is provisional.
+
 ## Running the game
 
 Static recompilation of the console image, on the user's own copy: the CPU is x86-64, so
