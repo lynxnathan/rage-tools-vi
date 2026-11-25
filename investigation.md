@@ -9992,3 +9992,30 @@ what the filesystem or the registry says, which is exactly what the experiments 
 
 So the next piece is not a path or a registry key: it is whatever is supposed to register a
 path in that table before the crash reporter asks for it.
+
+### Where the storage path stands (2026-11-25)
+
+The reporter's mount and the game's file layer both depend on XCRDAPI, whose only import is
+`DStorageGetFactory`. It is called early in every run:
+
+```
+[f924c7d8] xcrdapi!DStorageGetFactory(iid=..., out=0000000000000000 c=fffffff9 d=...)
+[f4] xcrdapi!method caller=00006ffff4cde518
+```
+
+— with a null out parameter, and the factory object the stub hands back is then used through
+its vtable. That custom stub (`tools/stub_custom/xcrdapi.dll.c`) answers every method with 0.
+
+Against that, the reporter's own lookup cannot succeed: `image+0x56eb30` returns 0 immediately
+when its path table count at `+0xc00` is zero, which is what gdb shows at the moment of the
+call (`rcx=0x205d450`), and the per-thread object at that address is created lazily by
+`image+0x643cd0` only to be left empty.
+
+So the two remaining pieces are named and independent:
+
+1. **`d3d12_xs`-style work on XCRDAPI**: a `DStorageFactory` that can open the package's files,
+   instead of a vtable answering 0.
+2. **The five GDK classes** (`xgame`, `xsystem`, `xnetworking`, `xuser`) the runtime refuses,
+   as a change inside the runtime's `QueryApiImpl`.
+
+Neither is a patch around the assert; both are platform surface the image is written against.
