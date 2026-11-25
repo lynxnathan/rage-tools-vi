@@ -10019,3 +10019,31 @@ So the two remaining pieces are named and independent:
    as a change inside the runtime's `QueryApiImpl`.
 
 Neither is a patch around the assert; both are platform surface the image is written against.
+
+### The failing call converts a wide path to ASCII against an empty alias table (2026-11-25)
+
+Read at the call itself (`image+0x2236e6e`), not inferred from the disassembly:
+
+```
+REPORTER-CALL rcx=0x205d450 rdx=0x6ffffa3a39f6 r8=0x6ffff96dd1bb
+  0x6ffff96dd1bb: 00 77 00 00 00 25 00 6c 00 6c 00 75 00 00 00 44 00 3a 00 5c 00 4c 00 6f
+  0x6ffffa3a39f6: 61 70 70 64 61 74 61 30 2e 72 70 66 00 00 78 00
+```
+
+`r8` is the wide string table (`"%llu"`, then `D:\LocalDumps` at offset `+0x10`), `rdx` is an
+ASCII output buffer that already held `appdata0.rpf`, and `rcx` is the engine's path object —
+the same one an earlier call resolved `appdata0.rpf` against. So `image+0x56eb10` is a
+wide→ASCII path resolution against the engine's path/alias object, and it returns false for
+`D:\LocalDumps`.
+
+The object is created lazily by `image+0x643cd0` and its constructor (`image+0x643d60`) writes
+`count = 0` at `+0xc00`, `1` at `+0xc04` and zeroes `+0xc08`/`+0xc0c`: a twelve-slot alias table
+at `+0x300` (0x100 bytes per slot) that nothing fills. The false return is therefore not about
+the filesystem: `WINEDEBUG=+file` shows the engine touching `D:` only to look for its own PDBs
+(`D:\a\_work\1\s\...`), never enumerating or opening a device root.
+
+**Correction to the storage-factory guess.** `DStorageGetFactory` is called exactly once, with a
+real out pointer (`out=0x6ffffa845e78`) and IID `62959d11-d45f-4884-a0a3-f7862ea243ae`, and the
+factory object is never used — no slot of its vtable is called in the whole run. DirectStorage
+is a probe at this stage, not the blocker; the previous entry's claim that it "feeds everything
+else" is not supported by the trace.
