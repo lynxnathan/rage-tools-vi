@@ -61,7 +61,7 @@ Each line is a route, what would settle it, and where it stands.
   filesystem for. Settle by reading the container's fill site and the value it wants.
 - [ ] **Title and sandbox answers.** The crash context reports `TitleID: unknown`,
   `Sandbox: unknown`, `System Language: Unknown State` in `System Init`, while
-  `MicrosoftGame.Config` in the package carries `7952987A`, the identity and the store id.
+  `MicrosoftGame.Config` in the package carries `7952987A`.
   Settle by answering that query from the config and seeing the fields filled in the next
   crash log; the package's own `microsoft_gameconfig.bin` has the same values in GDK form.
 - [ ] **The abort after five guards.** With the five guards patched the image raises no

@@ -9855,11 +9855,13 @@ What the package itself says the configuration should be — `MicrosoftGame.Conf
 package, read here rather than guessed:
 
 ```
-TitleId   7952987A                      MSAAppId 000000004060F900
-StoreId   9NL3WWNZLZZN                  Identity RockstarGamesInc.28872443D20A7
+TitleId   7952987A
 Executable  game_scarlett_master.exe  TargetDeviceFamily Scarlett
 VirtualMachine  XboxAnacondaTitleMemory Advanced   (SMTEnabled true)
 ```
+
+The store id, MSA app id and publisher identity are in the same file and are not reproduced
+here: they identify the package, not the platform behaviour this record is about.
 
 `TitleID: unknown` and `Sandbox: unknown` in the crash context are therefore not a limitation
 of the package: the values are on disk and the stub answers the query with zeros.

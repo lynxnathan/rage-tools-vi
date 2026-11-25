@@ -60,7 +60,7 @@ def imports(data, directories, secs):
         end = data.find(b"\0", name_at)
         dll = data[name_at:end].decode("ascii", "replace")
         thunk = offset_of(secs, original or first)
-        slot_rva = original or first
+        slot_rva = first        # calls go through the address table, not the name table
         while thunk is not None and thunk + 8 <= len(data):
             value = struct.unpack_from("<Q", data, thunk)[0]
             if value == 0:
