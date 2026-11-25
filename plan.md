@@ -60,7 +60,8 @@ Each needs a specific input, not more effort.
   recompilation project.
 - [ ] RPF9 table of contents: content unidentified; `Front B` is a per-entry table for 206
   of 654 packs and composite for the other 448.
-- [ ] Read the stream's `Read` at `+0x60`.
+- [ ] Read the stream class: its `Read` at `+0x60`, and the three words at `+0x10`,
+  `+0x18`, `+0x20` that the archive ctor passes to the region reader.
 - [ ] Front A milestone on `story000_bvh4.rpf` — needs independent table framing.
 - [ ] Exact end of the last `data.rpf` child — needs an independent trailer start.
 - [ ] Multi-mip texture tail — needs a multi-mip dictionary.

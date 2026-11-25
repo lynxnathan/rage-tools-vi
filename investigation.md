@@ -9451,3 +9451,23 @@ whatever they are, they are hashed or encrypted content rather than a readable k
 Two consequences for the open item: section 1 is `p3` records of 8 bytes and section 2 is
 `p4 - header[0x30]` bytes, and the `0x10`/`0x18` fields of the archive object are **file
 offsets**, not buffer pointers.
+
+### The two range sizes come from the stream object, not from the pack header (2026-11-24)
+
+The constructor `FUN_140fc2540` calls the region reader with the values it finds on the
+**stream** (`param_1[1]`, i.e. the object stored at archive `+0x08`):
+
+```
+cVar3 = FUN_141fb2600(param_1 + 3, param_1 + 4, param_3, param_4,
+                      *(u64*)(stream + 0x10), *(u64*)(stream + 0x18),
+                      *(u64*)(stream + 0x20), param_5)
+```
+
+So the two sizes seen in `FUN_140a348a0` (`align16(p3*8)` and `p4 - header[0x30]`) are not
+the only description of the front region: the *stream* also carries three words at
+`+0x10`, `+0x18`, `+0x20`, and the reader receives them as parameters. `param_1 + 3` and
+`param_1 + 4` are the archive's buffer base and size (`+0x18` and `+0x20`).
+
+That closes one ambiguity and opens exactly one question: which class sets `stream+0x10`,
+`+0x18` and `+0x20`. It is the same object whose `Read` at `+0x60` is still unread, so a
+single decompilation of that class answers both.
