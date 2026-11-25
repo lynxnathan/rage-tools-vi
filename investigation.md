@@ -9969,3 +9969,26 @@ So the fallback has to live inside the runtime, not beside it: `src/main.cpp`'s
 change to make. `tools/xgameruntime.py` now installs the runtime under its own name only.
 With that installed and the staged directory rebuilt, the run is back to the baseline:
 one breakpoint at `image+0x2237178`, exit 3, fourteen handled access violations.
+
+### The container is a twelve-slot path table, and it is empty (2026-11-25)
+
+`tools/wine_gdb.py` attaches gdb to the image and stops at chosen image addresses; it works
+where the earlier attempts did not (start inside `unshare -r` for `CAP_SYS_PTRACE`, attach to
+the process whose `exe` is `wine64*`, force `i386:x86-64`, software breakpoints at absolute
+addresses). First measurements with it, at `image+0x2236e73` (the decision after the lookup)
+and `image+0x2237174` (after the registration call):
+
+```
+HIT 0x6ffff5186e73  rsi(this)=0x2029b00  al=0        <- lookup returned false
+HIT 0x6ffff5187178  rsi(this)=0x2029b00  [this+0xc]=0
+```
+
+The registration call returns 0 and the field it should have filled stays 0, so the guard is a
+postcondition on a call that failed, not a wrong branch. Reading the container's own code
+(`image+0x56eb30`) gives its shape: entries are 0x100-byte path strings at `this+0x300`
+(twelve of them, `0xc00` bytes), the count is at `this+0xc00`, and the count is **zero** — the
+path table has never been filled. The lookup for `L"D:\LocalDumps"` therefore misses no matter
+what the filesystem or the registry says, which is exactly what the experiments above showed.
+
+So the next piece is not a path or a registry key: it is whatever is supposed to register a
+path in that table before the crash reporter asks for it.

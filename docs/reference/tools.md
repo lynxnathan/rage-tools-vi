@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-182 scripts.
+183 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -194,6 +194,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`verify_extraction.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_extraction.py) | Verify the general extraction entry point against known manifests. |  |
 | [`verify_quadtree.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/verify_quadtree.py) | Verify the class-0 quadtree JSON against the geometry source. |  |
 | [`vtable_scan.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/vtable_scan.py) | Enumerate vtables in the executable and resolve chosen slots. | --find --limit --min-slots --slot |
+| [`wine_gdb.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/wine_gdb.py) | Attach gdb to the running console image and stop at image addresses. | --at --game-dir --single |
 | [`wrapper_probe.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/wrapper_probe.py) | Probe 32-byte +0x10 wrappers for a signature that predicts rotation leaves. |  |
 | [`xgameruntime.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/xgameruntime.py) | Build the Xodus xgameruntime into `cache/shims` so the image talks to a real GDK layer. | --check --rebuild |
 | [`xref.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/xref.py) | Find the code that references an image RVA: call/jmp rel32, and rip-relative operands. | --kind --limit --to |
