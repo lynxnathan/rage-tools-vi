@@ -9733,3 +9733,62 @@ by another subsystem first, or this branch is not the path a working platform ta
 
 Files: `tools/run_dir.py`, `tools/d3d12_shim.py` + `tools/d3d12_xs.c`, `tools/xref.py`
 (which found the single caller of the guarded method).
+
+### The first guard was the crash reporter, and the reporter phones home (2026-11-25)
+
+Two measured facts change the boot picture, both from provisioning the prefix rather than
+patching the image.
+
+**The guard at `image+0x2237178` is the crash reporter's registration postcondition.** The
+code before it allocates 0x28 bytes, zeroes them (`image+0x582a610`), stores the object in
+`image+0x7453e58` and calls the method at `image+0x2236e00`, which early-exits to the assert
+when `image+0x56eb10` returns false. That function looks up the wide string
+`D:\LocalDumps` — the WER crash-dump directory. The prefix had no `D:` drive at all, so the
+lookup failed and the object was never initialised. Adding `d:` and `t:` to the prefix
+(`drive_d/LocalDumps`, `drive_t`) makes the registration succeed: the guard no longer stops
+the run first, and the reporter runs.
+
+**The reporter is Breakpad, wired to Backtrace, and it uploads.** The run then prints, through
+`OutputDebugStringA`:
+
+```
+BacktraceBreakpad:...http_upload.cc:505:Added file 'upload_file_minidump' (T:\9cbe09db-....dmp)
+BacktraceBreakpad:...http_upload.cc:291:URL: https://submit.backtrace.io/paradise/40d97e6dbe025ce8f3d1c0f146a90f6d7878fae3d7c57d20f10b5f9af6985ced/minidump
+BacktraceBreakpad:...http_upload.cc:388:HTTP Return code: 200
+```
+
+Three minidumps were posted during this session before the uploads were noticed. Test runs
+must not do that: `tools/run_dir.py` cannot stop it, and disabling `winhttp` makes the image
+exit 53 at startup, so blocking needs a `winhttp` stub that refuses the send. Until then the
+frames test reports the upload it sees in the log.
+
+**The crash context names the state at the stop.** `T:\<name>-<time>-<pid>.crash.log` is a
+RAGE debug dump; its head for these runs:
+
+```
+Game Running Time: 0h:0m:0s
+Game State: System Init
+Frame: 0
+TitleID: unknown        Sandbox: unknown
+System Language: Unknown State.
+Console Type: Anaconda
+```
+
+So the image is in system init with its title/sandbox configuration unanswered — the
+`xgameruntime` API-query layer is stubbed, and those queries are what the next stop depends
+on. The `xgameruntime` stub's slots now return a zeroed 0x2000-byte arena instead of NULL
+(measured: `image+0x55DEA79` copies 0x80 bytes from a slot-3 result without a null check),
+which is what lets the run reach the reporter at all.
+
+**The stop itself is unchanged.** With everything above, `d3d12_xs`, a real crash reporter and
+no NULL dereference, the image still raises `EXCEPTION_BREAKPOINT` at
+`image+0x2237178` — now handled by Breakpad instead of being unhandled, and the process exits
+3. A window still never opens.
+
+`tools/protection_audit.py` also answers the protector question with numbers rather than
+folklore: standard MSVC section set, maximum section entropy 6.75, entry point at
+`image+0x56a1ec8` in the shape of `__scrt_common_main_seh` with the default security cookie
+`0x2b992ddfa232`, two TLS callbacks that are MSVC static-TLS thunks (`%gs:0x58`, reason
+codes 0/2/3), no `VMProtect`/`Themida`/`Denuvo`/`UPX` strings or section names, and of
+3,269,969 `int3` bytes 3,662 are branch-target guards while 2,769,869 sit in padding runs.
+No commercial protector is indicated; the guards behave like live asserts in a checked build.

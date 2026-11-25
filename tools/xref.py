@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 
 IMAGE_BASE = 0x140000000
+RIP_MODRM = frozenset((0x05, 0x0D, 0x15, 0x1D, 0x25, 0x2D, 0x35, 0x3D))
 
 
 def sections(data):
@@ -64,10 +65,8 @@ def main():
                 delta = struct.unpack_from("<i", body, at + 2)[0]
                 if rva + 6 + delta == target:
                     hits.append((rva, "jcc", 6))
-            # rip-relative with a modrm of mod=00 rm=101: <op> 05/0d/15/1d/25/2d/35/3d
-            if body[at] in (0x8B, 0x89, 0x8D, 0x39, 0x3B, 0x03, 0x05, 0x0D, 0x15, 0x1D,
-                            0x25, 0x2D, 0x35, 0x3D, 0x63, 0x85) and body[at + 1] in (0x05, 0x0D,
-                                                                                     0x15, 0x1D):
+            # rip-relative memory operand: modrm with mod=00, rm=101 (the eight reg forms)
+            if body[at + 1] in RIP_MODRM:
                 delta = struct.unpack_from("<i", body, at + 2)[0]
                 if rva + 6 + delta == target:
                     hits.append((rva, "data", 6))

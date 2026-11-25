@@ -12,7 +12,7 @@ Run any tool with `--help` for its arguments. Most read from the repository root
 so `python3 tools/<name>.py` works without arguments.
 
 
-179 scripts.
+180 scripts.
 
 | Tool | Purpose | Notable flags |
 | --- | --- | --- |
@@ -139,6 +139,7 @@ so `python3 tools/<name>.py` works without arguments.
 | [`probe_ff25_payload.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_ff25_payload.py) | Find a 0xff25 payload by decoding candidates, not by guessing the container layout. | --end --start |
 | [`probe_index_layout.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/probe_index_layout.py) | Test fixed-stride offset and length hypotheses against small RPF9 controls. |  |
 | [`property_tree.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/property_tree.py) | Dump a named object subtree from the script.rpf object graph. |  |
+| [`protection_audit.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/protection_audit.py) | Test an image for a commercial packer/protector instead of assuming one. | --json |
 | [`psin_blocks.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_blocks.py) | Decode the five PSIN blocks with the writer's own field order. | --index --rows |
 | [`psin_dump.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_dump.py) | Print PSIN records as readable rows, using the name registry. | --build`). --limit --property --record |
 | [`psin_entries.py`](https://github.com/lynxnathan/rage-tools-vi/blob/main/tools/psin_entries.py) | Extract every two-row entry from the PSIN property arrays. | --out |

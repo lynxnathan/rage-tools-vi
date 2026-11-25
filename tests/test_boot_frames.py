@@ -385,6 +385,12 @@ def main():
         check("the scored rectangle belongs to the game", left > 0.5,
               f"(after exit the rectangle {'changed' if left > 0.5 else 'did not change'}, "
               f"motion {left:.2f}" + (f"; {error}" if error else "") + ")")
+    if "submit.backtrace.io" in log or "HTTP Return code" in log:
+        # Measured 2026-11-25: the image's Breakpad reporter posts a minidump to the
+        # publisher's Backtrace project when it catches a fault. A test run should not do
+        # that quietly, so it is reported and blocked before the next one.
+        print("  note  the crash reporter posted a minidump to submit.backtrace.io; "
+              "keep the network off for test runs")
     if not frames:
         for line in log.splitlines()[-6:]:
             print(f"    {line}")

@@ -52,6 +52,12 @@ Each line is a route, what would settle it, and where it stands.
   reports no window at all; the unpatched image stops on the first guard
   (`image+0x2237178`) inside a second. Settle by finding what should fill the object field
   that guard tests (`obj+0xc`), which is zero from the constructor at `image+0x582a610`.
+- [ ] **Crash reporter.** `D:`/`T:` in the prefix let the Breakpad reporter register, and it
+  posts minidumps to `submit.backtrace.io`; disabling `winhttp` makes the image exit 53 at
+  startup. Settle with a `winhttp` stub that fails the send, then confirm no upload line.
+- [ ] **Title and sandbox answers.** The crash context reports `TitleID: unknown`,
+  `Sandbox: unknown`, `System Language: Unknown State` in `System Init`. Settle by answering
+  those `xgameruntime` queries and seeing the same fields filled in the next crash log.
 - [ ] **The `_xs` shim is written, not exercised.** `tools/d3d12_xs.c` forwards the
   root-signature and device entry points to vkd3d-proton, but no run has called
   `D3D12XboxCreateDevice`: the only `d3d12_xs` call reached so far is
