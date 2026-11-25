@@ -40,7 +40,10 @@ Last updated: 2026-11-24.
   (`p5=7`, `p6=1`, `N=699`, `p8=2`) the last term gives 12 bytes per record, while the
   region measured after section 4 is 60,728 bytes ≈ 87 bytes per record, and the earlier
   corpus census found exactly `N×64` in 79 packs. The term is wrong for this pack; the
-  census numbers and the formula have to be reconciled before either is used.
+  census numbers and the formula have to be reconciled before either is used. Measured
+  negative on the way: neither autocorrelation nor a zero-phase scan finds a fixed record
+  grid in the front region (flat scores, max 0.075 at unrelated periods), so the records
+  are not fixed-size rows with padding.
 - [ ] Decode the remaining ~1.7 M Opus streams; the `0xff25` variant now has a working
   path, the others run through the table rules.
 - [ ] Carve the shader programs. No container magic exists in the plaintext corpus

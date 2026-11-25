@@ -9407,3 +9407,20 @@ So carving shader programs is not a magic search: it needs the loader's own tabl
 payloads inside the streams the index already finds. That is the same shape as the RPF9
 table-of-contents problem, and it is why a recompilation project carves them with the
 game's code rather than with a signature.
+
+### No fixed record grid in the front region (2026-11-24)
+
+Two measurements, both negative, both cheap and therefore worth writing down.
+
+Autocorrelation of the byte stream over `data.rpf`'s front region (`0x40..0x11060`,
+69,664 B) shows no peak at any lag 4–4000 above 0.15 — the region behaves as high-entropy
+bytes, so a repeated substructure does not show up as a period in the signal.
+
+A zero-phase scan is the right tool for "records of fixed size with padding": for every
+period 4–1024, take the residue class with the highest zero frequency. Best score is
+`0.075` at period 915, and the neighbours (963, 914, 900, 1024…) score the same — a flat
+distribution, not a grid. The same holds for the region after section 4 (60,728 B).
+
+So the entry records are not fixed-size rows with padding; whatever the arena formula sizes
+is not a plain record array with a zero byte. That is a real constraint on the next reading,
+and it is why the term `(p5-p6)×N×p8` and the census figure `N×64` still disagree.
