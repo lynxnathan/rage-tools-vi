@@ -57,6 +57,13 @@ are appended here.
   history. When the project starts receiving external notice or contributions,
   switch to the usual procedure (normal commits, branches, review) and stop
   rewriting remote history. Licence: MIT.
+- 2026-11-24: The console binary boot is **parked**. Wine loads the image once its
+  117 console imports and `xgameruntime.dll` are stubbed, and execution stops at
+  `game.exe+0x2237178` because a 32-byte structure from interface slot 2 is still zero.
+  Going past it means implementing the memory, GPU and storage semantics of the platform.
+  Do not reopen this thread without a concrete input: a PC build, or a public layout
+  source for the six queried interfaces. The reproduction stays available
+  (`tools/rage.py play --stubs`) and the evidence is in `investigation.md`.
 - Future standing instructions from the operator are appended to this section.
 
 ## Tooling
