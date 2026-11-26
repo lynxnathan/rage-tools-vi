@@ -57,7 +57,8 @@ def find_candidates(path, limit=0):
                     if limit and len(offsets) >= limit:
                         return offsets
                 start = index + 1
-            carry = data[-8:]
+            # Retain only an incomplete magic; complete matches were already emitted.
+            carry = data[-2:]
             position += len(block)
     return offsets
 

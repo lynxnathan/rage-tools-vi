@@ -68,7 +68,8 @@ def find_banks(path, limit=0, start=0, stop=None):
                     if limit and len(offsets) >= limit:
                         return offsets
                 start = index + 1
-            carry = data[-8:]
+            # Retain only an incomplete magic; complete matches were already emitted.
+            carry = data[-3:]
             position += len(block)
     return offsets
 

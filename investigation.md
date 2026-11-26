@@ -10717,3 +10717,19 @@ changes nothing because the call never happens.
 One detail worth carrying forward: `XMemVirtualAlloc` is called with `0x20402000`, which is a
 console flag word (large-page style attributes), and the stub ignores it and returns ordinary
 4 KiB pages. A title that checks its pages for a console granularity would find 4 KiB.
+
+### Index scanner chunk-boundary regression (2026-11-26)
+
+Synthetic fixtures reproduce duplicate candidate offsets in both `adat_index.find_banks`
+and `bink_index.find_candidates`: an eight-byte carry preserves complete signatures that
+the preceding read already reported. With 16-byte reads and signatures at offsets 12 and
+24, both return `[12, 12, 24, 24]`; a limit of two returns `[12, 12]`.
+Retaining only the incomplete signature suffix (three bytes for ADAT, two for KB2)
+returns each candidate once while preserving signatures split across reads. Offsets in
+these fixtures are file-relative; the ADAT range test uses `[12, 36)`.
+
+Validation: `python3 tests/test_index_scanning.py` (six tests),
+`python3 tests/test_extraction_tools.py`, and
+`python3 tests/test_robustness.py --rounds 200` pass. The new regressions failed against
+the original scanners. All fixtures are generated synthetic bytes; no game archives,
+executables, assets, or private material were used.
