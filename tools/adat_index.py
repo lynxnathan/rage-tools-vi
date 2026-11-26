@@ -85,6 +85,8 @@ def bank_extent(handle, offset):
     if len(head) < 16 or head[:4] != b"ADAT":
         return None, 0, 0, 0, "no magic"
     flags, count, header_size = struct.unpack_from("<III", head, 4)
+    if count == 0 or count > MAX_STREAMS:
+        return None, count, 0, flags, "implausible stream count"
     position = 16 + (4 if flags & 0x400000 else 0)
     if flags & 0x10000:
         position += count * 2
@@ -96,8 +98,6 @@ def bank_extent(handle, offset):
     words = handle.read(count * 4)
     if len(words) < count * 4:
         return None, count, 0, flags, "short info table"
-    if count == 0 or count > MAX_STREAMS:
-        return None, count, 0, flags, "implausible stream count"
     counts = [word >> 29 for word in struct.unpack(f"<{count}I", words)]
     if any(entry > 32 for entry in counts):
         return None, count, 0, flags, "implausible tag count"
@@ -187,6 +187,10 @@ def extent_bank(handle, offset, limit=MAX_BANK):
     if len(head) < 16 or head[:4] != b"ADAT":
         return None, 0, "no magic"
     version, flags, count, header_size = struct.unpack_from("<HHII", head, 4)
+    if count == 0 or count > MAX_STREAMS:
+        return None, count, "implausible stream count"
+    if header_size < 16 or header_size > min(limit, MAX_BANK):
+        return None, count, "implausible header size"
     if flags not in TABLE_AT:
         if flags not in SCANNED_FLAGS:
             return None, count, f"unsupported flags 0x{flags:04x}"
@@ -195,9 +199,9 @@ def extent_bank(handle, offset, limit=MAX_BANK):
         if error:
             return None, count, f"0x{flags:04x}: {error}"
         start, length, extent = found
+        if extent > limit:
+            return None, count, "implausible extent"
         return offset + ((extent + ALIGN - 1) // ALIGN) * ALIGN, count, None
-    if count == 0 or count > MAX_STREAMS:
-        return None, count, "implausible stream count"
     table_at = TABLE_AT[flags](count)
     # Derive the record count instead of assuming it: the table must end exactly at
     # header_size, which is an integer constraint on records-per-stream.
@@ -209,6 +213,8 @@ def extent_bank(handle, offset, limit=MAX_BANK):
         if error:
             return None, count, "table does not end at header_size"
         _start, _length, extent = found
+        if extent > limit:
+            return None, count, "implausible extent"
         return offset + ((extent + ALIGN - 1) // ALIGN) * ALIGN, count, None
     records_per_stream = span // (8 * count)
     if not 1 <= records_per_stream <= 16:
