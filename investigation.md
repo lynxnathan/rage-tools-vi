@@ -10891,3 +10891,25 @@ Validation: `python3 tests/test_index_scanning.py` (six tests),
 `python3 tests/test_robustness.py --rounds 200` pass. The new regressions failed against
 the original scanners. All fixtures are generated synthetic bytes; no game archives,
 executables, assets, or private material were used.
+
+### ADAT fallback extent limits and early header checks (2026-11-26)
+
+Generated in-memory headers show that `extent_bank` enforces its caller's `limit`
+for computed tables but not for either suffix-scan path. A synthetic bank with a
+bank-relative extent of `0x1800` is accepted despite a `0x1000` limit for `0xff25`,
+`0xff61`, and the fallback layouts of `0xff21` and `0xff02`. Those paths now reject
+the entire recovered table when its maximum extent exceeds the caller's limit;
+they do not retry a shorter suffix. Existing alignment rounding is unchanged.
+
+The same fixtures show that scanned variants bypass the stream-count check and
+that oversized header regions can be requested before validation. `extent_bank`
+now checks stream count and header size before dispatch. The legacy `bank_extent`
+also checks count before calculating or reading the info table. An instrumented
+in-memory reader verifies that invalid counts and oversized headers stop after the
+16-byte header, without requesting an input-controlled large read.
+
+Validation: `python3 tests/test_adat_bounds.py` (seven tests),
+`python3 tests/test_extraction_tools.py`, and
+`python3 tests/test_robustness.py --rounds 200` pass. The regressions failed on the
+original parser. Valid extents exactly at the limit and legacy stream counts of
+one and `MAX_STREAMS` remain accepted. No game files or private material were used.
