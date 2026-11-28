@@ -10913,3 +10913,31 @@ Validation: `python3 tests/test_adat_bounds.py` (seven tests),
 `python3 tests/test_robustness.py --rounds 200` pass. The regressions failed on the
 original parser. Valid extents exactly at the limit and legacy stream counts of
 one and `MAX_STREAMS` remain accepted. No game files or private material were used.
+
+### Bulk extraction respects indexed decoded sizes (2026-11-26)
+
+Synthetic zlib streams showed that `tools/bulk_extract.py` ignored the index's
+positive decoded-size field. Both smaller and larger declared sizes were accepted
+and written, and a stream expanding to 8 MiB was fully decoded despite a declared
+size of 16 bytes. The new tests against the committed implementation report three
+failing cases; exact-size, unknown-size and truncated-stream controls pass.
+
+For a known positive size, extraction now asks the incremental decoder for at
+most that size plus one byte, requires the expected length and a complete stream,
+and rejects a mismatch before creating the output directory or file. A zero size
+continues to mean unknown. The tool description now states that the memory bound
+depends on a known decoded size.
+
+Verification used generated in-memory compressed data and temporary directories
+only. All five regression tests pass on native Windows and Ubuntu WSL, including
+the 8 MiB expansion case with a traced allocation peak below 512 KiB. The existing extraction checks and robustness
+checks with 200 random rounds pass as well. No retail inputs, extracted samples,
+or private material were used.
+
+Reproduce from the repository root:
+
+```sh
+python3 tests/test_bulk_extract_bounds.py -v
+python3 tests/test_extraction_tools.py
+python3 tests/test_robustness.py --rounds 200
+```

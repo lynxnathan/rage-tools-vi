@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Parallel bounded-memory extraction of every zlib span in an index."""
+"""Parallel extraction of zlib spans, bounded by known decoded sizes."""
 import argparse
 import csv
 import hashlib
@@ -15,7 +15,14 @@ MM = None
 
 def extract_one(task):
     start, end, expected, outdir = task
-    decoded = zlib.decompress(MM[start:end])
+    if expected > 0:
+        decoder = zlib.decompressobj()
+        decoded = decoder.decompress(MM[start:end], expected + 1)
+        if len(decoded) != expected or not decoder.eof:
+            raise ValueError(
+                f"zlib stream at 0x{start:x} does not match indexed decoded length {expected}")
+    else:
+        decoded = zlib.decompress(MM[start:end])
     digest = hashlib.sha256(decoded).hexdigest()
     shard = Path(outdir) / f"{start >> 24:02x}"
     shard.mkdir(parents=True, exist_ok=True)
