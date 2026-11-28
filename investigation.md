@@ -10941,3 +10941,46 @@ python3 tests/test_bulk_extract_bounds.py -v
 python3 tests/test_extraction_tools.py
 python3 tests/test_robustness.py --rounds 200
 ```
+
+### Three external contributions land in `main`, and publishing stops rewriting history (2026-11-28)
+
+Three open pull requests from `yefan911` address the same class of defect: a bound the
+caller declares and the tool ignores. Each was reviewed and reproduced here before the
+merge, with the branch's own regressions run against the previous and the patched code in
+a scratch worktree:
+
+- **#2, index scanners.** `find_banks` and `find_candidates` carried eight bytes between
+  reads, so a complete signature near a chunk boundary was emitted twice and could fill
+  the caller's `limit` with duplicates. The carry keeps only the incomplete suffix (three
+  bytes for `ADAT`, two for `KB2`). Six synthetic regressions: 14 failures before, pass
+  after.
+- **#3, `ADAT` extents.** `extent_bank` bounded computed chunk tables by the caller's
+  `limit` but not the two suffix-scan paths; stream count was validated after the
+  info-table read, and `header_size` (a `u32` from the file) sized a read before any
+  check. Count and header size are now validated first, bounded by `min(limit, MAX_BANK)`,
+  and a recovered table past the limit rejects the whole bank. Seven regressions: 22
+  failures before, pass after.
+- **#4, bulk extraction.** `extract_one` ignored the index's `decoded_bytes`. A known
+  positive size now drives an incremental decoder capped at `expected + 1`, requires the
+  exact length and `eof`, and runs before any shard directory or file exists; zero still
+  means unknown. Five regressions: three failures before, pass after (8 MiB expansion with
+  a 16-byte declaration peaks below 512 KiB of traced allocations).
+
+The full `tests/` directory passes on the merged tree, including
+`test_extraction_tools.py` and `test_robustness.py --rounds 200`; `test_boot_stages.py`
+needs `--game-dir` and is unrelated to this change.
+
+Each branch was based on the published squashed snapshot, so their `investigation.md`
+addition conflicted at the old end of file. The entries were appended here instead, with
+`tools/journal_append.py`; the tool files themselves merged without overlap.
+
+This is also the trigger written down on 2026-11-22: outside contributions have arrived, so
+remote `main` stops being a single squashed commit refreshed by force. The published
+snapshot `49c8aaa` was merged into local history with `-s ours` (tree unchanged, snapshot
+made an ancestor) so the push is a fast-forward and existing clones keep working; from now
+on `main` is published with normal commits and branches. The `publication` branch is no
+longer refreshed.
+
+Follow-up worth recording, not blocking: `bulk_extract` still lets a rejected stream abort
+the batch through `future.result()`, exactly as `zlib.error` did before, so one bad indexed
+length ends a corpus run instead of being counted.
