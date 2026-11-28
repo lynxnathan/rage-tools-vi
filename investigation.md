@@ -10875,3 +10875,19 @@ the layout is consistent; the arguments above are a second, earlier use on the s
 The next implementation is therefore the console allocator-pool creator, with the size class
 from the structure at `image+0x247ab10` (`u16` at `+0`, `u8` at `+2`, `u8` at `+3`, `u32` at `+4`)
 and the state the initializer expects back.
+
+### Index scanner chunk-boundary regression (2026-11-26)
+
+Synthetic fixtures reproduce duplicate candidate offsets in both `adat_index.find_banks`
+and `bink_index.find_candidates`: an eight-byte carry preserves complete signatures that
+the preceding read already reported. With 16-byte reads and signatures at offsets 12 and
+24, both return `[12, 12, 24, 24]`; a limit of two returns `[12, 12]`.
+Retaining only the incomplete signature suffix (three bytes for ADAT, two for KB2)
+returns each candidate once while preserving signatures split across reads. Offsets in
+these fixtures are file-relative; the ADAT range test uses `[12, 36)`.
+
+Validation: `python3 tests/test_index_scanning.py` (six tests),
+`python3 tests/test_extraction_tools.py`, and
+`python3 tests/test_robustness.py --rounds 200` pass. The new regressions failed against
+the original scanners. All fixtures are generated synthetic bytes; no game archives,
+executables, assets, or private material were used.
