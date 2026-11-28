@@ -4,7 +4,7 @@ Live check/todo list: open checks only. Evidence, measurements and the failures 
 here belong in [investigation.md](investigation.md) and `handoff/`; the boot thread also has
 a one-read resume sheet at [handoff/boot-thread-resume.md](handoff/boot-thread-resume.md).
 
-Last updated: 2026-11-25.
+Last updated: 2026-11-28.
 
 ## Format and corpus
 
@@ -37,6 +37,8 @@ Last updated: 2026-11-25.
   this is a code-tracing task.
 - [ ] Locate the script bytecode container (code tracing).
 - [ ] Extend the type-name vocabulary (`root_type`, `type_tag`).
+- [ ] Decide `bulk_extract`'s policy for a stream rejected by the indexed decoded length: it
+  currently aborts the batch through `future.result()`. Count, report and skip, or stop?
 
 ## Boot thread
 
